@@ -12,6 +12,7 @@ public:
 	Mesh* m;
 	int id_shader;
 	int id_texture;
+	int a = 0;
 
 };
 
