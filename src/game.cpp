@@ -41,7 +41,6 @@ std::uniform_int_distribution<> distr(-500, 500); // define the range
 std::uniform_int_distribution<> distr2(0, 3);
 std::vector<Vector3> list_pos;
 
-
 Game::Game(int window_width, int window_height, SDL_Window* window)
 {
 	this->window_width = window_width;

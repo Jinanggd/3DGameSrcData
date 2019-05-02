@@ -9,10 +9,16 @@ public:
 	Objeto();
 	~Objeto();
 
+	Objeto(Mesh* m, int s, int t);
+	Objeto(Mesh* m, int s, int t, std::string n);
+
 	Mesh* m;
 	int id_shader;
-	int id_texture;
-	int a = 0;
+	
+	std::vector<int> id_texture;
+	std::string name;
+	std::string tag;
+	Vector3 position; //World Coordinate position
 
 };
 
