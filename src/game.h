@@ -8,7 +8,8 @@
 #include "includes.h"
 #include "camera.h"
 #include "utils.h"
-#include "Objeto.h"
+#include "object.h"
+#include "world.h"
 
 class Game
 {
@@ -26,7 +27,7 @@ public:
 	float elapsed_time;
 	int fps;
 	bool must_exit;
-
+	World world;
 	//some vars
 	Camera* camera; //our global camera
 	bool mouse_locked; //tells if the mouse is locked (not seen)

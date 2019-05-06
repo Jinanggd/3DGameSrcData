@@ -5,6 +5,8 @@
 #include "fbo.h"
 #include "shader.h"
 #include "input.h"
+#include "object.h"
+#include "world.h"
 #include <random>
 #include <iostream>
 #include <cmath>
@@ -64,8 +66,17 @@ Game::Game(int window_width, int window_height, SDL_Window* window)
 	camera->lookAt(Vector3(0.f,100.f, 100.f),Vector3(0.f,0.f,0.f), Vector3(0.f,1.f,0.f)); //position the camera and point to 0,0,0
 	camera->setPerspective(70.f,window_width/(float)window_height,0.1f,10000.f); //set the projection, we want to be perspective
 
+
+	
+
+	
+
+
 	//create a plane mesh
 	mesh = Mesh::Get("data/box.ASE");
+
+
+
 	house = Mesh::Get("data/house.obj");
 	tower = Mesh::Get("data/tower.obj");
 	tree = Mesh::Get("data/lod_tree.obj");
@@ -90,11 +101,10 @@ Game::Game(int window_width, int window_height, SDL_Window* window)
 	mask->load("data/heightmap.tga");
 	house_texture->load("data/house.tga");
 	tree_texture->load("data/tree.tga");
-
 	mask->image.loadTGA("data/heightmap.tga");
 
-	//Uint8* foo = house_texture->info.data;
-	//std::cout<< foo;
+
+
 
 	plane.createPlane(1024);
 
@@ -111,6 +121,12 @@ Game::Game(int window_width, int window_height, SDL_Window* window)
 		list_pos.push_back(Vector3(distr(eng)+ distr(eng), distr(eng)+ distr(eng), distr2(eng)));
 
 	}
+
+
+	world = World(camera, &time);
+	world.all_elements.push_back(Object(mesh, mat_types::rock));
+	world.all_elements.push_back(Object(&plane, mat_types::plane));
+
 
 	//hide the cursor
 	SDL_ShowCursor(!mouse_locked); //hide or show the mouse
@@ -137,13 +153,16 @@ void Game::render(void)
 	Matrix44 m;
 	//m.rotate( (float)(angle * DEG2RAD), Vector3(0.0f,1.0f, 0.0f) ); //build a rotation matrix
 
-	Shader* current_shader = shader;
+	Shader* current_shader = world.current_shader;
 
 	if(current_shader)
 	{
+
+		world.render();
+
 		//draws house
 
-		
+		/*
 		current_shader->enable();
 		
 		current_shader->setUniform("u_color", Vector4(1,1,1,1));
@@ -241,7 +260,7 @@ void Game::render(void)
 
 		current_shader->disable();
 
-		//disable shader
+		 */
 		
 	}
 
