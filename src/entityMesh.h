@@ -1,8 +1,9 @@
-#ifndef OBJECT_H
-#define OBJECT_H
+#ifndef ENTITYMESH_H
+#define ENTITYMESH_H
 
 #include "mesh.h";
 #include "camera.h"
+#include "entity.h"
 
 
 enum class mat_types {
@@ -10,7 +11,8 @@ enum class mat_types {
 	rock,
 	tree,
 	house,
-	plane
+	plane,
+	sky
 
 };
 
@@ -22,17 +24,18 @@ struct Material {
 };
 
 
-class Object
+class EntityMesh : public Entity
 {
 
 
 public:
-	Object();
-	~Object();
+	EntityMesh();
+	~EntityMesh();
 
-	Object(Mesh* m, mat_types type);
+	EntityMesh(Mesh* m, mat_types type);
 	void render();
 	void setPosition(Vector3 pos);
+	Vector3 getPosition();
 	// model matrix 
 	Matrix44 m;
 	Mesh* mesh;

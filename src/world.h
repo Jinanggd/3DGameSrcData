@@ -3,12 +3,23 @@
 
 #include "mesh.h"
 #include "texture.h"
-#include "object.h"
+#include "entityMesh.h"
 #include "shader.h"
+
+
+
 
 
 class World
 {
+
+
+	struct gamestate {
+
+		int a = 0;
+		int b = 0;
+
+	};
 
 
 public:
@@ -19,12 +30,24 @@ public:
 
 	World(Camera * camera, float* time);
 
-	void render();
+	void renderentities();
+	void renderplane();
+	void renderSkybox();
+
+	bool load();
+	bool save();
 
 	Camera * camera;
 	float* time;
 	Shader* current_shader;
-	std::vector<Object> all_elements;
+	std::vector<EntityMesh> entities;
+	Matrix44 m;
+	gamestate mygameState;
+
+	Mesh plane;
+	EntityMesh Skybox;
+
+	Shader* plane_shader = NULL;
 
 };
 

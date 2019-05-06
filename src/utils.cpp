@@ -81,6 +81,7 @@ bool readFile(const std::string& filename, std::string& content)
 	long count = 0;
 
 	FILE *fp = fopen(filename.c_str(), "rb");
+
 	if (fp == NULL)
 	{
 		std::cerr << "::readFile: file not found " << filename << std::endl;
@@ -92,10 +93,12 @@ bool readFile(const std::string& filename, std::string& content)
 	rewind(fp);
 
 	content.resize(count);
+
 	if (count > 0)
 	{
 		count = fread(&content[0], sizeof(char), count, fp);
 	}
+
 	fclose(fp);
 
 	return true;

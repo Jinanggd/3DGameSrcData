@@ -5,7 +5,7 @@
 #include "fbo.h"
 #include "shader.h"
 #include "input.h"
-#include "object.h"
+#include "entityMesh.h"
 #include "world.h"
 #include <random>
 #include <iostream>
@@ -13,24 +13,6 @@
 #include <vector>
 
 //some globals
-Mesh* mesh = NULL;
-Mesh* house = NULL;
-Mesh* tower = NULL;
-Mesh* templete = NULL;
-Mesh* tree = NULL;
-Mesh plane;
-
-Texture* texture = NULL;
-Texture* grass = NULL;
-Texture* rock = NULL;
-Texture* mask = NULL;
-Texture* heightmap = NULL;
-Texture* house_texture = NULL;
-Texture* tree_texture = NULL;
-
-Shader* shader = NULL;
-Shader* plane_shader = NULL;
-Shader* tree_shader = NULL;
 
 float angle = 0;
 
@@ -67,55 +49,6 @@ Game::Game(int window_width, int window_height, SDL_Window* window)
 	camera->setPerspective(70.f,window_width/(float)window_height,0.1f,10000.f); //set the projection, we want to be perspective
 
 
-	
-
-	
-
-
-	//create a plane mesh
-	mesh = Mesh::Get("data/box.ASE");
-
-
-
-	house = Mesh::Get("data/house.obj");
-	tower = Mesh::Get("data/tower.obj");
-	tree = Mesh::Get("data/lod_tree.obj");
-	templete = Mesh::Get("data/templete.obj");
-
-	//load one texture
-	texture = new Texture();
-
- 	texture->load("data/texture.tga"); 
-
-	grass = new Texture();
-	rock = new Texture();
-	mask = new Texture();
-	house_texture = new Texture();
-	tree_texture = new Texture();
-
-	heightmap= new Texture();
-
-
-	grass->load("data/grass.tga");
-	rock->load("data/rocks.tga");
-	mask->load("data/heightmap.tga");
-	house_texture->load("data/house.tga");
-	tree_texture->load("data/tree.tga");
-	mask->image.loadTGA("data/heightmap.tga");
-
-
-
-
-	plane.createPlane(1024);
-
-	// example of shader loading using the shaders manager
-	
-	shader = Shader::Get("data/shaders/basic.vs", "data/shaders/texture.fs");
-	
-	plane_shader = Shader::Get("data/shaders/heightmap.vs", "data/shaders/plane_texture.fs");
-
-	tree_shader = Shader::Get("data/shaders/basic.vs", "data/shaders/tree_texture.fs");
-
 	for (int n = 0; n < 100; ++n) {
 
 		list_pos.push_back(Vector3(distr(eng)+ distr(eng), distr(eng)+ distr(eng), distr2(eng)));
@@ -124,8 +57,7 @@ Game::Game(int window_width, int window_height, SDL_Window* window)
 
 
 	world = World(camera, &time);
-	world.all_elements.push_back(Object(mesh, mat_types::rock));
-	world.all_elements.push_back(Object(&plane, mat_types::plane));
+	world.entities.push_back(EntityMesh(Mesh::Get("data/box.ASE"), mat_types::rock));
 
 
 	//hide the cursor
@@ -144,10 +76,7 @@ void Game::render(void)
 	//set the camera as default
 	camera->enable();
 
-	//set flags
-	glDisable(GL_BLEND);
-	glEnable(GL_DEPTH_TEST);
-	glDisable(GL_CULL_FACE);
+
    
 	//create model matrix for cube
 	Matrix44 m;
@@ -158,109 +87,18 @@ void Game::render(void)
 	if(current_shader)
 	{
 
-		world.render();
+	
+		glDisable(GL_DEPTH_TEST);
+		world.renderSkybox();
 
-		//draws house
+		//set flags
+		glDisable(GL_BLEND);
+		glEnable(GL_DEPTH_TEST);
 
-		/*
-		current_shader->enable();
-		
-		current_shader->setUniform("u_color", Vector4(1,1,1,1));
-		current_shader->setUniform("u_viewprojection", camera->viewprojection_matrix );
-		current_shader->setUniform("u_texture", house_texture);
-		current_shader->setUniform("u_time", time);
+		world.renderentities();
 
-		for (int i = 0; i < list_pos.size(); i++) {
-		m.setIdentity();
-		m.translate(list_pos[i].x, 0, list_pos[i].y);
-		current_shader->setUniform("u_model", m);
+		world.renderplane();
 
-		if (list_pos[i].z == 0) house->render(GL_TRIANGLES);
-		else if (list_pos[i].z == 1) {
-			house->render(GL_TRIANGLES);
-			tower->render(GL_TRIANGLES);
-		
-		}
-
-		else if (list_pos[i].z == 2) {
-			house->render(GL_TRIANGLES);
-			tower->render(GL_TRIANGLES);
-			m.setIdentity();
-			m.translate(list_pos[i].x + 18, 17, list_pos[i].y + 2);
-			current_shader->setUniform("u_model", m);
-			templete->render(GL_TRIANGLES);
-		}
-		
-		else {
-		
-			house->render(GL_TRIANGLES);
-			m.setIdentity();
-			m.translate(list_pos[i].x + 18, 17, list_pos[i].y + 2);
-			current_shader->setUniform("u_model", m);
-			templete->render(GL_TRIANGLES);
-				
-		}
-
-		
-		}
-
-		current_shader->disable();
-
-		//draws tree
-		current_shader = tree_shader;
-
-		current_shader->enable();
-
-
-		for (int i = 0; i < list_pos.size(); i++) {
-
-			int x = abs(int(((list_pos[i].x - 500) * 256) / 500));
-			int y = abs(int(((list_pos[i].y - 500) * 256) / 500));
-
-			if (x > 256)x /= 4;
-			if (y > 256)y /= 4;
-
-			Vector4 color = mask->image.getPixel(x, y);
-			//std::cout << x << " " << y << std::endl;
-			m.setIdentity();
-			
-			if (color.x > 0)
-				m.translate(list_pos[i].x+60, 0, list_pos[i].y);
-			m.scale(3.0, 3.0, 3.0);
-
-			current_shader->setUniform("u_color", Vector4(1, 1, 1, 1));
-			current_shader->setUniform("u_viewprojection", camera->viewprojection_matrix);
-			current_shader->setUniform("u_texture", tree_texture);
-			current_shader->setUniform("u_model", m);
-			current_shader->setUniform("u_time", time);
-
-			tree->render(GL_TRIANGLES);
-		}
-		current_shader->disable();
-
-		current_shader = plane_shader;
-
-		//draws plane
-
-		current_shader->enable();
-		m.setIdentity();
-
-		current_shader->setUniform("u_color", Vector4(1, 1, 1, 1));
-		current_shader->setUniform("u_viewprojection", camera->viewprojection_matrix);
-		current_shader->setUniform("u_texture_grass", grass);
-		current_shader->setUniform("u_texture_rock", rock);
-		current_shader->setUniform("u_texture_mask", mask);
-
-
-		current_shader->setUniform("u_model", m);
-		current_shader->setUniform("u_time", time);
-
-
-		plane.render(GL_TRIANGLES);
-
-		current_shader->disable();
-
-		 */
 		
 	}
 
@@ -289,7 +127,7 @@ void Game::update(double seconds_elapsed)
 	}
 
 	//async input to move the camera around
-	if(Input::isKeyPressed(SDL_SCANCODE_LSHIFT) ) speed *= 10; //move faster with left shift
+	if (Input::isKeyPressed(SDL_SCANCODE_LSHIFT) ) speed *= 10; //move faster with left shift
 	if (Input::isKeyPressed(SDL_SCANCODE_W) || Input::isKeyPressed(SDL_SCANCODE_UP)) camera->move(Vector3(0.0f, 0.0f, 1.0f) * speed);
 	if (Input::isKeyPressed(SDL_SCANCODE_S) || Input::isKeyPressed(SDL_SCANCODE_DOWN)) camera->move(Vector3(0.0f, 0.0f,-1.0f) * speed);
 	if (Input::isKeyPressed(SDL_SCANCODE_A) || Input::isKeyPressed(SDL_SCANCODE_LEFT)) camera->move(Vector3(1.0f, 0.0f, 0.0f) * speed);
@@ -303,10 +141,44 @@ void Game::update(double seconds_elapsed)
 //Keyboard event handler (sync input)
 void Game::onKeyDown( SDL_KeyboardEvent event )
 {
+
+	EntityMesh foo;
 	switch(event.keysym.sym)
 	{
 		case SDLK_ESCAPE: must_exit = true; break; //ESC key, kill the app
 		case SDLK_F1: Shader::ReloadAll(); break; 
+		case SDLK_F2: 
+
+			
+			world.load();
+
+			std::cout << world.mygameState.a << " "<< world.mygameState.b << std::endl;
+			
+			
+			break;
+		case SDLK_F3: 
+			world.mygameState.a = 100;
+			world.mygameState.b = 200;
+
+			world.save(); break;
+		case SDLK_a: 
+
+
+			foo = EntityMesh(Mesh::Get("data/box.ASE"), mat_types::rock);
+			foo.setPosition(Vector3(distr(eng) + distr(eng), distr(eng) + distr(eng), distr2(eng)));
+			world.entities.push_back(foo);
+			break;
+
+		case SDLK_s:
+			
+			foo = EntityMesh(Mesh::Get("data/sphere.obj"), mat_types::sky);
+
+			foo.setPosition(Vector3(camera->eye.x, camera->eye.y, camera->eye.z));
+			foo.model.scale(100, 100, 100);
+			world.entities.push_back(foo);
+			
+			break;
+
 	}
 }
 

@@ -1,9 +1,9 @@
-#include "object.h"
+#include "entityMesh.h"
 #include "shader.h"
 #include "texture.h"
 #include "camera.h"
 
-Object::Object()
+EntityMesh::EntityMesh() : Entity()
 {
 	this->mesh = NULL;
     this->mat.shader = NULL;
@@ -12,12 +12,12 @@ Object::Object()
 }
 
 
-Object::~Object()
+EntityMesh::~EntityMesh()
 {
 
 }
 
-Object::Object(Mesh * mesh, mat_types type)
+EntityMesh::EntityMesh(Mesh * mesh, mat_types type)
 {
 	this->mesh = mesh;
 
@@ -50,16 +50,23 @@ Object::Object(Mesh * mesh, mat_types type)
 
 		this->mat.shader = Shader::Get("data/shaders/basic.vs", "data/shaders/heightmap.fs");
 		this->mat.texture = Texture::Get("data/heightmap.tga");
-
 		break;
+
+
+
+	case mat_types::sky:
+
+		this->mat.shader = Shader::Get("data/shaders/basic.vs", "data/shaders/texture.fs");
+		this->mat.texture = Texture::Get("data/skybox.tga");
+		break;
+
 
 	}
 
 
-
 }
 
-void Object::render() {
+void EntityMesh::render() {
 
 
 	this->mat.shader->setUniform("u_color", Vector4(1, 1, 1, 1));
@@ -69,10 +76,17 @@ void Object::render() {
 
 }
 
-void Object::setPosition(Vector3 pos) {
+void EntityMesh::setPosition(Vector3 pos) {
 
 	m.setIdentity();
 	m.translate(pos.x,pos.y,pos.z);
+
+
+}
+
+Vector3 EntityMesh::getPosition() {
+
+	return m.getTranslation();
 
 
 }
