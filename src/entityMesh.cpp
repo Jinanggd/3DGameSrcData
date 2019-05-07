@@ -23,7 +23,6 @@ EntityMesh::EntityMesh(Mesh * mesh, mat_types type)
 	this->mesh = mesh;
 	this->tag = "EntityMesh";
 	this->name = "UndefName";
-
 	switch (type)
 
 	{

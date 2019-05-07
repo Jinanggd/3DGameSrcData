@@ -2,7 +2,9 @@
 #include <fstream>
 #include <iostream>
 
-
+//World* World::Instance() {
+//	return instance;
+//}
 World::World()
 {
 }
@@ -17,18 +19,14 @@ World::World(Camera * camera, float* time)
 	this->camera = camera;
 	this->time = time;
 
-
-	plane.createPlane(1024);
-
+	//plane.createPlane(1024);
+	plane.createSubdividedPlane(1024, 256, true);
 	plane_shader = Shader::Get("data/shaders/heightmap.vs", "data/shaders/plane_texture.fs");
 
 }
 
 
 void World::renderSkybox() {
-
-
-
 
 	Skybox = EntityMesh(Mesh::Get("data/sphere.obj"), mat_types::sky);
 
@@ -80,7 +78,7 @@ void World::renderplane() {
 
 	current_shader->enable();
 
-
+	//m.translate(0, 0, 0);
 	m.setIdentity();
 	
 	current_shader->setUniform("u_color", Vector4(1, 1, 1, 1));

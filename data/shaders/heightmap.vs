@@ -27,11 +27,7 @@ void main()
 	//calcule the vertex in object space
 	v_position = a_vertex;
 
-	vec4 mask = texture2D(u_texture_mask,v_uv); 
-
-	if(mask.x>0.3)
-		v_position.y = v_position.y+ (1000*mask.x);
-
+	v_position.y = texture(u_texture_mask,a_uv).r*20.0; 
 
 	v_world_position = (u_model * vec4( v_position, 1.0) ).xyz;
 

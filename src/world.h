@@ -4,10 +4,8 @@
 #include "mesh.h"
 #include "texture.h"
 #include "entityMesh.h"
+#include "entityLight.h"
 #include "shader.h"
-
-
-
 
 
 class World
@@ -37,10 +35,12 @@ public:
 	bool load();
 	bool save();
 
+	//static World* Instance();
 	Camera * camera;
 	float* time;
 	Shader* current_shader;
 	std::vector<EntityMesh> entities;
+	std::vector<EntityLight> lights;
 	Matrix44 m;
 
 	gamestate mygameState;
@@ -50,6 +50,8 @@ public:
 
 	Shader* plane_shader = NULL;
 
+//private:
+//	static World* instance;
 };
 
 
