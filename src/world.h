@@ -42,6 +42,7 @@ public:
 	Shader* current_shader;
 	std::vector<EntityMesh> entities;
 	Matrix44 m;
+
 	gamestate mygameState;
 
 	Mesh plane;

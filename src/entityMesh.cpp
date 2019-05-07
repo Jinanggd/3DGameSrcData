@@ -71,22 +71,22 @@ void EntityMesh::render() {
 
 	this->mat.shader->setUniform("u_color", Vector4(1, 1, 1, 1));
 	this->mat.shader->setUniform("u_texture", this->mat.texture);
-	this->mat.shader->setUniform("u_model", m);
+	this->mat.shader->setUniform("u_model", model);
 	this->mesh->render(GL_TRIANGLES);
 
 }
 
 void EntityMesh::setPosition(Vector3 pos) {
 
-	m.setIdentity();
-	m.translate(pos.x,pos.y,pos.z);
+	model.setIdentity();
+	model.translate(pos.x,pos.y,pos.z);
 
 
 }
 
 Vector3 EntityMesh::getPosition() {
 
-	return m.getTranslation();
+	return model.getTranslation();
 
 
 }

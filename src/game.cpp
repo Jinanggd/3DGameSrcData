@@ -88,16 +88,24 @@ void Game::render(void)
 	{
 
 	
-		glDisable(GL_DEPTH_TEST);
-		world.renderSkybox();
+
 
 		//set flags
 		glDisable(GL_BLEND);
+
+		glDisable(GL_DEPTH_TEST);
+		
+		glDisable(GL_CULL_FACE);
+
+		world.renderSkybox();
+
 		glEnable(GL_DEPTH_TEST);
 
 		world.renderentities();
 
 		world.renderplane();
+
+		
 
 		
 	}
@@ -166,7 +174,8 @@ void Game::onKeyDown( SDL_KeyboardEvent event )
 
 			foo = EntityMesh(Mesh::Get("data/box.ASE"), mat_types::rock);
 			foo.setPosition(Vector3(distr(eng) + distr(eng), distr(eng) + distr(eng), distr2(eng)));
-			world.entities.push_back(foo);
+			foo.model.scale(100, 100, 100);
+			//world.entities.push_back(foo);
 			break;
 
 		case SDLK_s:
@@ -175,7 +184,7 @@ void Game::onKeyDown( SDL_KeyboardEvent event )
 
 			foo.setPosition(Vector3(camera->eye.x, camera->eye.y, camera->eye.z));
 			foo.model.scale(100, 100, 100);
-			world.entities.push_back(foo);
+			//world.entities.push_back(foo);
 			
 			break;
 

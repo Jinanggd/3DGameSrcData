@@ -20,7 +20,6 @@ struct Material {
 
 	Texture* texture;
 	Shader* shader;
-
 };
 
 
@@ -37,7 +36,6 @@ public:
 	void setPosition(Vector3 pos);
 	Vector3 getPosition();
 	// model matrix 
-	Matrix44 m;
 	Mesh* mesh;
 	Material mat;
 

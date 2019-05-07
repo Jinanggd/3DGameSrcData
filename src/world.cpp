@@ -28,24 +28,26 @@ World::World(Camera * camera, float* time)
 void World::renderSkybox() {
 
 
+
+
 	Skybox = EntityMesh(Mesh::Get("data/sphere.obj"), mat_types::sky);
 
 	current_shader = Skybox.mat.shader;
 
 	current_shader->enable();
 
-	m.setIdentity();
-	m.setTranslation(camera->eye.x, camera->eye.y, camera->eye.z);
-	m.scale(100,100, 100);
+
+	Skybox.model.translate(camera->eye.x, camera->eye.y, camera->eye.z);
+	Skybox.model.scale(100, 100, 100);
+
 	current_shader->setUniform("u_color", Vector4(1, 1, 1, 1));
 	current_shader->setUniform("u_viewprojection", camera->viewprojection_matrix);
-	current_shader->setUniform("u_model", m);
+	current_shader->setUniform("u_model", Skybox.model);
 	current_shader->setUniform("u_time", *time);
 
 	Skybox.render();
 
 	current_shader->disable();
-
 
 }
 
@@ -86,6 +88,7 @@ void World::renderplane() {
 	current_shader->setUniform("u_texture_grass", Texture::Get("data/grass.tga"));
 	current_shader->setUniform("u_texture_rock", Texture::Get("data/rocks.tga"));
 	current_shader->setUniform("u_texture_mask", Texture::Get("data/heightmap.tga"));
+	current_shader->setUniform("u_texture_water", Texture::Get("data/agua.tga"));
 	current_shader->setUniform("u_model", m);
 	current_shader->setUniform("u_time", *time);
 	plane.render(GL_TRIANGLES);
