@@ -18,9 +18,13 @@ public:
 	void addChild(Entity* ent);
 	void removeChild(Entity* ent);
 
+	Matrix44 getModelMatrix();
+	Entity * getChildren(std::string n);
+
 	// model matrix 
 	Matrix44 model;
 	std::string name;
+	std::string tag;
 	Entity *parent;
 	std::vector<Entity*> children;
 

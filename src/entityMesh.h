@@ -35,8 +35,10 @@ public:
 	void render();
 	void setPosition(Vector3 pos);
 	Vector3 getPosition();
+
 	// model matrix 
 	Mesh* mesh;
+	Mesh* lowmesh;
 	Material mat;
 
 

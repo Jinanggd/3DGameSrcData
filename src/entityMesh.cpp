@@ -6,6 +6,7 @@
 EntityMesh::EntityMesh() : Entity()
 {
 	this->mesh = NULL;
+	this->lowmesh = NULL;
     this->mat.shader = NULL;
 	this->mat.texture = NULL;
 
@@ -20,6 +21,8 @@ EntityMesh::~EntityMesh()
 EntityMesh::EntityMesh(Mesh * mesh, mat_types type)
 {
 	this->mesh = mesh;
+	this->tag = "EntityMesh";
+	this->name = "UndefName";
 
 	switch (type)
 
