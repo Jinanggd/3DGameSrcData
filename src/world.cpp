@@ -20,7 +20,7 @@ World::World(Camera * camera, float* time)
 	this->time = time;
 
 	//plane.createPlane(1024);
-	plane.createSubdividedPlane(1024, 256, true);
+	plane.createSubdividedPlane(1024, 512, true);
 	plane_shader = Shader::Get("data/shaders/heightmap.vs", "data/shaders/plane_texture.fs");
 
 }
@@ -79,7 +79,7 @@ void World::renderplane() {
 	current_shader->enable();
 
 	//m.translate(0, 0, 0);
-	m.setIdentity();
+	m.translate(0, 0, 0);
 	
 	current_shader->setUniform("u_color", Vector4(1, 1, 1, 1));
 	current_shader->setUniform("u_viewprojection", camera->viewprojection_matrix);

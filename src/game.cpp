@@ -187,7 +187,8 @@ void Game::onKeyDown( SDL_KeyboardEvent event )
 			//world.entities.push_back(foo);
 			
 			break;
-
+		case SDLK_t:
+			break;
 	}
 }
 
