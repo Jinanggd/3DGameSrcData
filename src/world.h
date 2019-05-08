@@ -6,6 +6,7 @@
 #include "entityMesh.h"
 #include "entityLight.h"
 #include "entityWater.h"
+#include "entityCloud.h"
 #include "shader.h"
 
 
@@ -47,6 +48,8 @@ public:
 	gamestate mygameState;
 
 	EntityWater* water;
+	EntityCloud* cloud;
+
 	Mesh plane;
 	EntityMesh Skybox;
 
