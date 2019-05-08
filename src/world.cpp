@@ -20,8 +20,11 @@ World::World(Camera * camera, float* time)
 	this->time = time;
 
 	//plane.createPlane(1024);
-	plane.createSubdividedPlane(1024, 512, true);
+	plane.createSubdividedPlane(1024, 128, false);
 	plane_shader = Shader::Get("data/shaders/heightmap.vs", "data/shaders/plane_texture.fs");
+	//plane_shader = Shader::Get("data/shaders/basic.vs", "data/shaders/water.fs");
+
+	water = new	EntityWater();
 
 }
 
@@ -94,7 +97,31 @@ void World::renderplane() {
 
 	current_shader->disable();
 
+	glEnable(GL_BLEND);
+	glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+	current_shader = water->mat.shader;
+	current_shader->enable();
 
+	current_shader->setUniform("u_time", *time);
+	current_shader->setUniform("u_viewprojection", camera->viewprojection_matrix);
+	water->render();
+
+	current_shader->disable();
+	glDisable(GL_BLEND);
+	//glEnable(GL_BLEND);
+	//glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+	//m.translate(0, 0, 0);
+	//current_shader = plane_shader;
+	//current_shader->enable();
+	//current_shader->setUniform("u_time", *time);
+	//current_shader->setUniform("u_color", Vector4(1, 1, 1, 0.5f));
+	//current_shader->setUniform("u_viewprojection", camera->viewprojection_matrix);
+	//current_shader->setUniform("u_model", m);
+	//current_shader->setUniform("u_texture", Texture::Get("data/agua.tga"));
+	//plane.render(GL_TRIANGLES);
+	//current_shader->disable();
+	//glDisable(GL_BLEND);
+	
 }
 
 

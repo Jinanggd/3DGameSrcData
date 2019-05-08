@@ -5,6 +5,7 @@
 #include "texture.h"
 #include "entityMesh.h"
 #include "entityLight.h"
+#include "entityWater.h"
 #include "shader.h"
 
 
@@ -45,6 +46,7 @@ public:
 
 	gamestate mygameState;
 
+	EntityWater* water;
 	Mesh plane;
 	EntityMesh Skybox;
 

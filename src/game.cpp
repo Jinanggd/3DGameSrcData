@@ -69,6 +69,7 @@ void Game::render(void)
 {
 	//set the clear color (the background color)
 	glClearColor(0.372, 0.827, 0.945, 1.0);
+	//glClearColor(0, 0, 0, 1.0);
 
 	// Clear the window and the depth buffer
 	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
@@ -105,6 +106,7 @@ void Game::render(void)
 
 		world.renderplane();
 
+		//world.water.render();
 		
 
 		
