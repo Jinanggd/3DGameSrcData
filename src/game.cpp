@@ -18,6 +18,8 @@ float angle = 0;
 
 Game* Game::instance = NULL;
 
+bool debug = TRUE;
+
 
 std::random_device rd; // obtain a random number from hardware
 std::mt19937 eng(rd()); // seed the generator
@@ -75,8 +77,8 @@ void Game::render(void)
 	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
 	//set the camera as default
-	camera->enable();
-
+	if(debug)camera->enable();
+	 
 
    
 	//create model matrix for cube
@@ -89,8 +91,6 @@ void Game::render(void)
 	{
 
 	
-
-
 		//set flags
 		glDisable(GL_BLEND);
 
@@ -130,7 +130,7 @@ void Game::update(double seconds_elapsed)
 	angle += (float)seconds_elapsed * 10.0f;
 
 	//mouse input to rotate the cam
-	if ((Input::mouse_state & SDL_BUTTON_LEFT) || mouse_locked ) //is left button pressed?
+	if ((Input::mouse_state & SDL_BUTTON_LEFT) ||( mouse_locked && debug )) //is left button pressed?
 	{
 		camera->rotate(Input::mouse_delta.x * 0.005f, Vector3(0.0f,-1.0f,0.0f));
 		camera->rotate(Input::mouse_delta.y * 0.005f, camera->getLocalVector( Vector3(-1.0f,0.0f,0.0f)));
@@ -144,8 +144,9 @@ void Game::update(double seconds_elapsed)
 	if (Input::isKeyPressed(SDL_SCANCODE_D) || Input::isKeyPressed(SDL_SCANCODE_RIGHT)) camera->move(Vector3(-1.0f,0.0f, 0.0f) * speed);
 
 	//to navigate with the mouse fixed in the middle
-	if (mouse_locked)
-		Input::centerMouse();
+	if (mouse_locked && debug)
+		Input::centerMouse(); 
+		
 }
 
 //Keyboard event handler (sync input)
@@ -171,18 +172,27 @@ void Game::onKeyDown( SDL_KeyboardEvent event )
 			world.mygameState.b = 200;
 
 			world.save(); break;
-		case SDLK_a: 
+
+
+		case SDLK_w:
 
 
 			break;
 
 		case SDLK_s:
-			
 
-			
+
 			break;
-		case SDLK_t:
+
+		case SDLK_a: 
+
+
 			break;
+
+		case SDLK_d:
+				
+			break;
+
 	}
 }
 

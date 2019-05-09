@@ -34,6 +34,7 @@ public:
 	void renderplane();
 	void renderSkybox();
 	void initTree();
+	void initAirplane();
 	float mapping(float start1, float stop1, float start2, float stop2, float value);
 
 	bool load();
@@ -52,6 +53,7 @@ public:
 
 	EntityWater* water;
 	EntityCloud* cloud;
+
 
 	Mesh plane;
 	EntityMesh Skybox;

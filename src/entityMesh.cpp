@@ -58,15 +58,28 @@ EntityMesh::EntityMesh( mat_types type)
 		break;
 
 
-
 	case mat_types::sky:
 		this->mesh = Mesh::Get("data/sphere.obj");
 		this->mat.shader = Shader::Get("data/shaders/basic.vs", "data/shaders/texture.fs");
 		this->mat.texture = Texture::Get("data/skybox.tga");
 		break;
 
+	case mat_types::airplane:
+
+		this->mesh = Mesh::Get("data/spitfire/spitfire.ASE");
+		this->mat.shader = Shader::Get("data/shaders/basic.vs", "data/shaders/texture.fs");
+		this->mat.texture = Texture::Get("data/spitfire/spitfire_color_spec.tga");
+
+		this->camera = new Camera();
+		this->camera->lookAt(Vector3(0.f, 100.f, 100.f), Vector3(0.f, 0.f, 0.f), Vector3(0.f, 1.f, 0.f)); //position the camera and point to 0,0,0
+	
+		break;
+
+
 
 	}
+
+
 
 
 }

@@ -26,7 +26,12 @@ World::World(Camera * camera, float* time)
 	cloud = new EntityCloud();
 	mask = Texture::Get("data/heightmap.tga");
 	mask->image.loadTGA("data/heightmap.tga");
+
 	initTree();
+	initAirplane();
+
+	
+
 
 }
 
@@ -42,6 +47,7 @@ void World::renderSkybox() {
 
 	Skybox.model.translate(camera->eye.x, camera->eye.y, camera->eye.z);
 	Skybox.model.scale(100, 100, 100);
+
 
 	current_shader->setUniform("u_color", Vector4(1, 1, 1, 1));
 	current_shader->setUniform("u_viewprojection", camera->viewprojection_matrix);
@@ -117,7 +123,7 @@ void World::renderplane() {
 
 
 	glDisable(GL_BLEND);
-	//renderTree();
+	
 	/*
 
 	glEnable(GL_BLEND);
@@ -145,13 +151,13 @@ void World::initTree() {
 			
 			float px = mapping(0, mask->image.width, -1024, 1024, i);
 
-			Vector4 color = mask->image.getPixel(i, j);
+			
 		
-			if (mask->image.getPixel(i, j).x >  0) {
+			if (mask->image.getPixel(j, i).x >  100) {
 				
 				float pz = mapping(0, mask->image.width, -1024, 1024, j);
-				//float py = mask->image.getPixel(i, j).x/255.0f * 40.0f;
-				positions.push_back(Vector3 (px, 10, pz));
+				float py = mask->image.getPixel(j, i).x/255.0f * 40.0f;
+				positions.push_back(Vector3 (px, py, pz));
 
 			}
 
@@ -161,22 +167,37 @@ void World::initTree() {
 	for (int i = 0; i < positions.size(); i++) {
 
 		EntityMesh m = EntityMesh(mat_types::tree);
-		m.model.setIdentity();
-		m.setPosition(positions[i]);
+
+		m.model.setTranslation(positions[i].x, positions[i].y, positions[i].z);
 		m.model.scale(5, 5, 5);
 		entities.push_back(m);
 	}
 
-
-
 	
+
+
 }
+
 float World::mapping(float start1,float stop1, float start2,float stop2,float value) {
 	
 	float outgoing =
 		start2 + (stop2 - start2) * ((value - start1) / (stop1 - start1));
 	//std::cout << value << " " << outgoing <<std::endl;
 	return outgoing;
+}
+
+
+void World::initAirplane() {
+
+	EntityMesh plane = EntityMesh(mat_types::airplane);
+	plane.model.translate(0, 100, 0);
+	plane.model.scale(30, 30, 30);
+	//plane.camera = new Camera();
+	//Vector3 eye = plane.model *   Vector3(0, 100, 0);
+	//Vector3 center = plane.model * Vector3(0, 0, 0);
+	//camera->lookAt(eye, center, Vector3(0, 1, 0));
+	//entities.push_back(plane);
+
 }
 
 

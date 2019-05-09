@@ -12,7 +12,8 @@ enum class mat_types {
 	tree,
 	house,
 	plane,
-	sky
+	sky,
+	airplane
 
 };
 
@@ -43,6 +44,7 @@ public:
 	Mesh* mesh2;
 	Mesh* lowmesh;
 	Material mat;
+	Camera * camera;
 
 
 };
