@@ -27,9 +27,9 @@ void main()
 	if(mask.x>0.3)
 		color = grass * mask.x + rock*(1.0-mask.x);
 
-	else color = water*(1.0-mask.x);
-
-	gl_FragColor = color*vec4(abs(sin(u_time/5.0)),abs(sin(u_time/5.0)),abs(sin(u_time/5.0)),1.0);
+	else color = mix(rock,water,0.8);
+	color *= vec4(abs(cos(u_time/100)),abs(cos(u_time/100)),abs(cos(u_time/100)),1.0);
+	gl_FragColor = color+vec4(0.2,0.2,0.2,1.0);
 	
 	
 }

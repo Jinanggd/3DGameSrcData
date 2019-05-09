@@ -18,25 +18,28 @@ EntityMesh::~EntityMesh()
 
 }
 
-EntityMesh::EntityMesh(Mesh * mesh, mat_types type)
+EntityMesh::EntityMesh( mat_types type)
 {
 	this->mesh = mesh;
 	this->tag = "EntityMesh";
 	this->name = "UndefName";
+	this->type = (int)type;
 	switch (type)
 
 	{
 	case mat_types::rock:
-
+		this->mesh->createPlane(10);
 		this->mat.shader = Shader::Get("data/shaders/basic.vs", "data/shaders/texture.fs");
 		this->mat.texture = Texture::Get("data/rocks.tga");
 
 		break;
 
 	case mat_types::tree:
-
+		this->mesh = Mesh::Get("data/trees/trunk.obj");
+		this->mesh2 = Mesh::Get("data/trees/leaves.obj");
 		this->mat.shader = Shader::Get("data/shaders/basic.vs", "data/shaders/tree_texture.fs");
-		this->mat.texture = Texture::Get("data/tree.tga");
+		this->mat.texture = Texture::Get("data/trees/trunk.tga");
+		this->mat.texture2 = Texture::Get("data/trees/leaves_olive.tga");
 
 
 		break;
@@ -57,7 +60,7 @@ EntityMesh::EntityMesh(Mesh * mesh, mat_types type)
 
 
 	case mat_types::sky:
-
+		this->mesh = Mesh::Get("data/sphere.obj");
 		this->mat.shader = Shader::Get("data/shaders/basic.vs", "data/shaders/texture.fs");
 		this->mat.texture = Texture::Get("data/skybox.tga");
 		break;
@@ -68,13 +71,34 @@ EntityMesh::EntityMesh(Mesh * mesh, mat_types type)
 
 }
 
+
+
 void EntityMesh::render() {
 
+	if (!(type == (int)mat_types::tree)) {
+	
 
-	this->mat.shader->setUniform("u_color", Vector4(1, 1, 1, 1));
-	this->mat.shader->setUniform("u_texture", this->mat.texture);
-	this->mat.shader->setUniform("u_model", model);
-	this->mesh->render(GL_TRIANGLES);
+		this->mat.shader->setUniform("u_color", Vector4(1, 1, 1, 1));
+		this->mat.shader->setUniform("u_texture", this->mat.texture);
+		this->mat.shader->setUniform("u_model", model);
+		this->mesh->render(GL_TRIANGLES);
+	
+	}
+
+	else {
+	
+	
+		this->mat.shader->setUniform("u_color", Vector4(1, 1, 1, 1));
+		this->mat.shader->setUniform("u_texture", this->mat.texture);
+		this->mat.shader->setUniform("u_model", model);
+		this->mesh->render(GL_TRIANGLES);
+
+		this->mat.shader->setUniform("u_texture", this->mat.texture2);
+		this->mesh2->render(GL_TRIANGLES);
+
+	
+	}
+
 
 }
 

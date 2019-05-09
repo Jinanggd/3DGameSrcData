@@ -20,16 +20,20 @@ World::World(Camera * camera, float* time)
 	this->time = time;
 
 	//plane.createPlane(1024);
-	plane.createSubdividedPlane(1024, 128, false);
+	plane.createSubdividedPlane(1024*2, 128, true);
 	plane_shader = Shader::Get("data/shaders/heightmap.vs", "data/shaders/plane_texture.fs");
 	water = new	EntityWater();
 	cloud = new EntityCloud();
+	mask = Texture::Get("data/heightmap.tga");
+	mask->image.loadTGA("data/heightmap.tga");
+	initTree();
+
 }
 
 
 void World::renderSkybox() {
 
-	Skybox = EntityMesh(Mesh::Get("data/sphere.obj"), mat_types::sky);
+	Skybox = EntityMesh( mat_types::sky);
 
 	current_shader = Skybox.mat.shader;
 
@@ -81,7 +85,9 @@ void World::renderplane() {
 	current_shader->enable();
 
 	//m.translate(0, 0, 0);
-	m.translate(0, 0, 0);
+
+	m.setIdentity();
+	m.translate(-1024, 0, -1024);
 	
 	current_shader->setUniform("u_color", Vector4(1, 1, 1, 1));
 	current_shader->setUniform("u_viewprojection", camera->viewprojection_matrix);
@@ -108,8 +114,11 @@ void World::renderplane() {
 	water->render();
 
 	current_shader->disable();
+
+
 	glDisable(GL_BLEND);
-	
+	//renderTree();
+	/*
 
 	glEnable(GL_BLEND);
 	glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_CONSTANT_ALPHA);
@@ -123,9 +132,52 @@ void World::renderplane() {
 
 	current_shader->disable();
 	glDisable(GL_BLEND);
-	glDepthMask(false);
+	glDepthMask(false);*/
 }
 
+void World::initTree() {
+	
+	std::vector<Vector3> positions;
+
+	for(int i = 0; i< mask->image.width; i+=100)
+
+		for (int j =0; j < mask->image.height; j+=100) {
+			
+			float px = mapping(0, mask->image.width, -1024, 1024, i);
+
+			Vector4 color = mask->image.getPixel(i, j);
+		
+			if (mask->image.getPixel(i, j).x >  0) {
+				
+				float pz = mapping(0, mask->image.width, -1024, 1024, j);
+				//float py = mask->image.getPixel(i, j).x/255.0f * 40.0f;
+				positions.push_back(Vector3 (px, 10, pz));
+
+			}
+
+		}
+
+	// Creas entities arboles
+	for (int i = 0; i < positions.size(); i++) {
+
+		EntityMesh m = EntityMesh(mat_types::tree);
+		m.model.setIdentity();
+		m.setPosition(positions[i]);
+		m.model.scale(5, 5, 5);
+		entities.push_back(m);
+	}
+
+
+
+	
+}
+float World::mapping(float start1,float stop1, float start2,float stop2,float value) {
+	
+	float outgoing =
+		start2 + (stop2 - start2) * ((value - start1) / (stop1 - start1));
+	//std::cout << value << " " << outgoing <<std::endl;
+	return outgoing;
+}
 
 
 bool World::load() {

@@ -33,6 +33,8 @@ public:
 	void renderentities();
 	void renderplane();
 	void renderSkybox();
+	void initTree();
+	float mapping(float start1, float stop1, float start2, float stop2, float value);
 
 	bool load();
 	bool save();
@@ -44,6 +46,7 @@ public:
 	std::vector<EntityMesh> entities;
 	std::vector<EntityLight> lights;
 	Matrix44 m;
+	Texture* mask;
 
 	gamestate mygameState;
 

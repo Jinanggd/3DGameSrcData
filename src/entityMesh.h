@@ -19,6 +19,7 @@ enum class mat_types {
 struct Material {
 
 	Texture* texture;
+	Texture* texture2;
 	Shader* shader;
 };
 
@@ -31,13 +32,15 @@ public:
 	EntityMesh();
 	~EntityMesh();
 
-	EntityMesh(Mesh* m, mat_types type);
+	EntityMesh( mat_types type);
 	void render();
 	void setPosition(Vector3 pos);
+	int type;
 	Vector3 getPosition();
 
 	// model matrix 
 	Mesh* mesh;
+	Mesh* mesh2;
 	Mesh* lowmesh;
 	Material mat;
 

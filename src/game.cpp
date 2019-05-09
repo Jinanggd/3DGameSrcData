@@ -57,7 +57,7 @@ Game::Game(int window_width, int window_height, SDL_Window* window)
 
 
 	world = World(camera, &time);
-	world.entities.push_back(EntityMesh(Mesh::Get("data/box.ASE"), mat_types::rock));
+	//world.entities.push_back(EntityMesh(Mesh::Get("data/box.ASE"), mat_types::rock));
 
 
 	//hide the cursor
@@ -174,19 +174,11 @@ void Game::onKeyDown( SDL_KeyboardEvent event )
 		case SDLK_a: 
 
 
-			foo = EntityMesh(Mesh::Get("data/box.ASE"), mat_types::rock);
-			foo.setPosition(Vector3(distr(eng) + distr(eng), distr(eng) + distr(eng), distr2(eng)));
-			foo.model.scale(100, 100, 100);
-			//world.entities.push_back(foo);
 			break;
 
 		case SDLK_s:
 			
-			foo = EntityMesh(Mesh::Get("data/sphere.obj"), mat_types::sky);
 
-			foo.setPosition(Vector3(camera->eye.x, camera->eye.y, camera->eye.z));
-			foo.model.scale(100, 100, 100);
-			//world.entities.push_back(foo);
 			
 			break;
 		case SDLK_t:
