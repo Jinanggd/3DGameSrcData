@@ -35,6 +35,8 @@ public:
 
 	EntityMesh( mat_types type);
 	void render();
+	void update(float elapsed_time);
+
 	void setPosition(Vector3 pos);
 	int type;
 	Vector3 getPosition();
@@ -44,6 +46,10 @@ public:
 	Mesh* mesh2;
 	Mesh* lowmesh;
 	Material mat;
+
+	//Firs person camera
+	float yaw;
+	float pitch;
 	Camera * camera;
 
 

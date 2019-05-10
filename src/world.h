@@ -57,6 +57,7 @@ public:
 
 	Mesh plane;
 	EntityMesh Skybox;
+	EntityMesh* Player;
 
 	Shader* plane_shader = NULL;
 

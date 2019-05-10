@@ -64,6 +64,7 @@ Game::Game(int window_width, int window_height, SDL_Window* window)
 
 	//hide the cursor
 	SDL_ShowCursor(!mouse_locked); //hide or show the mouse
+
 }
 
 //what to do when the image has to be draw
@@ -130,7 +131,7 @@ void Game::update(double seconds_elapsed)
 	angle += (float)seconds_elapsed * 10.0f;
 
 	//mouse input to rotate the cam
-	if ((Input::mouse_state & SDL_BUTTON_LEFT) ||( mouse_locked && debug )) //is left button pressed?
+	if ((Input::mouse_state & SDL_BUTTON_LEFT) || mouse_locked ) //is left button pressed?
 	{
 		camera->rotate(Input::mouse_delta.x * 0.005f, Vector3(0.0f,-1.0f,0.0f));
 		camera->rotate(Input::mouse_delta.y * 0.005f, camera->getLocalVector( Vector3(-1.0f,0.0f,0.0f)));
@@ -144,7 +145,7 @@ void Game::update(double seconds_elapsed)
 	if (Input::isKeyPressed(SDL_SCANCODE_D) || Input::isKeyPressed(SDL_SCANCODE_RIGHT)) camera->move(Vector3(-1.0f,0.0f, 0.0f) * speed);
 
 	//to navigate with the mouse fixed in the middle
-	if (mouse_locked && debug)
+	if (mouse_locked)
 		Input::centerMouse(); 
 		
 }
@@ -173,6 +174,12 @@ void Game::onKeyDown( SDL_KeyboardEvent event )
 
 			world.save(); break;
 
+		case SDLK_F4:
+
+
+			world.camera = world.Player->camera;
+
+			break;
 
 		case SDLK_w:
 

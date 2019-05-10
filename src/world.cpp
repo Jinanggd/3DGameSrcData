@@ -30,7 +30,7 @@ World::World(Camera * camera, float* time)
 	initTree();
 	initAirplane();
 
-	
+	Player = new EntityMesh(mat_types::airplane);
 
 
 }
@@ -79,8 +79,14 @@ void World::renderentities()
 		current_shader->disable();
 	
 	}
+	current_shader = Player->mat.shader;
+	current_shader->enable();
+	current_shader->setUniform("u_viewprojection", camera->viewprojection_matrix);
 
+	current_shader->setUniform("u_time", *time);
+	Player->render();
 
+	current_shader->disable();
 }
 
 void World::renderplane() {

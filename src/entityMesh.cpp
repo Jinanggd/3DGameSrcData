@@ -67,11 +67,14 @@ EntityMesh::EntityMesh( mat_types type)
 	case mat_types::airplane:
 
 		this->mesh = Mesh::Get("data/spitfire/spitfire.ASE");
-		this->mat.shader = Shader::Get("data/shaders/basic.vs", "data/shaders/texture.fs");
+		this->mat.shader = Shader::Get("data/shaders/basic.vs", "data/shaders/airplane.fs");
 		this->mat.texture = Texture::Get("data/spitfire/spitfire_color_spec.tga");
 
 		this->camera = new Camera();
-		this->camera->lookAt(Vector3(0.f, 100.f, 100.f), Vector3(0.f, 0.f, 0.f), Vector3(0.f, 1.f, 0.f)); //position the camera and point to 0,0,0
+		this->camera->lookAt(Vector3(0.f, 100, 50), Vector3(0.f, 40, 0.f), Vector3(0.f, 1.f, 0.f)); //position the camera and point to 0,0,0
+		this->camera->setPerspective(70.f, 800.0f / (float)600.0f, 0.1f, 10000.f);
+		this->model.translate(0, 40, 0);
+		this->model.scale(30, 30, 30);
 	
 		break;
 
@@ -113,6 +116,10 @@ void EntityMesh::render() {
 	}
 
 
+}
+
+void EntityMesh::update(float elapsed_time)
+{
 }
 
 void EntityMesh::setPosition(Vector3 pos) {
