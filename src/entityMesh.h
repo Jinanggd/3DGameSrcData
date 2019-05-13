@@ -36,6 +36,8 @@ public:
 	EntityMesh( mat_types type);
 	void render();
 	void update(float elapsed_time);
+	void move(Vector3 delta);
+	void rotate(float angle, Vector3 axis);
 
 	void setPosition(Vector3 pos);
 	int type;
@@ -48,9 +50,8 @@ public:
 	Material mat;
 
 	//Firs person camera
-	float yaw;
-	float pitch;
 	Camera * camera;
+	Vector3 front;
 
 
 };

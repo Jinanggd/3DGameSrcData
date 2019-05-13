@@ -63,20 +63,30 @@ void World::renderSkybox() {
 void World::renderentities()
 {
 
-
+	Matrix44 m;
 	for (int i = 0; i < entities.size(); ++i) {
+		m.setTranslation(entities[i].model.getTranslation().x, entities[i].model.getTranslation().y, entities[i].model.getTranslation().z);
+		Vector3 world_center = m*entities[i].mesh->box.center;
+		//std::cout << entities[i].model.getTranslation().x << " " << entities[i].model.getTranslation().y <<" " << entities[i].model.getTranslation().z << std::endl;
 
-		current_shader = entities[i].mat.shader;
+		if (!(this->camera->testBoxInFrustum(world_center, entities[i].mesh->box.halfsize) == CLIP_OUTSIDE))
+		{
 
-		current_shader->enable();
+			current_shader = entities[i].mat.shader;
 
-		current_shader->setUniform("u_viewprojection", camera->viewprojection_matrix);
+			current_shader->enable();
 
-		current_shader->setUniform("u_time", *time);
+			current_shader->setUniform("u_viewprojection", camera->viewprojection_matrix);
 
-		entities[i].render();
+			current_shader->setUniform("u_time", *time);
 
-		current_shader->disable();
+			entities[i].render();
+
+			current_shader->disable();
+
+
+		}
+
 	
 	}
 	current_shader = Player->mat.shader;

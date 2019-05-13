@@ -18,7 +18,7 @@ float angle = 0;
 
 Game* Game::instance = NULL;
 
-bool debug = TRUE;
+bool ThirdCameraMode = TRUE;
 
 
 std::random_device rd; // obtain a random number from hardware
@@ -78,7 +78,7 @@ void Game::render(void)
 	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
 	//set the camera as default
-	if(debug)camera->enable();
+	if(ThirdCameraMode)camera->enable();
 	 
 
    
@@ -131,18 +131,55 @@ void Game::update(double seconds_elapsed)
 	angle += (float)seconds_elapsed * 10.0f;
 
 	//mouse input to rotate the cam
-	if ((Input::mouse_state & SDL_BUTTON_LEFT) || mouse_locked ) //is left button pressed?
+	if ((Input::mouse_state & SDL_BUTTON_LEFT) || mouse_locked  ) //is left button pressed?
 	{
-		camera->rotate(Input::mouse_delta.x * 0.005f, Vector3(0.0f,-1.0f,0.0f));
-		camera->rotate(Input::mouse_delta.y * 0.005f, camera->getLocalVector( Vector3(-1.0f,0.0f,0.0f)));
+		if (ThirdCameraMode) {
+			camera->rotate(Input::mouse_delta.x * 0.005f, Vector3(0.0f, -1.0f, 0.0f));
+			camera->rotate(Input::mouse_delta.y * 0.005f, camera->getLocalVector(Vector3(-1.0f, 0.0f, 0.0f)));
+		}
+		else {
+			world.Player->rotate(Input::mouse_delta.x * 0.005f, Vector3(0.0f, -1.0f, 0.0f));
+			world.Player->rotate(Input::mouse_delta.y * 0.005f, camera->getLocalVector(Vector3(-1.0f, 0.0f, 0.0f)));
+
+			//player camera
+			//world.Player->camera->rotate(Input::mouse_delta.x * 0.005f, Vector3(0.0f, -1.0f, 0.0f));
+			//world.Player->camera->rotate(Input::mouse_delta.y * 0.005f, camera->getLocalVector(Vector3(-1.0f, 0.0f, 0.0f)));
+
+			
+		}
+		
 	}
 
 	//async input to move the camera around
 	if (Input::isKeyPressed(SDL_SCANCODE_LSHIFT) ) speed *= 10; //move faster with left shift
-	if (Input::isKeyPressed(SDL_SCANCODE_W) || Input::isKeyPressed(SDL_SCANCODE_UP)) camera->move(Vector3(0.0f, 0.0f, 1.0f) * speed);
-	if (Input::isKeyPressed(SDL_SCANCODE_S) || Input::isKeyPressed(SDL_SCANCODE_DOWN)) camera->move(Vector3(0.0f, 0.0f,-1.0f) * speed);
-	if (Input::isKeyPressed(SDL_SCANCODE_A) || Input::isKeyPressed(SDL_SCANCODE_LEFT)) camera->move(Vector3(1.0f, 0.0f, 0.0f) * speed);
-	if (Input::isKeyPressed(SDL_SCANCODE_D) || Input::isKeyPressed(SDL_SCANCODE_RIGHT)) camera->move(Vector3(-1.0f,0.0f, 0.0f) * speed);
+
+	if (Input::isKeyPressed(SDL_SCANCODE_W) || Input::isKeyPressed(SDL_SCANCODE_UP)) {
+		if (ThirdCameraMode)
+			camera->move(Vector3(0.0f, 0.0f, 1.0f) * speed);
+		else
+			world.Player->move(Vector3(0.0f, 0.0f, 1.0f)*speed);
+	}
+
+	if (Input::isKeyPressed(SDL_SCANCODE_S) || Input::isKeyPressed(SDL_SCANCODE_DOWN)) {
+		if (ThirdCameraMode)
+			camera->move(Vector3(0.0f, 0.0f, -1.0f) * speed);
+		else 
+			world.Player->move(Vector3(0.0f, 0.0f, -1.0f)*speed);
+
+	} 
+	if (Input::isKeyPressed(SDL_SCANCODE_A) || Input::isKeyPressed(SDL_SCANCODE_LEFT)) {
+		if(ThirdCameraMode)
+			camera->move(Vector3(1.0f, 0.0f, 0.0f) * speed);
+		else 
+			world.Player->move(Vector3(1.0f, 0.0f, 0.0f)*speed);
+
+	}
+	if (Input::isKeyPressed(SDL_SCANCODE_D) || Input::isKeyPressed(SDL_SCANCODE_RIGHT)) {
+		if(ThirdCameraMode)
+			camera->move(Vector3(-1.0f, 0.0f, 0.0f) * speed);
+		else 
+			world.Player->move(Vector3(-1.0f, 0.0f, 0.0f)*speed);
+	}
 
 	//to navigate with the mouse fixed in the middle
 	if (mouse_locked)
@@ -176,9 +213,14 @@ void Game::onKeyDown( SDL_KeyboardEvent event )
 
 		case SDLK_F4:
 
-
-			world.camera = world.Player->camera;
-
+			if (ThirdCameraMode) {
+				world.camera = world.Player->camera;
+				ThirdCameraMode = false;
+			}
+			else {
+				world.camera = camera;
+				ThirdCameraMode = true;
+			}
 			break;
 
 		case SDLK_w:

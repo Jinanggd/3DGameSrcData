@@ -70,21 +70,17 @@ EntityMesh::EntityMesh( mat_types type)
 		this->mat.shader = Shader::Get("data/shaders/basic.vs", "data/shaders/airplane.fs");
 		this->mat.texture = Texture::Get("data/spitfire/spitfire_color_spec.tga");
 
-		this->camera = new Camera();
-		this->camera->lookAt(Vector3(0.f, 100, 50), Vector3(0.f, 40, 0.f), Vector3(0.f, 1.f, 0.f)); //position the camera and point to 0,0,0
-		this->camera->setPerspective(70.f, 800.0f / (float)600.0f, 0.1f, 10000.f);
-		this->model.translate(0, 40, 0);
+		this->model.translate(0, 100, 0);
 		this->model.scale(30, 30, 30);
+		this->front = Vector3(0, 0, -1);
+
+		this->camera = new Camera();
+		this->camera->lookAt(Vector3(0.f, 300, 200), this->model.getTranslation()+Vector3(0,0,-60) , Vector3(0.f, 1.f, 0.f)); //position the camera and point to 0,0,0
+		this->camera->setPerspective(70.f, 800.0f / (float)600.0f, 0.1f, 10000.f);
+
 	
 		break;
-
-
-
 	}
-
-
-
-
 }
 
 
@@ -120,6 +116,30 @@ void EntityMesh::render() {
 
 void EntityMesh::update(float elapsed_time)
 {
+}
+
+void EntityMesh::move(Vector3 delta)
+{
+	Vector3 localDelta = this->camera->getLocalVector(delta);
+	Matrix44 v4localDelta;
+	v4localDelta.translate(-delta.x, -delta.y, -delta.z);
+	
+	this->model = this->model*v4localDelta;
+	this->camera->lookAt(this->model.getTranslation() + Vector3(0.0f, 200.0f, 200.0f), this->model.getTranslation() + Vector3(0,  60, 60), Vector3(0.f, 1.f, 0.f)); //position the camera and point to 0,0,0
+	//this->camera->move(delta);
+}
+
+void EntityMesh::rotate(float angle, Vector3 axis)
+{
+	Matrix44 R;
+	R.setRotation(angle, axis);
+	this->model.rotate(angle, axis);
+	Vector3 new_front = R * (this->camera->center - this->camera-> eye);
+
+	this->camera->lookAt(this->model.getTranslation()+Vector3(0.0f,200.0f,200.0f), this->model.getTranslation() + Vector3(0, 60, 60), Vector3(0.f, 1.f, 0.f)); //position the camera and point to 0,0,0
+	//this->camera->center = this->camera->eye + new_front;
+	//this->camera->updateViewMatrix();
+
 }
 
 void EntityMesh::setPosition(Vector3 pos) {
