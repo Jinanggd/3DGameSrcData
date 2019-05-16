@@ -13,7 +13,8 @@ enum class mat_types {
 	house,
 	plane,
 	sky,
-	airplane
+	airplane,
+	tower
 
 };
 

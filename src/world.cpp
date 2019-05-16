@@ -19,7 +19,7 @@ World::World(Camera * camera, float* time)
 	this->camera = camera;
 	this->time = time;
 	initWorld();
-	initTree();
+	//initTree();
 	initAirplane();
 
 	Player = new EntityMesh(mat_types::airplane);
@@ -149,37 +149,59 @@ void World::renderplane() {
 	glDepthMask(false);*/
 }
 
-void World::initTree() {
+void World::initProps() {
 	
 	std::vector<Vector3> positions;
 
-	for(int i = 0; i< mask->image.width; i+=100)
+	for (int i = 0; i < mask->image.width; i += 150) {
+		float px = mapping(0, mask->image.width, -1024, 1024, i);
 
-		for (int j =0; j < mask->image.height; j+=100) {
-			
-			float px = mapping(0, mask->image.width, -1024, 1024, i);
+		for (int j = 0; j < mask->image.height; j += 150) {
 
-			
-		
-			if (mask->image.getPixel(j, i).x >  100) {
-				
-				float pz = mapping(0, mask->image.width, -1024, 1024, j);
-				float py = mask->image.getPixel(j, i).x/255.0f * 40.0f;
-				positions.push_back(Vector3 (px, py, pz));
+			float pz = mapping(0, mask->image.width, -1024, 1024, j);
+			float py = mask->image.getPixel(j, i).x / 255.0f * 40.0f;
 
+			//Trees
+			if (mask->image.getPixel(j, i).x > 100 && mask->image.getPixel(j, i).x < 200) {
+				EntityMesh m = EntityMesh(mat_types::tree);
+				m.model.setTranslation(px, py, pz);
+				m.model.scale(5, 5, 5);
+				entities.push_back(m);
+			}
+			//Building
+			if (mask->image.getPixel(j, i).x > 200 && ( j < mask->image.height-100) && (i<mask->image.width-300)) {
+				if (j % 3 == 0) {
+					EntityMesh m = EntityMesh(mat_types::tower);
+					m.model.setTranslation(px, py, pz);
+					m.model.scale(1, 1, 1);
+					entities.push_back(m);
+				}
+
+				if (j % 7 == 0) {
+
+				}
+				else {
+					EntityMesh h = EntityMesh(mat_types::house);
+					//Can add random rotation
+					h.model.setTranslation(px, py, pz);
+					h.model.scale(1, 1, 1);
+					entities.push_back(h);
+				}
 			}
 
 		}
+	}
+		
 
 	// Creas entities arboles
-	for (int i = 0; i < positions.size(); i++) {
+	//for (int i = 0; i < positions.size(); i++) {
 
-		EntityMesh m = EntityMesh(mat_types::tree);
+	//	EntityMesh m = EntityMesh(mat_types::tree);
 
-		m.model.setTranslation(positions[i].x, positions[i].y, positions[i].z);
-		m.model.scale(5, 5, 5);
-		entities.push_back(m);
-	}
+	//	m.model.setTranslation(positions[i].x, positions[i].y, positions[i].z);
+	//	m.model.scale(5, 5, 5);
+	//	entities.push_back(m);
+	//}
 
 	
 
@@ -210,6 +232,7 @@ void World::initAirplane() {
 
 void World::initWorld()
 {
+	//Terrain 
 	//plane.createPlane(1024);
 	plane.createSubdividedPlane(1024 * 2, 128, true);
 	plane_shader = Shader::Get("data/shaders/heightmap.vs", "data/shaders/plane_texture.fs");
@@ -217,6 +240,10 @@ void World::initWorld()
 	cloud = new EntityCloud();
 	mask = Texture::Get("data/heightmap.tga");
 	mask->image.loadTGA("data/heightmap.tga");
+
+	initProps();
+
+
 }
 
 
