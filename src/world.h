@@ -35,6 +35,7 @@ public:
 	void renderSkybox();
 	void initTree();
 	void initAirplane();
+	void initWorld();
 	float mapping(float start1, float stop1, float start2, float stop2, float value);
 
 	bool load();

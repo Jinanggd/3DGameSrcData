@@ -18,15 +18,7 @@ World::World(Camera * camera, float* time)
 {
 	this->camera = camera;
 	this->time = time;
-
-	//plane.createPlane(1024);
-	plane.createSubdividedPlane(1024*2, 128, true);
-	plane_shader = Shader::Get("data/shaders/heightmap.vs", "data/shaders/plane_texture.fs");
-	water = new	EntityWater();
-	cloud = new EntityCloud();
-	mask = Texture::Get("data/heightmap.tga");
-	mask->image.loadTGA("data/heightmap.tga");
-
+	initWorld();
 	initTree();
 	initAirplane();
 
@@ -214,6 +206,17 @@ void World::initAirplane() {
 	//camera->lookAt(eye, center, Vector3(0, 1, 0));
 	//entities.push_back(plane);
 
+}
+
+void World::initWorld()
+{
+	//plane.createPlane(1024);
+	plane.createSubdividedPlane(1024 * 2, 128, true);
+	plane_shader = Shader::Get("data/shaders/heightmap.vs", "data/shaders/plane_texture.fs");
+	water = new	EntityWater();
+	cloud = new EntityCloud();
+	mask = Texture::Get("data/heightmap.tga");
+	mask->image.loadTGA("data/heightmap.tga");
 }
 
 
