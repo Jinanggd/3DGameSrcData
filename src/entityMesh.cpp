@@ -89,6 +89,8 @@ EntityMesh::EntityMesh( mat_types type)
 	
 		break;
 	}
+
+	
 }
 
 

@@ -20,10 +20,10 @@ World::World(Camera * camera, float* time)
 	this->time = time;
 	initWorld();
 	//initTree();
-	initAirplane();
+	//initAirplane();
 
-	Player = new EntityMesh(mat_types::airplane);
-
+	//Player = new EntityMesh(mat_types::airplane);
+	Player = new EntityPlayer();
 
 }
 
@@ -81,6 +81,7 @@ void World::renderentities()
 
 	
 	}
+
 	current_shader = Player->mat.shader;
 	current_shader->enable();
 	current_shader->setUniform("u_viewprojection", camera->viewprojection_matrix);
@@ -206,6 +207,11 @@ void World::initProps() {
 	
 
 
+}
+
+void World::printCamPos()
+{
+	std::cout <<"("<< camera->eye.x << "," << camera->eye.y <<"," << camera->eye.z << ")"<< std::endl;
 }
 
 float World::mapping(float start1,float stop1, float start2,float stop2,float value) {

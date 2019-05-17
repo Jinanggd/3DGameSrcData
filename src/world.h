@@ -7,6 +7,7 @@
 #include "entityLight.h"
 #include "entityWater.h"
 #include "entityCloud.h"
+#include "entityPlayer.h"
 #include "shader.h"
 
 
@@ -30,13 +31,16 @@ public:
 
 	World(Camera * camera, float* time);
 
+
 	void renderentities();
 	void renderplane();
 	void renderSkybox();
+
 	void initProps();
 	void initAirplane();
-	
 	void initWorld();
+
+	void printCamPos();
 	float mapping(float start1, float stop1, float start2, float stop2, float value);
 
 	bool load();
@@ -59,7 +63,7 @@ public:
 
 	Mesh plane;
 	EntityMesh Skybox;
-	EntityMesh* Player;
+	EntityPlayer* Player;
 
 	Shader* plane_shader = NULL;
 

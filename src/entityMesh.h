@@ -14,7 +14,8 @@ enum class mat_types {
 	plane,
 	sky,
 	airplane,
-	tower
+	tower,
+	player
 
 };
 
@@ -50,6 +51,7 @@ public:
 	Mesh* lowmesh;
 	Material mat;
 
+	//DEPRACATED -- NOW USING ENTITY PLAYER CLASS
 	//Firs person camera
 	Camera * camera;
 	Vector3 front;
