@@ -8,6 +8,7 @@
 #include "animation.h"
 
 
+
 class EntityPlayer : public Entity
 {
 
@@ -16,7 +17,7 @@ public:
 	EntityPlayer();
 	~EntityPlayer();
 
-	void render();
+	void render(float time);
 	void render(Camera* cam);
 	void Init(Camera* cam);
 
@@ -25,7 +26,15 @@ public:
 	void update(float dt);
 	Vector3 getLocalVector(Vector3 v);
 	Vector3 current_position;
-	float current_YRotation;
+	float yaw;
+	float speed;
+
+	enum direction {
+		KEY_UP,
+		KEY_DOWN,
+		KEY_RIGHT,
+		KEY_LEFT,
+	}direction;
 
 	Mesh* mesh;
 	Animation* anim;

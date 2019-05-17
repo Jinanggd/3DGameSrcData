@@ -21,12 +21,6 @@ Game* Game::instance = NULL;
 bool ThirdCameraMode = TRUE;
 
 
-std::random_device rd; // obtain a random number from hardware
-std::mt19937 eng(rd()); // seed the generator
-std::uniform_int_distribution<> distr(-500, 500); // define the range
-std::uniform_int_distribution<> distr2(0, 3);
-std::vector<Vector3> list_pos;
-
 Game::Game(int window_width, int window_height, SDL_Window* window)
 {
 	this->window_width = window_width;
@@ -45,20 +39,24 @@ Game::Game(int window_width, int window_height, SDL_Window* window)
 	glEnable( GL_CULL_FACE ); //render both sides of every triangle
 	glEnable( GL_DEPTH_TEST ); //check the occlusions using the Z buffer
 
+	glViewport(0, 0, window_width / 2.0f, window_height);
 	//create our camera
 	camera = new Camera();
 	camera->lookAt(Vector3(0.f,100.f, 100.f),Vector3(0.f,0.f,0.f), Vector3(0.f,1.f,0.f)); //position the camera and point to 0,0,0
 	camera->setPerspective(70.f,window_width/(float)window_height,0.1f,10000.f); //set the projection, we want to be perspective
+	camera->enable();
 
 
-	for (int n = 0; n < 100; ++n) {
+	glViewport(window_width / 2.0f, 0, window_width/2.0f, window_height);
+	Camera* cam = new Camera();
+	cam->lookAt(Vector3(0.f, 100.f, 100.f), Vector3(100.f, 0.f, 0.f), Vector3(0.f, 1.f, 0.f)); //position the camera and point to 0,0,0
+	cam->setPerspective(70.f, window_width / (float)window_height, 0.1f, 10000.f); //set the projection, we want to be perspective
+	cam->enable();
 
-		list_pos.push_back(Vector3(distr(eng)+ distr(eng), distr(eng)+ distr(eng), distr2(eng)));
-
-	}
 
 
 	world = World(camera, &time);
+	world2 = World(cam, &time);
 	//world.entities.push_back(EntityMesh(Mesh::Get("data/box.ASE"), mat_types::rock));
 
 
@@ -78,10 +76,9 @@ void Game::render(void)
 	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
 	//set the camera as default
-	if(ThirdCameraMode)camera->enable();
+	//if(ThirdCameraMode)camera->enable();
 	 
 
-   
 	//create model matrix for cube
 	Matrix44 m;
 	//m.rotate( (float)(angle * DEG2RAD), Vector3(0.0f,1.0f, 0.0f) ); //build a rotation matrix
@@ -98,8 +95,10 @@ void Game::render(void)
 		glDisable(GL_DEPTH_TEST);
 		
 		glDisable(GL_CULL_FACE);
-
+		glViewport(0, 0, window_width / 2.0f, window_height);
 		world.renderSkybox();
+		glViewport(window_width / 2.0f, 0, window_width / 2.0f, window_height);
+		world2.renderSkybox();
 
 		glEnable(GL_DEPTH_TEST);
 
@@ -157,30 +156,24 @@ void Game::update(double seconds_elapsed)
 		if (ThirdCameraMode) {
 			camera->move(Vector3(0.0f, 0.0f, 1.0f) * speed);
 		}
-		else
-			world.Player->move(Vector3(0.0f, 0.0f, -1.0f)*speed);
 	}
 
 	if (Input::isKeyPressed(SDL_SCANCODE_S) || Input::isKeyPressed(SDL_SCANCODE_DOWN)) {
 		if (ThirdCameraMode)
 			camera->move(Vector3(0.0f, 0.0f, -1.0f) * speed);
-		else 
-			world.Player->move(Vector3(0.0f, 0.0f, 1.0f)*speed);
 
 	} 
 	if (Input::isKeyPressed(SDL_SCANCODE_A) || Input::isKeyPressed(SDL_SCANCODE_LEFT)) {
 		if(ThirdCameraMode)
 			camera->move(Vector3(1.0f, 0.0f, 0.0f) * speed);
-		else 
-			world.Player->rotate(-0.5,Vector3(0,1,0));
 
 	}
 	if (Input::isKeyPressed(SDL_SCANCODE_D) || Input::isKeyPressed(SDL_SCANCODE_RIGHT)) {
 		if(ThirdCameraMode)
 			camera->move(Vector3(-1.0f, 0.0f, 0.0f) * speed);
-		else 
-			world.Player->rotate(0.5,Vector3(0,1,0));
 	}
+
+	world.Player->update(seconds_elapsed*speed);
 
 	//to navigate with the mouse fixed in the middle
 	if (mouse_locked)

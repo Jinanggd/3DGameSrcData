@@ -42,7 +42,7 @@ void World::renderSkybox() {
 
 
 	current_shader->setUniform("u_color", Vector4(1, 1, 1, 1));
-	current_shader->setUniform("u_viewprojection", camera->viewprojection_matrix);
+	current_shader->setUniform("u_viewprojection", camera->viewprojection_matrix); 
 	current_shader->setUniform("u_model", Skybox.model);
 	current_shader->setUniform("u_time", *time);
 
@@ -87,7 +87,7 @@ void World::renderentities()
 	current_shader->setUniform("u_viewprojection", camera->viewprojection_matrix);
 
 	current_shader->setUniform("u_time", *time);
-	Player->render();
+	Player->render(*time);
 
 	current_shader->disable();
 }
@@ -154,10 +154,10 @@ void World::initProps() {
 	
 	std::vector<Vector3> positions;
 
-	for (int i = 0; i < mask->image.width; i += 150) {
+	for (int i = 0; i < mask->image.width; i += 500) {
 		float px = mapping(0, mask->image.width, -1024, 1024, i);
 
-		for (int j = 0; j < mask->image.height; j += 150) {
+		for (int j = 0; j < mask->image.height; j += 500) {
 
 			float pz = mapping(0, mask->image.width, -1024, 1024, j);
 			float py = mask->image.getPixel(j, i).x / 255.0f * 40.0f;
