@@ -22,6 +22,7 @@ public:
 
 	void move(Vector3 delta);
 	void rotate(float angle, Vector3 axis);
+	void update(float dt);
 	Vector3 getLocalVector(Vector3 v);
 	Vector3 current_position;
 	float current_YRotation;

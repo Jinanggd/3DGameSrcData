@@ -402,7 +402,7 @@ void Mesh::renderAnimated( unsigned int primitive, Animation* anim )
 	if (bones_loc != -1)
 	{
 		anim->skeleton.computeFinalBoneMatrices(bone_matrices, this);
-		//shader->setUniform("u_bones", bone_matrices );
+		shader->setUniform("u_bones", bone_matrices );
 	}
 
 	render(primitive);

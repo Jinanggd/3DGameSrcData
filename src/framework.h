@@ -3,8 +3,8 @@
 */
 
 //macros to ensure the code is included once
-#ifndef FRAMEWORK_H 
-#define FRAMEWORK_H
+#ifndef FRAMEWORK 
+#define FRAMEWORK
 
 #include <vector>
 #include <cmath>

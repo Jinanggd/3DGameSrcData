@@ -86,8 +86,8 @@ bool FBO::createFromTextures(Texture* color_texture, Texture* color_textureB, Te
 {
 	assert(color_texture);
 	assert(glGetError() == GL_NO_ERROR);
-	width = color_texture->width;
-	height = color_texture->height;
+	width = (int)color_texture->width;
+	height = (int)color_texture->height;
 	owns_textures = false;
 
 	if(fbo_id == 0)

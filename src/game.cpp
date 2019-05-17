@@ -172,14 +172,14 @@ void Game::update(double seconds_elapsed)
 		if(ThirdCameraMode)
 			camera->move(Vector3(1.0f, 0.0f, 0.0f) * speed);
 		else 
-			world.Player->rotate(-0.0005,Vector3(0,1,0));
+			world.Player->rotate(-0.5,Vector3(0,1,0));
 
 	}
 	if (Input::isKeyPressed(SDL_SCANCODE_D) || Input::isKeyPressed(SDL_SCANCODE_RIGHT)) {
 		if(ThirdCameraMode)
 			camera->move(Vector3(-1.0f, 0.0f, 0.0f) * speed);
 		else 
-			world.Player->rotate(0.0005,Vector3(0,1,0));
+			world.Player->rotate(0.5,Vector3(0,1,0));
 	}
 
 	//to navigate with the mouse fixed in the middle
