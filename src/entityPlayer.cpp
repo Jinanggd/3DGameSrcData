@@ -20,7 +20,7 @@ EntityPlayer::EntityPlayer() : Entity()
 	//this->current_YRotation = 180 * DEG2RAD;
 	this->yaw = 0.0f;
 	this->speed = 0.0f;
-	this->pitch = 0.0f;
+	this->pitch = -1.1f;
 
 	updateMatrix();
 	this->camera = new Camera();
