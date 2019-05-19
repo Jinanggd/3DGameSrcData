@@ -23,7 +23,10 @@ public:
 
 	void update(float dt);
 	void updateCamera();
+	void updateMatrix();
 	void animateCharacter();
+
+	void setPosition(float x, float y, float z);
 
 	Vector3 getLocalVector(Vector3 v);
 	Vector3 current_position;

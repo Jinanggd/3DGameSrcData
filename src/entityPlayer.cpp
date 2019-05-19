@@ -15,15 +15,14 @@ EntityPlayer::EntityPlayer() : Entity()
 	anim = Animation::Get("data/characters/characters/running.skanim");
 
 	
-	this->model.setTranslation(0, 40, 0);
 	this->current_position = Vector3(0, 40, 0);
 	//this->model.rotate(180 * DEG2RAD, Vector3(0, 1, 0));
 	//this->current_YRotation = 180 * DEG2RAD;
 	this->yaw = 0.0f;
 	this->speed = 0.0f;
 	this->pitch = 0.0f;
-	this->model.scale(1, 1, 1);
 
+	updateMatrix();
 	this->camera = new Camera();
 	//this->camera->lookAt(Vector3(current_position.x, current_position.y + 40, current_position.z +50),current_position, Vector3(0.f, 1.f, 0.f)); //position the camera and point to 0,0,0
 	this->camera->setPerspective(70.f, 800.0f / (float)600.0f, 0.1f, 10000.f);
@@ -78,7 +77,7 @@ void EntityPlayer::update(float dt)
 
 	if (Input::isKeyPressed(SDL_SCANCODE_E) ) pitch += dt * 30;
 	
-	pitch = clamp(pitch, -15.0f, 20.0f);
+	pitch = clamp(pitch, -15.0f, 12.5f);
 
 	
 	Matrix44 R;
@@ -87,11 +86,11 @@ void EntityPlayer::update(float dt)
 
 	current_position = current_position +  move;
 
-	this->model.setTranslation(current_position.x, current_position.y, current_position.z);
+	//this->model.setTranslation(current_position.x, current_position.y, current_position.z);
 
-	this->model.rotate(yaw*DEG2RAD, Vector3(0, 1, 0));
+	//this->model.rotate(yaw*DEG2RAD, Vector3(0, 1, 0));
 
-	
+	updateMatrix();
 	updateCamera();
 
 
@@ -114,10 +113,32 @@ void EntityPlayer::updateCamera()
 	this->camera->lookAt(cam_eye, cam_center, Vector3(0, 1, 0));
 }
 
+void EntityPlayer::updateMatrix()
+{
+	this->model.setTranslation(current_position.x, current_position.y, current_position.z);
+	this->model.scale(0.5f, 0.5f, 0.5f);
+
+	//Matrix44 R_Yaw;
+	//R_Yaw.setRotation(yaw*DEG2RAD, Vector3(0, 1, 0));
+	//Vector3 right = R_Yaw * Vector3(1, 0, 0);
+
+	this->model.rotate(yaw*DEG2RAD, Vector3(0, 1, 0));
+	//this->model.rotate(pitch*DEG2RAD, right);
+
+
+}
+
 void EntityPlayer::animateCharacter()
 {
 	isanimated = true;
 	mat.shader = Shader::Get("data/shaders/skinning.vs", "data/shaders/texture.fs");
+}
+
+void EntityPlayer::setPosition(float x, float y, float z)
+{
+	this->current_position = Vector3(x, y, z);
+	this->model.translate(x, y, z);
+	updateCamera();
 }
 
 Vector3 EntityPlayer::getLocalVector(Vector3 v)
