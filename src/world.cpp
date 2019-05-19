@@ -212,6 +212,7 @@ void World::initProps() {
 void World::printCamPos()
 {
 	std::cout <<"("<< camera->eye.x << "," << camera->eye.y <<"," << camera->eye.z << ")"<< std::endl;
+	std::cout << "Pitch: " << Player->pitch << std::endl;
 }
 
 float World::mapping(float start1,float stop1, float start2,float stop2,float value) {

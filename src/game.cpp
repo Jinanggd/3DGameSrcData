@@ -39,7 +39,7 @@ Game::Game(int window_width, int window_height, SDL_Window* window)
 	glEnable( GL_CULL_FACE ); //render both sides of every triangle
 	glEnable( GL_DEPTH_TEST ); //check the occlusions using the Z buffer
 
-	glViewport(0, 0, window_width / 2.0f, window_height);
+	//glViewport(0, 0, window_width / 2.0f, window_height);
 	//create our camera
 	camera = new Camera();
 	camera->lookAt(Vector3(0.f,100.f, 100.f),Vector3(0.f,0.f,0.f), Vector3(0.f,1.f,0.f)); //position the camera and point to 0,0,0
@@ -47,16 +47,14 @@ Game::Game(int window_width, int window_height, SDL_Window* window)
 	camera->enable();
 
 
-	glViewport(window_width / 2.0f, 0, window_width/2.0f, window_height);
-	Camera* cam = new Camera();
-	cam->lookAt(Vector3(0.f, 100.f, 100.f), Vector3(100.f, 0.f, 0.f), Vector3(0.f, 1.f, 0.f)); //position the camera and point to 0,0,0
-	cam->setPerspective(70.f, window_width / (float)window_height, 0.1f, 10000.f); //set the projection, we want to be perspective
-	cam->enable();
-
-
+	//glViewport(window_width / 2.0f, 0, window_width/2.0f, window_height);
+	//Camera* cam = new Camera();
+	//cam->lookAt(Vector3(0.f, 100.f, 100.f), Vector3(100.f, 0.f, 0.f), Vector3(0.f, 1.f, 0.f)); //position the camera and point to 0,0,0
+	//cam->setPerspective(70.f, window_width / (float)window_height, 0.1f, 10000.f); //set the projection, we want to be perspective
+	//cam->enable();
 
 	world = World(camera, &time);
-	world2 = World(cam, &time);
+	//world2 = World(cam, &time);
 	//world.entities.push_back(EntityMesh(Mesh::Get("data/box.ASE"), mat_types::rock));
 
 
@@ -77,11 +75,6 @@ void Game::render(void)
 
 	//set the camera as default
 	//if(ThirdCameraMode)camera->enable();
-	 
-
-	//create model matrix for cube
-	Matrix44 m;
-	//m.rotate( (float)(angle * DEG2RAD), Vector3(0.0f,1.0f, 0.0f) ); //build a rotation matrix
 
 	Shader* current_shader = world.current_shader;
 
@@ -95,10 +88,13 @@ void Game::render(void)
 		glDisable(GL_DEPTH_TEST);
 		
 		glDisable(GL_CULL_FACE);
-		glViewport(0, 0, window_width / 2.0f, window_height);
+
+		//glViewport(0, 0, window_width / 2.0f, window_height);
 		world.renderSkybox();
-		glViewport(window_width / 2.0f, 0, window_width / 2.0f, window_height);
-		world2.renderSkybox();
+
+		//Double ViewPort
+		/*glViewport(window_width / 2.0f, 0, window_width / 2.0f, window_height);
+		world2.renderSkybox();*/
 
 		glEnable(GL_DEPTH_TEST);
 
@@ -136,17 +132,6 @@ void Game::update(double seconds_elapsed)
 			camera->rotate(Input::mouse_delta.x * 0.005f, Vector3(0.0f, -1.0f, 0.0f));
 			camera->rotate(Input::mouse_delta.y * 0.005f, camera->getLocalVector(Vector3(-1.0f, 0.0f, 0.0f)));
 		}
-		//else {
-		//	world.Player->rotate(Input::mouse_delta.x * 0.005f, Vector3(0.0f, -1.0f, 0.0f));
-		//	world.Player->rotate(Input::mouse_delta.y * 0.005f, camera->getLocalVector(Vector3(-1.0f, 0.0f, 0.0f)));
-
-			//player camera
-			//world.Player->camera->rotate(Input::mouse_delta.x * 0.005f, Vector3(0.0f, -1.0f, 0.0f));
-			//world.Player->camera->rotate(Input::mouse_delta.y * 0.005f, camera->getLocalVector(Vector3(-1.0f, 0.0f, 0.0f)));
-
-			
-		//}
-		
 	}
 
 	//async input to move the camera around

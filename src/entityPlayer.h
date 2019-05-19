@@ -21,11 +21,13 @@ public:
 	void render(Camera* cam);
 	void Init(Camera* cam);
 
-	void move(Vector3 delta);
-	void rotate(float angle, Vector3 axis);
 	void update(float dt);
+	void updateCamera();
+	void animateCharacter();
+
 	Vector3 getLocalVector(Vector3 v);
 	Vector3 current_position;
+	float pitch;
 	float yaw;
 	float speed;
 
@@ -41,6 +43,7 @@ public:
 	Material mat;
 	std::vector<Matrix44> bone_matrices;
 	Camera * camera;
+	bool isanimated = false;
 	
 
 };
