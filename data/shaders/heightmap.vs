@@ -3,6 +3,11 @@ attribute vec3 a_normal;
 attribute vec2 a_uv;
 attribute vec4 a_color;
 
+
+float density = 0.007;
+float gradient = 1.5;
+
+
 uniform vec3 u_camera_pos;
 
 uniform mat4 u_model;
@@ -15,6 +20,7 @@ varying vec3 v_world_position;
 varying vec3 v_normal;
 varying vec2 v_uv;
 varying vec4 v_color;
+varying float visibility;
 
 
 void main()
@@ -31,6 +37,9 @@ void main()
 
 	v_world_position = (u_model * vec4( v_position, 1.0) ).xyz;
 
+	float dist = length(u_viewprojection * vec4( v_world_position, 1.0 ));
+	visibility = exp(-pow((dist*density),gradient));
+	visibility = clamp(visibility,0,1);
 	
 	//store the color in the varying var to use it from the pixel shader
 	v_color = a_color;

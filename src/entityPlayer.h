@@ -7,6 +7,12 @@
 #include "entityMesh.h"
 #include "animation.h"
 
+enum type {
+
+	PLAYER,
+	TITAN
+
+};
 
 class EntityPlayer : public Entity
 {
@@ -14,24 +20,42 @@ class EntityPlayer : public Entity
 
 public:
 	EntityPlayer();
+	EntityPlayer(type);
 	~EntityPlayer();
 
-	void render();
+	enum direction {
+		KEY_UP,
+		KEY_DOWN,
+		KEY_RIGHT,
+		KEY_LEFT,
+	}direction;
+
+
+
+	void render(float time);
 	void render(Camera* cam);
 	void Init(Camera* cam);
 
-	void move(Vector3 delta);
-	void rotate(float angle, Vector3 axis);
 	void update(float dt);
+	void updateCamera();
+	void updateMatrix();
+	void animateCharacter();
+
+	void setPosition(float x, float y, float z);
+
 	Vector3 getLocalVector(Vector3 v);
 	Vector3 current_position;
-	float current_YRotation;
+	float pitch;
+	float yaw;
+	float speed;
+
 
 	Mesh* mesh;
 	Animation* anim;
 	Material mat;
 	std::vector<Matrix44> bone_matrices;
 	Camera * camera;
+	bool isanimated = true;
 	
 
 };
