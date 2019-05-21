@@ -20,6 +20,7 @@ class EntityPlayer : public Entity
 
 public:
 	EntityPlayer();
+	EntityPlayer(float * time);
 	EntityPlayer(type);
 	~EntityPlayer();
 
@@ -40,19 +41,25 @@ public:
 	void updateCamera();
 	void updateMatrix();
 	void animateCharacter();
+	void updateAnim(float time);
 
 	void setPosition(float x, float y, float z);
 
 	Vector3 getLocalVector(Vector3 v);
 	Vector3 current_position;
+	Vector3 velocity;
+
+	float speed;
 	float pitch;
 	float yaw;
-	float speed;
+	float * time;
 
 
+	Skeleton skeleton;
 	Mesh* mesh;
 	Animation* anim;
 	Material mat;
+
 	std::vector<Matrix44> bone_matrices;
 	Camera * camera;
 	bool isanimated = true;

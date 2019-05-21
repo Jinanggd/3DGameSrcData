@@ -18,7 +18,7 @@ World::World(Camera * camera, float* time)
 {
 	this->camera = camera;
 	this->time = time;
-	Player = new EntityPlayer();
+	Player = new EntityPlayer(time);
 	Titan = new EntityPlayer(TITAN);
 	initWorld();
 	//initTree();

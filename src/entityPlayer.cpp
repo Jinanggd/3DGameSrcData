@@ -3,7 +3,8 @@
 #include "texture.h"
 #include "camera.h"
 #include "input.h"
-
+#include "game.h"
+#include <cmath>     
 
 
 EntityPlayer::EntityPlayer(type mytype) : Entity()
@@ -39,7 +40,6 @@ EntityPlayer::EntityPlayer() : Entity()
 	anim = Animation::Get("data/characters/characters/crouch_walking.skanim");
 
 	
-
 	this->current_position = Vector3(0, 40, 0);
 	//this->model.rotate(180 * DEG2RAD, Vector3(0, 1, 0));
 	//this->current_YRotation = 180 * DEG2RAD;
@@ -47,11 +47,18 @@ EntityPlayer::EntityPlayer() : Entity()
 	this->speed = 0.0f;
 	this->pitch = -1.1f;
 
+
 	updateMatrix();
 	this->camera = new Camera();
 	//this->camera->lookAt(Vector3(current_position.x, current_position.y + 40, current_position.z +50),current_position, Vector3(0.f, 1.f, 0.f)); //position the camera and point to 0,0,0
 	this->camera->setPerspective(70.f, 800.0f / (float)600.0f, 0.1f, 10000.f);
 	updateCamera();
+}
+
+EntityPlayer::EntityPlayer(float *time) : EntityPlayer()
+{
+
+	this->time = time;
 }
 
 
@@ -67,10 +74,12 @@ void EntityPlayer::render(float time) {
 	this->mat.shader->setUniform("u_model", this->model);
 
 	if (isanimated) {
+		/*
 		anim->assignTime(time);
 		anim->skeleton.getBoneMatrix("mixamorig_Head").scale(2, 2, 2);
 		anim->skeleton.getBoneMatrix("mixamorig_Spine2").scale(2, 2, 2);
-		anim->skeleton.computeFinalBoneMatrices(bone_matrices, mesh);
+		*/
+		skeleton.computeFinalBoneMatrices(bone_matrices, mesh);
 		this->mat.shader->setUniform("u_bones", bone_matrices);
 	}
 		
@@ -91,14 +100,15 @@ void EntityPlayer::update(float dt)
 	// Crear el movimiento, sumarla a la posicion y multiplcarla por la matriz
 	// 
 	Vector3 move;
+	direction = KEY_UP;
 
-	if (Input::isKeyPressed(SDL_SCANCODE_W) || Input::isKeyPressed(SDL_SCANCODE_UP)) { move = Vector3(0, 0, -1); speed += dt * 5; }
+	if (Input::isKeyPressed(SDL_SCANCODE_W) || Input::isKeyPressed(SDL_SCANCODE_UP)) { move.z -= dt * 10; }
 
-	if (Input::isKeyPressed(SDL_SCANCODE_S) || Input::isKeyPressed(SDL_SCANCODE_DOWN)) { move = Vector3(0, 0, 1); speed += dt * 5; }
+	if (Input::isKeyPressed(SDL_SCANCODE_S) || Input::isKeyPressed(SDL_SCANCODE_DOWN)) { move.z += dt * 10; }
 
-	if (Input::isKeyPressed(SDL_SCANCODE_A) || Input::isKeyPressed(SDL_SCANCODE_LEFT)) yaw -= dt * 50;
+	if (Input::isKeyPressed(SDL_SCANCODE_A) || Input::isKeyPressed(SDL_SCANCODE_LEFT)) { yaw -= dt * 10; direction = KEY_LEFT;}
 
-	if (Input::isKeyPressed(SDL_SCANCODE_D) || Input::isKeyPressed(SDL_SCANCODE_RIGHT)) yaw += dt * 50;
+	if (Input::isKeyPressed(SDL_SCANCODE_D) || Input::isKeyPressed(SDL_SCANCODE_RIGHT)) { yaw += dt * 10; direction = KEY_RIGHT;}
 
 	if (Input::isKeyPressed(SDL_SCANCODE_Q) ) pitch -= dt * 30;
 
@@ -108,20 +118,25 @@ void EntityPlayer::update(float dt)
 
 	
 	Matrix44 R;
+
 	R.setRotation((yaw+180.0f)*DEG2RAD, Vector3(0, 1, 0));
-	move = R * move* speed;
 
-	current_position = current_position +  move;
+	move = R * move;
 
-	//this->model.setTranslation(current_position.x, current_position.y, current_position.z);
+	velocity = velocity + move *3;
 
-	//this->model.rotate(yaw*DEG2RAD, Vector3(0, 1, 0));
+	current_position = current_position + velocity * dt;
+
+	float friction = 1.0 / (1.0 + (dt * 4.5));
+
+	velocity = velocity * friction;
+
+
+	if (isanimated)updateAnim(dt);
 
 	updateMatrix();
 	updateCamera();
 
-
-	speed *= 0.9;
 
 }
 
@@ -138,6 +153,90 @@ void EntityPlayer::updateCamera()
 	Vector3 front = R_Yaw*R_Pitch * Vector3(0, 5, 20);
 	Vector3 cam_center = cam_eye + front;
 	this->camera->lookAt(cam_eye, cam_center, Vector3(0, 1, 0));
+}
+
+void EntityPlayer::updateAnim(float dt) {
+
+
+	//if (visibility < 0.8 && (Game::instance->frame + id) % 5)
+	//	return;
+
+	//update anim
+	
+	float t = *time;
+	float speed = velocity.length() * 0.1;
+	float w = 0.0;
+
+	Vector3 vel = velocity;
+	
+	
+	if (velocity.length() > 0.01)
+	{
+		normalize(velocity); //vel in local space
+		Matrix44 R;
+		R.rotate(-yaw * DEG2RAD, Vector3(0, 1, 0));
+		vel = R * vel;
+	}
+
+	Animation* anim = NULL;
+	Animation* animB = NULL;
+	const char* idle_name = "data/characters/characters/idle.skanim";
+
+
+	//std::cout << speed << std::endl;
+
+	if (speed < 0.01) //idle
+	{
+		anim = Animation::Get(idle_name);
+		anim->assignTime(t);
+		skeleton = anim->skeleton;
+	}
+	else if (speed < 1) //walk
+	{
+		anim = Animation::Get(idle_name);
+		anim->assignTime(t);
+		w = clamp(speed, 0, 1);
+		animB = Animation::Get("data/characters/characters/walking.skanim");
+		if (vel.z < 0)
+			animB->assignTime(t);
+		else
+			animB->assignTime(-t);
+		blendSkeleton(&anim->skeleton, &animB->skeleton, w, &skeleton);
+	}
+
+	if (direction == KEY_LEFT) {
+
+		animB = Animation::Get("data/characters/characters/left_turn.skanim");
+		animB->assignTime(t, false);
+		float angle = abs(yaw * DEG2RAD);
+
+		w = clamp(angle, 0, 1);
+
+		blendSkeleton(&skeleton, &animB->skeleton, w, &skeleton);
+	
+	}
+	/*
+	else //run
+	{
+		w = clamp(speed - 1.0, 0, 1);
+		anim = Animation::Get("data/characters/characters/walking.skanim");
+		if (vel.z < 0)
+			anim->assignTime(t);
+		else
+			anim->assignTime(-t);
+		animB = Animation::Get("data/characters/characters/running.skanim");
+		if (vel.z < 0)
+			animB->assignTime((t / anim->duration) * animB->duration);
+		else
+			animB->assignTime(-(t / anim->duration) * animB->duration);
+		blendSkeleton(&anim->skeleton, &animB->skeleton, w, &skeleton);
+
+	}
+	*/
+
+	skeleton.computeFinalBoneMatrices(bone_matrices, mesh);
+
+
 }
 
 void EntityPlayer::updateMatrix()
