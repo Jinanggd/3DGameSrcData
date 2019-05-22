@@ -123,7 +123,7 @@ void EntityPlayer::update(float dt)
 
 	move = R * move;
 
-	velocity = velocity + move *3;
+	velocity = velocity + move *4;
 
 	current_position = current_position + velocity * dt;
 
@@ -183,7 +183,7 @@ void EntityPlayer::updateAnim(float dt) {
 	const char* idle_name = "data/characters/characters/idle.skanim";
 
 
-	//std::cout << speed << std::endl;
+	
 
 	if (speed < 0.01) //idle
 	{
@@ -191,7 +191,7 @@ void EntityPlayer::updateAnim(float dt) {
 		anim->assignTime(t);
 		skeleton = anim->skeleton;
 	}
-	else if (speed < 1) //walk
+	else if (speed < 0.8) //walk
 	{
 		anim = Animation::Get(idle_name);
 		anim->assignTime(t);
@@ -204,18 +204,8 @@ void EntityPlayer::updateAnim(float dt) {
 		blendSkeleton(&anim->skeleton, &animB->skeleton, w, &skeleton);
 	}
 
-	if (direction == KEY_LEFT) {
-
-		animB = Animation::Get("data/characters/characters/left_turn.skanim");
-		animB->assignTime(t, false);
-		float angle = abs(yaw * DEG2RAD);
-
-		w = clamp(angle, 0, 1);
-
-		blendSkeleton(&skeleton, &animB->skeleton, w, &skeleton);
 	
-	}
-	/*
+
 	else //run
 	{
 		w = clamp(speed - 1.0, 0, 1);
@@ -229,10 +219,31 @@ void EntityPlayer::updateAnim(float dt) {
 			animB->assignTime((t / anim->duration) * animB->duration);
 		else
 			animB->assignTime(-(t / anim->duration) * animB->duration);
-		blendSkeleton(&anim->skeleton, &animB->skeleton, w, &skeleton);
+		blendSkeleton(&anim->skeleton, &animB->skeleton, 0.8, &skeleton);
 
 	}
-	*/
+
+
+	//if (direction == KEY_LEFT) {
+
+	//	animB = Animation::Get("data/characters/characters/left_turn.skanim");
+	//	animB->assignTime(t);
+
+	//	float angle = abs(yaw / 360);
+
+	//	if (fmod(animB->duration, t) < 0.5) { yaw -= 90;  std::cout << "a"; }
+
+	//	w = clamp(angle, 0, 1);
+
+	//	//updateCamera();
+	//	updateMatrix();
+
+	//	blendSkeleton(&skeleton, &animB->skeleton, 0.9, &skeleton);
+
+	//}
+	
+
+	
 
 	skeleton.computeFinalBoneMatrices(bone_matrices, mesh);
 
