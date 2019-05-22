@@ -14,7 +14,6 @@ enum type {
 
 };
 
-
 class EntityPlayer : public Entity
 {
 
@@ -25,8 +24,6 @@ public:
 	EntityPlayer(type);
 	~EntityPlayer();
 
-<<<<<<< HEAD
-=======
 	enum direction {
 		KEY_UP,
 		KEY_DOWN,
@@ -36,7 +33,6 @@ public:
 
 
 
->>>>>>> master
 	void render(float time);
 	void render(Camera* cam);
 	void Init(Camera* cam);
@@ -45,34 +41,18 @@ public:
 	void updateCamera();
 	void updateMatrix();
 	void animateCharacter();
-<<<<<<< HEAD
-=======
 	void updateAnim(float time);
->>>>>>> master
 
 	void setPosition(float x, float y, float z);
 
 	Vector3 getLocalVector(Vector3 v);
 	Vector3 current_position;
-<<<<<<< HEAD
-	float pitch;
-	float yaw;
-	float speed;
-
-	enum direction {
-		KEY_UP,
-		KEY_DOWN,
-		KEY_RIGHT,
-		KEY_LEFT,
-	}direction;
-=======
 	Vector3 velocity;
 
 	float speed;
 	float pitch;
 	float yaw;
 	float * time;
->>>>>>> master
 
 
 	Skeleton skeleton;
@@ -82,11 +62,7 @@ public:
 
 	std::vector<Matrix44> bone_matrices;
 	Camera * camera;
-<<<<<<< HEAD
-	bool isanimated = false;
-=======
 	bool isanimated = true;
->>>>>>> master
 	
 
 };
