@@ -37,7 +37,8 @@ public:
 	void render(Camera* cam);
 	void Init(Camera* cam);
 
-	void update(float dt);
+	void update(float dt, std::vector<EntityMesh> props);
+	void checkCollision(std::vector<EntityMesh> props,Vector3 newpos,float dt);
 	void updateCamera();
 	void updateMatrix();
 	void animateCharacter();

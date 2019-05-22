@@ -93,7 +93,7 @@ void EntityPlayer::render(Camera * cam)
 	
 }
 
-void EntityPlayer::update(float dt)
+void EntityPlayer::update(float dt, std::vector<EntityMesh> props)
 {
 	
 	// Crear la matriz de rotatcion con la rotacion actual,
@@ -106,9 +106,9 @@ void EntityPlayer::update(float dt)
 
 	if (Input::isKeyPressed(SDL_SCANCODE_S) || Input::isKeyPressed(SDL_SCANCODE_DOWN)) { move.z += dt * 10; }
 
-	if (Input::isKeyPressed(SDL_SCANCODE_A) || Input::isKeyPressed(SDL_SCANCODE_LEFT)) { yaw -= dt * 10; direction = KEY_LEFT;}
+	if (Input::isKeyPressed(SDL_SCANCODE_A) || Input::isKeyPressed(SDL_SCANCODE_LEFT)) { yaw -= dt * 20; direction = KEY_LEFT;}
 
-	if (Input::isKeyPressed(SDL_SCANCODE_D) || Input::isKeyPressed(SDL_SCANCODE_RIGHT)) { yaw += dt * 10; direction = KEY_RIGHT;}
+	if (Input::isKeyPressed(SDL_SCANCODE_D) || Input::isKeyPressed(SDL_SCANCODE_RIGHT)) { yaw += dt * 20; direction = KEY_RIGHT;}
 
 	if (Input::isKeyPressed(SDL_SCANCODE_Q) ) pitch -= dt * 30;
 
@@ -123,9 +123,10 @@ void EntityPlayer::update(float dt)
 
 	move = R * move;
 
-	velocity = velocity + move *4;
+	velocity = velocity + move*4;
 
-	current_position = current_position + velocity * dt;
+	checkCollision(props, current_position + velocity * dt,dt);
+	//current_position = current_position + velocity * dt;
 
 	float friction = 1.0 / (1.0 + (dt * 4.5));
 
@@ -139,6 +140,34 @@ void EntityPlayer::update(float dt)
 
 
 }
+
+//Check if there is a collision to the new position of the player, if there it is, the player will keep the same position as before moving
+//Depending of the Mesh tag it will happen different kind of interactions
+void EntityPlayer::checkCollision(std::vector<EntityMesh> props, Vector3 newpos,float dt)
+{
+	Vector3 character_center = newpos + Vector3(0, 2, 0);
+
+	for (int i = 0; i < props.size(); i++) {
+
+		if (props[i].tag == "EntityMesh") continue;
+
+		Vector3 collisionpoint, collision_normal;
+		if (props[i].mesh->testSphereCollision(props[i].model,character_center,3,collisionpoint,collision_normal) == false) continue;
+
+
+		
+		if (props[i].tag == "PropTree" || props[i].tag == "PropHouse" || props[i].tag == "PropTower") {
+			Vector3 push_away = normalize(collisionpoint - character_center)*dt;
+			current_position = current_position - push_away;
+			return;
+		}
+		else if (props[i].tag == "PropBullet") {
+
+		}
+	}
+	current_position = newpos;
+}
+
 
 void EntityPlayer::updateCamera()
 {
