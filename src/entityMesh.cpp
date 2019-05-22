@@ -128,29 +128,7 @@ void EntityMesh::update(float elapsed_time)
 {
 }
 
-void EntityMesh::move(Vector3 delta)
-{
-	Vector3 localDelta = this->camera->getLocalVector(delta);
-	Matrix44 v4localDelta;
-	v4localDelta.translate(-delta.x, -delta.y, -delta.z);
-	
-	this->model = this->model*v4localDelta;
-	this->camera->lookAt(this->model.getTranslation() + Vector3(0.0f, 200.0f, 200.0f), this->model.getTranslation() + Vector3(0,  60, 60), Vector3(0.f, 1.f, 0.f)); //position the camera and point to 0,0,0
-	//this->camera->move(delta);
-}
 
-void EntityMesh::rotate(float angle, Vector3 axis)
-{
-	Matrix44 R;
-	R.setRotation(angle, axis);
-	this->model.rotate(angle, axis);
-	Vector3 new_front = R * (this->camera->center - this->camera-> eye);
-
-	this->camera->lookAt(this->model.getTranslation()+Vector3(0.0f,200.0f,200.0f), this->model.getTranslation() + Vector3(0, 60, 60), Vector3(0.f, 1.f, 0.f)); //position the camera and point to 0,0,0
-	//this->camera->center = this->camera->eye + new_front;
-	//this->camera->updateViewMatrix();
-
-}
 
 void EntityMesh::setPosition(Vector3 pos) {
 
