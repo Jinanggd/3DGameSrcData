@@ -163,7 +163,7 @@ void World::initProps() {
 
 			float pz = mapping(0, mask->image.width, -1024, 1024, j);
 			float py = mask->image.getPixel(j, i).x / 255.0f * 40.0f;
-
+			int randtext = rand() % 4 + 1;
 			//Trees
 			if (mask->image.getPixel(j, i).x > 100 && mask->image.getPixel(j, i).x < 162) {
 				EntityMesh m = EntityMesh(mat_types::tree);
@@ -177,6 +177,9 @@ void World::initProps() {
 					EntityMesh m = EntityMesh(mat_types::tower);
 					m.model.setTranslation(px, py, pz);
 					m.model.scale(1.5, 1.5, 1.5);
+					std::string filename = "data/house_" + std::to_string(randtext) + ".tga";
+					const char *c = filename.c_str();
+					m.mat.texture = Texture::Get(c);
 					entities.push_back(m);
 				}
 
@@ -188,6 +191,9 @@ void World::initProps() {
 					//Can add random rotation
 					h.model.setTranslation(px, py, pz);
 					h.model.scale(1.5, 1.5, 1.5);
+					std::string filename = "data/house_" + std::to_string(randtext) + ".tga";
+					const char *c = filename.c_str();
+					h.mat.texture = Texture::Get(c);
 					entities.push_back(h);
 				}
 			}
