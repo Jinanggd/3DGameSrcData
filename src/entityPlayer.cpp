@@ -325,7 +325,7 @@ void EntityPlayer::updateHPBar()
 {
 	Matrix44 R_Yaw;
 	R_Yaw.setRotation(yaw*DEG2RAD, Vector3(0, 1, 0));
-	Vector3 right = R_Yaw * Vector3(1, 0, 0);
+	Vector3 right = camera->getLocalVector(Vector3(1, 0, 0));
 	Vector3 up = Vector3(0, 1, 0);
 
 	hpbar.m.vertices.clear();
@@ -358,7 +358,7 @@ void EntityPlayer::updateHPBar()
 
 	//hpbar.m.createQuad(camera->center.x, camera->center.y, 100, 1000, false);
 	hpbar.model.setTranslation(camera->center.x, camera->center.y, camera->center.z);
-	//hpbar.model.rotate(90 * DEG2RAD, right);
+	hpbar.model.rotate(90 * DEG2RAD, right);
 
 }
 
