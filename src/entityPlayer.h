@@ -48,6 +48,7 @@ public:
 	void checkCollision(std::vector<EntityMesh> props,Vector3 newpos,float dt);
 	void updateCamera();
 	void updateMatrix();
+	void updateHPBar();
 	void animateCharacter();
 	void updateAnim(float time);
 
@@ -61,12 +62,13 @@ public:
 	float pitch;
 	float yaw;
 	float * time;
-
+	float hp;
 
 	Skeleton skeleton;
 	Mesh* mesh;
 	
 	ActionPlane actionplane;
+	ActionPlane hpbar;
 	
 	Animation* anim;
 	Material mat;

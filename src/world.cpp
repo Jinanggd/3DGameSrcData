@@ -93,17 +93,27 @@ void World::renderentities()
 	//Titan->render(*time);
 	current_shader->disable();
 
-	current_shader = Player->actionplane.mat.shader;
+	//current_shader = Player->actionplane.mat.shader;
 
 
+	//current_shader->enable();
+	//current_shader->setUniform("u_viewprojection", camera->viewprojection_matrix);
+	//current_shader->setUniform("u_time", *time);
+	//current_shader->setUniform("u_color", Vector4(1, 1, 1, 1));
+	//current_shader->setUniform("u_texture", Player->actionplane.mat.texture);
+	//current_shader->setUniform("u_model", Player->actionplane.model);
+	//Player->actionplane.m.render(GL_TRIANGLES);
+
+	//current_shader->disable();
+
+	current_shader = Player->hpbar.mat.shader;
 	current_shader->enable();
 	current_shader->setUniform("u_viewprojection", camera->viewprojection_matrix);
 	current_shader->setUniform("u_time", *time);
 	current_shader->setUniform("u_color", Vector4(1, 1, 1, 1));
-	current_shader->setUniform("u_texture", Player->actionplane.mat.texture);
-	current_shader->setUniform("u_model", Player->actionplane.model);
+	current_shader->setUniform("u_texture", Player->hpbar.mat.texture);
+	current_shader->setUniform("u_model", Player->hpbar.model);
 	Player->actionplane.m.render(GL_TRIANGLES);
-
 	current_shader->disable();
 }
 

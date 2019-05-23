@@ -12,6 +12,7 @@ EntityPlayer::EntityPlayer(type mytype) : Entity()
 	switch (mytype)
 	{
 	case PLAYER:
+		hp = 100.0f; // Default health 
 		break;
 	case TITAN:
 		EntityPlayer();
@@ -57,8 +58,8 @@ EntityPlayer::EntityPlayer() : Entity()
 	actionplane.m.createPlane(10);
 
 	
-
-
+	hpbar.mat.shader = Shader::Get("data/shaders/basic.vs", "data/shaders/texture.fs");
+	hpbar.mat.texture = Texture::Get("data/bullet.tga");
 	actionplane.mat.shader = Shader::Get("data/shaders/basic.vs", "data/shaders/texture.fs");
 	actionplane.mat.texture = Texture::Get("data/bullet.tga");	
 
@@ -149,6 +150,7 @@ void EntityPlayer::update(float dt, std::vector<EntityMesh> props)
 
 	updateMatrix();
 	updateCamera();
+	updateHPBar();
 
 	actionplane.model.setTranslation(current_position.x, current_position.y + 13, current_position.z);
 	actionplane.model.scale(0.1, 0.06, 1);
@@ -316,6 +318,47 @@ void EntityPlayer::updateMatrix()
 	this->model.rotate(yaw*DEG2RAD, Vector3(0, 1, 0));
 	//this->model.rotate(pitch*DEG2RAD, right);
 
+
+}
+
+void EntityPlayer::updateHPBar()
+{
+	Matrix44 R_Yaw;
+	R_Yaw.setRotation(yaw*DEG2RAD, Vector3(0, 1, 0));
+	Vector3 right = R_Yaw * Vector3(1, 0, 0);
+	Vector3 up = Vector3(0, 1, 0);
+
+	hpbar.m.vertices.clear();
+	hpbar.m.normals.clear();
+	hpbar.m.uvs.clear();
+	hpbar.m.colors.clear();
+
+	hpbar.m.vertices.push_back(50 * (right + up));
+	hpbar.m.vertices.push_back(50 * (right - up));
+	hpbar.m.vertices.push_back(50* ((-1.0)*right - up));
+	hpbar.m.vertices.push_back(50 * ((-1.0)*right + up));
+	hpbar.m.vertices.push_back(50 * (right + up) );
+	hpbar.m.vertices.push_back(50 * ((-1.0)*right - up));
+
+	hpbar.m.normals.push_back(cross(right, up));
+	hpbar.m.normals.push_back(cross(right, up));
+	hpbar.m.normals.push_back(cross(right, up));
+	hpbar.m.normals.push_back(cross(right, up));
+	hpbar.m.normals.push_back(cross(right, up));
+	hpbar.m.normals.push_back(cross(right, up));
+
+
+	hpbar.m.uvs.push_back(Vector2(1, 1));
+	hpbar.m.uvs.push_back(Vector2(1, 0));
+	hpbar.m.uvs.push_back(Vector2(0, 0));
+	hpbar.m.uvs.push_back(Vector2(0, 1));
+	hpbar.m.uvs.push_back(Vector2(1, 1));
+	hpbar.m.uvs.push_back(Vector2(0, 0));
+
+
+	//hpbar.m.createQuad(camera->center.x, camera->center.y, 100, 1000, false);
+	hpbar.model.setTranslation(camera->center.x, camera->center.y, camera->center.z);
+	//hpbar.model.rotate(90 * DEG2RAD, right);
 
 }
 
