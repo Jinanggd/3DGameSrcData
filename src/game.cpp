@@ -157,8 +157,8 @@ void Game::update(double seconds_elapsed)
 		if(ThirdCameraMode)
 			camera->move(Vector3(-1.0f, 0.0f, 0.0f) * speed);
 	}
-
-	world.Player->update(seconds_elapsed*speed,world.entities);
+	if(!ThirdCameraMode)
+		world.Player->update(seconds_elapsed*speed,world.entities);
 
 	//to navigate with the mouse fixed in the middle
 	if (mouse_locked)

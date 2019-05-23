@@ -37,7 +37,7 @@ EntityMesh::EntityMesh( mat_types type)
 	case mat_types::tree:
 		this->mesh = Mesh::Get("data/trees/trunk.obj");
 		this->mesh2 = Mesh::Get("data/trees/leaves.obj");
-		this->mat.shader = Shader::Get("data/shaders/basic.vs", "data/shaders/tree_texture.fs");
+		this->mat.shader = Shader::Get("data/shaders/basic.vs", "data/shaders/texture.fs");
 		this->mat.texture = Texture::Get("data/trees/trunk.tga");
 		this->mat.texture2 = Texture::Get("data/trees/leaves_olive.tga");
 		this->tag = "PropTree";
@@ -57,6 +57,13 @@ EntityMesh::EntityMesh( mat_types type)
 		this->mat.shader = Shader::Get("data/shaders/basic.vs", "data/shaders/texture.fs");
 		this->mat.texture = Texture::Get("data/house.tga");
 		this->tag = "PropTower";
+		break;
+
+	case mat_types::bullet:
+		this->mesh = Mesh::Get("data/sphere.obj");
+		this->mat.shader = Shader::Get("data/shaders/basic.vs", "data/shaders/texture.fs");
+		this->mat.texture = Texture::Get("data/bullet.tga");
+		this->tag = "PropBullet";
 		break;
 		
 	case mat_types::plane:
@@ -89,7 +96,7 @@ EntityMesh::EntityMesh( mat_types type)
 	
 		break;
 	}
-
+	
 	
 }
 

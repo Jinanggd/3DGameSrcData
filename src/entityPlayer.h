@@ -31,6 +31,13 @@ public:
 		KEY_LEFT,
 	}direction;
 
+	struct ActionPlane
+	{
+		Mesh m;
+		Matrix44 model;
+		Material mat;
+		Vector3* pos;
+	};
 
 
 	void render(float time);
@@ -58,6 +65,9 @@ public:
 
 	Skeleton skeleton;
 	Mesh* mesh;
+	
+	ActionPlane actionplane;
+	
 	Animation* anim;
 	Material mat;
 

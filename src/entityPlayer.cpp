@@ -53,6 +53,15 @@ EntityPlayer::EntityPlayer() : Entity()
 	//this->camera->lookAt(Vector3(current_position.x, current_position.y + 40, current_position.z +50),current_position, Vector3(0.f, 1.f, 0.f)); //position the camera and point to 0,0,0
 	this->camera->setPerspective(70.f, 800.0f / (float)600.0f, 0.1f, 10000.f);
 	updateCamera();
+
+	actionplane.m.createPlane(10);
+
+	
+
+
+	actionplane.mat.shader = Shader::Get("data/shaders/basic.vs", "data/shaders/texture.fs");
+	actionplane.mat.texture = Texture::Get("data/bullet.tga");	
+
 }
 
 EntityPlayer::EntityPlayer(float *time) : EntityPlayer()
@@ -82,6 +91,8 @@ void EntityPlayer::render(float time) {
 		skeleton.computeFinalBoneMatrices(bone_matrices, mesh);
 		this->mat.shader->setUniform("u_bones", bone_matrices);
 	}
+
+
 		
 
 	this->mesh->render(GL_TRIANGLES);
@@ -100,6 +111,7 @@ void EntityPlayer::update(float dt, std::vector<EntityMesh> props)
 	// Crear el movimiento, sumarla a la posicion y multiplcarla por la matriz
 	// 
 	Vector3 move;
+
 	direction = KEY_UP;
 
 	if (Input::isKeyPressed(SDL_SCANCODE_W) || Input::isKeyPressed(SDL_SCANCODE_UP)) { move.z -= dt * 10; }
@@ -138,6 +150,12 @@ void EntityPlayer::update(float dt, std::vector<EntityMesh> props)
 	updateMatrix();
 	updateCamera();
 
+	actionplane.model.setTranslation(current_position.x, current_position.y + 13, current_position.z);
+	actionplane.model.scale(0.1, 0.06, 1);
+	actionplane.model.rotate(90 * DEG2RAD, Vector3(1, 0, 0));
+	actionplane.model.rotate(yaw*DEG2RAD, Vector3(0, 0, 1));
+
+
 
 }
 
@@ -152,7 +170,7 @@ void EntityPlayer::checkCollision(std::vector<EntityMesh> props, Vector3 newpos,
 		if (props[i].tag == "EntityMesh") continue;
 
 		Vector3 collisionpoint, collision_normal;
-		if (props[i].mesh->testSphereCollision(props[i].model,character_center,3,collisionpoint,collision_normal) == false) continue;
+		if (props[i].mesh->testSphereCollision(props[i].model,character_center,2,collisionpoint,collision_normal) == false) continue;
 
 
 		
@@ -162,6 +180,11 @@ void EntityPlayer::checkCollision(std::vector<EntityMesh> props, Vector3 newpos,
 			return;
 		}
 		else if (props[i].tag == "PropBullet") {
+			std::cout << "Bullet Detected"<< std::endl;
+			Matrix44 R_Yaw;
+			R_Yaw.setRotation(yaw*DEG2RAD, Vector3(0, 1, 0));
+			Vector3 right = R_Yaw * Vector3(1, 0, 0);
+			Vector3 up = this->camera->up;
 
 		}
 	}
@@ -283,6 +306,8 @@ void EntityPlayer::updateMatrix()
 {
 	this->model.setTranslation(current_position.x, current_position.y, current_position.z);
 	this->model.scale(0.5f, 0.5f, 0.5f);
+	
+
 
 	//Matrix44 R_Yaw;
 	//R_Yaw.setRotation(yaw*DEG2RAD, Vector3(0, 1, 0));
@@ -304,6 +329,7 @@ void EntityPlayer::setPosition(float x, float y, float z)
 {
 	this->current_position = Vector3(x, y, z);
 	this->model.translate(x, y, z);
+	updateMatrix();
 	updateCamera();
 }
 

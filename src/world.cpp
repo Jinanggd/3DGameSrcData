@@ -63,7 +63,7 @@ void World::renderentities()
 		Vector3 world_center = m*entities[i].mesh->box.center;
 		//std::cout << entities[i].model.getTranslation().x << " " << entities[i].model.getTranslation().y <<" " << entities[i].model.getTranslation().z << std::endl;
 
-		if (!(this->camera->testBoxInFrustum(world_center, entities[i].mesh->box.halfsize) == CLIP_OUTSIDE))
+		if (!(this->camera->testSphereInFrustum(world_center, 50) == CLIP_OUTSIDE))
 		{
 
 			current_shader = entities[i].mat.shader;
@@ -91,6 +91,19 @@ void World::renderentities()
 	current_shader->setUniform("u_time", *time);
 	Player->render(*time);
 	//Titan->render(*time);
+	current_shader->disable();
+
+	current_shader = Player->actionplane.mat.shader;
+
+
+	current_shader->enable();
+	current_shader->setUniform("u_viewprojection", camera->viewprojection_matrix);
+	current_shader->setUniform("u_time", *time);
+	current_shader->setUniform("u_color", Vector4(1, 1, 1, 1));
+	current_shader->setUniform("u_texture", Player->actionplane.mat.texture);
+	current_shader->setUniform("u_model", Player->actionplane.model);
+	Player->actionplane.m.render(GL_TRIANGLES);
+
 	current_shader->disable();
 }
 
@@ -202,7 +215,14 @@ void World::initProps() {
 
 			if (mask->image.getPixel(j, i).x == 255 && setPlayerPos) {
 				float characterpy = py * 0.63f;
+				float bulletpy = py * 0.65f;
+				EntityMesh b = EntityMesh(mat_types::bullet);
+				b.model.setTranslation(px, bulletpy, pz+20);
+				entities.push_back(b);
+				
+				
 				this->Player->setPosition(px, characterpy, pz);
+
 				setPlayerPos = false;
 			}
 

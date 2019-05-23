@@ -15,7 +15,8 @@ enum class mat_types {
 	sky,
 	airplane,
 	tower,
-	player
+	player,
+	bullet
 
 };
 
