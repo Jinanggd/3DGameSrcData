@@ -241,7 +241,7 @@ void World::initProps() {
 				
 				this->Player->setPosition(px, characterpy, pz);
 				
-				for (int i = 0; i < Players.size; i++) {
+				for (int i = 0; i < Players.size(); i++) {
 
 
 					Players.at(i).setPosition(random(20), characterpy, random(10));
@@ -276,10 +276,11 @@ void World::initProps() {
 
 void World::printCamPos()
 {
-	std::cout <<"("<< Player->current_position.x << "," << Player->current_position.y <<"," << Player->current_position.z << ")"<< std::endl;
+	//std::cout <<"("<< Player->current_position.x << "," << Player->current_position.y <<"," << Player->current_position.z << ")"<< std::endl;
+	std::cout << "(" << camera->eye.x << "," << camera->eye.y << "," << camera->eye.z << ")" << std::endl;
 	//std::cout << "(" << Player->camera << "," << Player->current_position.y << "," << Player->current_position.z << ")" << std::endl;
 
-	std::cout << "Pitch: " << Player->pitch << std::endl;
+	//std::cout << "Pitch: " << Player->pitch << std::endl;
 }
 
 float World::mapping(float start1,float stop1, float start2,float stop2,float value) {

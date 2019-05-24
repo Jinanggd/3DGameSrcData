@@ -53,7 +53,7 @@ EntityPlayer::EntityPlayer() : Entity()
 	this->camera = new Camera();
 	//this->camera->lookAt(Vector3(current_position.x, current_position.y + 40, current_position.z +50),current_position, Vector3(0.f, 1.f, 0.f)); //position the camera and point to 0,0,0
 	this->camera->setPerspective(70.f, 800.0f / (float)600.0f, 0.1f, 10000.f);
-	updateCamera();
+	updateCamera(Vector3(0, 10, -20));
 
 	actionplane.m.createPlane(10);
 
@@ -140,6 +140,8 @@ void EntityPlayer::update(float dt, std::vector<EntityMesh> props)
 	velocity = velocity + move*4;
 
 	checkCollision(props, current_position + velocity * dt,dt);
+	cameracheckCollision(props, dt);
+
 	//current_position = current_position + velocity * dt;
 
 	float friction = 1.0 / (1.0 + (dt * 4.5));
@@ -150,7 +152,7 @@ void EntityPlayer::update(float dt, std::vector<EntityMesh> props)
 	if (isanimated)updateAnim(dt);
 
 	updateMatrix();
-	updateCamera();
+	//updateCamera();
 	updateHPBar();
 
 	actionplane.model.setTranslation(current_position.x, current_position.y + 13, current_position.z);
@@ -167,20 +169,22 @@ void EntityPlayer::update(float dt, std::vector<EntityMesh> props)
 void EntityPlayer::checkCollision(std::vector<EntityMesh> props, Vector3 newpos,float dt)
 {
 	Vector3 character_center = newpos + Vector3(0, 2, 0);
+	Vector3 camera_center = this->camera->eye;
 
 	for (int i = 0; i < props.size(); i++) {
 
 		if (props[i].tag == "EntityMesh") continue;
 
 		Vector3 collisionpoint, collision_normal;
-		if (props[i].mesh->testSphereCollision(props[i].model,character_center,2,collisionpoint,collision_normal) == false) continue;
 
+		if (props[i].mesh->testSphereCollision(props[i].model,character_center,2,collisionpoint,collision_normal) == true) {
 
 		
 		if (props[i].tag == "PropTree" || props[i].tag == "PropHouse" || props[i].tag == "PropTower") {
 			Vector3 push_away = normalize(collisionpoint - character_center)*dt;
 			current_position = current_position - push_away;
 			return;
+		
 		}
 		else if (props[i].tag == "PropBullet") {
 			std::cout << "Bullet Detected"<< std::endl;
@@ -190,12 +194,56 @@ void EntityPlayer::checkCollision(std::vector<EntityMesh> props, Vector3 newpos,
 			Vector3 up = this->camera->up;
 
 		}
+
+		}
+
+		
+
+
 	}
 	current_position = newpos;
+
+
 }
 
 
-void EntityPlayer::updateCamera()
+
+void EntityPlayer::cameracheckCollision(std::vector<EntityMesh> props, float dt)
+{
+
+	Vector3 camera_center = this->camera->eye;
+	Vector3 character_center = current_position + Vector3(0, 2, 0);
+
+	for (int i = 0; i < props.size(); i++) {
+
+		if (props[i].tag == "EntityMesh") continue;
+
+		Vector3 collisionpoint, collision_normal;
+
+
+		//if (props[i].mesh->testSphereCollision(props[i].model, camera_center, 6, collisionpoint, collision_normal) == true) {
+	    if(props[i].mesh->testRayCollision(props[i].model, camera_center, (camera->center - camera->eye).normalize(), collisionpoint, collision_normal, (camera->center-camera->eye).length() )==true) {
+
+			if (props[i].tag == "PropTree" || props[i].tag == "PropHouse" || props[i].tag == "PropTower") {
+
+
+				//this->camera->lookAt(Vector3(0,1000,0), current_position, Vector3(0, 1, 0));
+				
+				updateCamera(Vector3(0,20,-30));
+				return;
+			}
+
+
+		}
+
+
+	}
+
+	updateCamera( Vector3(0, 10, -20));
+}
+
+
+void EntityPlayer::updateCamera(Vector3 delta)
 {
 	Matrix44 R_Yaw;
 	R_Yaw.setRotation(yaw*DEG2RAD, Vector3(0, 1, 0));
@@ -204,7 +252,7 @@ void EntityPlayer::updateCamera()
 
 	Matrix44 R_Pitch;
 	R_Pitch.setRotation(pitch*DEG2RAD, right);
-	Vector3 cam_eye = current_position + R_Yaw *Vector3(0, 10, -20);
+	Vector3 cam_eye = current_position + R_Yaw * delta ;
 	Vector3 front = R_Yaw*R_Pitch * Vector3(0, 5, 20);
 	Vector3 cam_center = cam_eye + front;
 	this->camera->lookAt(cam_eye, cam_center, Vector3(0, 1, 0));
@@ -381,7 +429,7 @@ void EntityPlayer::setPosition(float x, float y, float z)
 	this->current_position = Vector3(x, y, z);
 	this->model.translate(x, y, z);
 	updateMatrix();
-	updateCamera();
+	updateCamera(Vector3(0, 10, -20));
 }
 
 Vector3 EntityPlayer::getLocalVector(Vector3 v)

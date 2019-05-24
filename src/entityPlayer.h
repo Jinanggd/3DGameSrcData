@@ -46,7 +46,8 @@ public:
 
 	void update(float dt, std::vector<EntityMesh> props);
 	void checkCollision(std::vector<EntityMesh> props,Vector3 newpos,float dt);
-	void updateCamera();
+	void cameracheckCollision(std::vector<EntityMesh> props, float dt);
+	void updateCamera(Vector3 delta);
 	void updateMatrix();
 	void updateHPBar();
 	void animateCharacter();

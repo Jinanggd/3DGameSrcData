@@ -39,13 +39,16 @@ Game::Game(int window_width, int window_height, SDL_Window* window)
 	glEnable( GL_CULL_FACE ); //render both sides of every triangle
 	glEnable( GL_DEPTH_TEST ); //check the occlusions using the Z buffer
 
-	//glViewport(0, 0, window_width / 2.0f, window_height);
+	
 	//create our camera
 	camera = new Camera();
 	camera->lookAt(Vector3(0.f,100.f, 100.f),Vector3(0.f,0.f,0.f), Vector3(0.f,1.f,0.f)); //position the camera and point to 0,0,0
 	camera->setPerspective(70.f,window_width/(float)window_height,0.1f,10000.f); //set the projection, we want to be perspective
 	camera->enable();
 
+
+
+	//Gl viewport test  
 
 	//glViewport(window_width / 2.0f, 0, window_width/2.0f, window_height);
 	//Camera* cam = new Camera();
@@ -54,6 +57,7 @@ Game::Game(int window_width, int window_height, SDL_Window* window)
 	//cam->enable();
 
 	world = World(camera, &time);
+
 	//world2 = World(cam, &time);
 	//world.entities.push_back(EntityMesh(Mesh::Get("data/box.ASE"), mat_types::rock));
 
