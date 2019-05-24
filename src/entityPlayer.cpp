@@ -62,7 +62,8 @@ EntityPlayer::EntityPlayer() : Entity()
 	hpbar.mat.texture = Texture::Get("data/bullet.tga");
 	actionplane.mat.shader = Shader::Get("data/shaders/basic.vs", "data/shaders/texture.fs");
 	actionplane.mat.texture = Texture::Get("data/bullet.tga");	
-
+	
+	updateHPBar();
 }
 
 EntityPlayer::EntityPlayer(float *time) : EntityPlayer()
@@ -355,10 +356,17 @@ void EntityPlayer::updateHPBar()
 	hpbar.m.uvs.push_back(Vector2(1, 1));
 	hpbar.m.uvs.push_back(Vector2(0, 0));
 
+	
 
 	//hpbar.m.createQuad(camera->center.x, camera->center.y, 100, 1000, false);
-	hpbar.model.setTranslation(camera->center.x, camera->center.y, camera->center.z);
-	hpbar.model.rotate(90 * DEG2RAD, right);
+	hpbar.model.setIdentity();
+	hpbar.model.setTranslation(camera->center.x, camera->center.y+5, camera->center.z);
+	hpbar.model.scale(0.5, 0.2, 0);
+	//hpbar.model.rotate(yaw * DEG2RAD, Vector3(0,1,0));
+
+	//
+	
+	
 
 }
 

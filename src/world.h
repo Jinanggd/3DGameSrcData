@@ -64,6 +64,7 @@ public:
 	Mesh plane;
 	EntityMesh Skybox;
 	EntityPlayer* Player;
+	std::vector<EntityPlayer> Players;
 	EntityPlayer* Titan;
 
 	Shader* plane_shader = NULL;

@@ -19,6 +19,14 @@ World::World(Camera * camera, float* time)
 	this->camera = camera;
 	this->time = time;
 	Player = new EntityPlayer(time);
+
+	for (int i = 0; i < 10; i++) {
+	
+		EntityPlayer p =  EntityPlayer(time);
+		Players.push_back(p);
+	
+	}
+
 	Titan = new EntityPlayer(TITAN);
 	initWorld();
 	//initTree();
@@ -106,15 +114,15 @@ void World::renderentities()
 
 	//current_shader->disable();
 
-	current_shader = Player->hpbar.mat.shader;
-	current_shader->enable();
-	current_shader->setUniform("u_viewprojection", camera->viewprojection_matrix);
-	current_shader->setUniform("u_time", *time);
-	current_shader->setUniform("u_color", Vector4(1, 1, 1, 1));
-	current_shader->setUniform("u_texture", Player->hpbar.mat.texture);
-	current_shader->setUniform("u_model", Player->hpbar.model);
-	Player->actionplane.m.render(GL_TRIANGLES);
-	current_shader->disable();
+	//current_shader = Player->hpbar.mat.shader;
+	//current_shader->enable();
+	//current_shader->setUniform("u_viewprojection", camera->viewprojection_matrix);
+	//current_shader->setUniform("u_time", *time);
+	//current_shader->setUniform("u_color", Vector4(1, 1, 1, 1));
+	//current_shader->setUniform("u_texture", Player->hpbar.mat.texture);
+	//current_shader->setUniform("u_model", Player->hpbar.model);
+	//Player->hpbar.m.render(GL_TRIANGLES);
+	//current_shader->disable();
 }
 
 void World::renderplane() {
@@ -232,6 +240,13 @@ void World::initProps() {
 				
 				
 				this->Player->setPosition(px, characterpy, pz);
+				
+				for (int i = 0; i < Players.size; i++) {
+
+
+					Players.at(i).setPosition(random(20), characterpy, random(10));
+				
+				}
 
 				setPlayerPos = false;
 			}
@@ -261,7 +276,9 @@ void World::initProps() {
 
 void World::printCamPos()
 {
-	std::cout <<"("<< camera->eye.x << "," << camera->eye.y <<"," << camera->eye.z << ")"<< std::endl;
+	std::cout <<"("<< Player->current_position.x << "," << Player->current_position.y <<"," << Player->current_position.z << ")"<< std::endl;
+	//std::cout << "(" << Player->camera << "," << Player->current_position.y << "," << Player->current_position.z << ")" << std::endl;
+
 	std::cout << "Pitch: " << Player->pitch << std::endl;
 }
 
