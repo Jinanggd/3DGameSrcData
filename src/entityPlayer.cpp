@@ -53,7 +53,7 @@ EntityPlayer::EntityPlayer() : Entity()
 	this->camera = new Camera();
 	//this->camera->lookAt(Vector3(current_position.x, current_position.y + 40, current_position.z +50),current_position, Vector3(0.f, 1.f, 0.f)); //position the camera and point to 0,0,0
 	this->camera->setPerspective(70.f, 800.0f / (float)600.0f, 0.1f, 10000.f);
-	updateCamera(Vector3(0, 10, -20));
+	//updateCamera(Vector3(0, 10, -20));
 
 	actionplane.m.createPlane(10);
 
@@ -137,7 +137,7 @@ void EntityPlayer::update(float dt, std::vector<EntityMesh> props)
 	velocity = velocity + move*4;
 
 	checkCollision(props, current_position + velocity * dt,dt);
-	cameracheckCollision(props, dt);
+	//cameracheckCollision(props, dt);
 
 	//current_position = current_position + velocity * dt;
 
@@ -149,7 +149,7 @@ void EntityPlayer::update(float dt, std::vector<EntityMesh> props)
 	if (isanimated)updateAnim(dt);
 
 	updateMatrix();
-	//updateCamera();
+	updateCamera(props);
 	updateHPBar();
 
 	actionplane.model.setTranslation(current_position.x, current_position.y + 13, current_position.z);
@@ -175,7 +175,7 @@ void EntityPlayer::checkCollision(std::vector<EntityMesh> props, Vector3 newpos,
 
 			Vector3 collisionpoint, collision_normal;
 
-			if (props[i].mesh->testSphereCollision(props[i].model, character_center, 2, collisionpoint, collision_normal) == true) {
+			if (props[i].mesh->testSphereCollision(props[i].model, character_center, 4.5, collisionpoint, collision_normal) == true) {
 
 				Vector3 push_away = normalize(collisionpoint - character_center)*dt;
 				current_position = current_position - push_away;
@@ -221,7 +221,7 @@ void EntityPlayer::cameracheckCollision(std::vector<EntityMesh> props, float dt)
 
 				//this->camera->lookAt(Vector3(0,1000,0), current_position, Vector3(0, 1, 0));
 				
-				updateCamera(Vector3(0,20,-30));
+				//updateCamera(Vector3(0,20,-30));
 				return;
 			}
 
@@ -231,11 +231,11 @@ void EntityPlayer::cameracheckCollision(std::vector<EntityMesh> props, float dt)
 
 	}
 
-	updateCamera( Vector3(0, 10, -20));
+	//updateCamera( Vector3(0, 10, -20));
 }
 
 
-void EntityPlayer::updateCamera(Vector3 delta)
+void EntityPlayer::updateCamera( std::vector<EntityMesh>props)
 {
 	Matrix44 R_Yaw;
 	R_Yaw.setRotation(yaw*DEG2RAD, Vector3(0, 1, 0));
@@ -244,10 +244,61 @@ void EntityPlayer::updateCamera(Vector3 delta)
 
 	Matrix44 R_Pitch;
 	R_Pitch.setRotation(pitch*DEG2RAD, right);
-	Vector3 cam_eye = current_position + R_Yaw * delta ;
+	Vector3 cam_eye = current_position + R_Yaw * Vector3(0, 10, -20);
 	Vector3 front = R_Yaw*R_Pitch * Vector3(0, 5, 20);
 	Vector3 cam_center = cam_eye + front;
+
+	Vector3 vector_eyetocenter = (cam_center - cam_eye);
+	float length = vector_eyetocenter.length();
+	vector_eyetocenter = vector_eyetocenter.normalize();
+	float maxdist = 1000000.0f;
+	//this->camera->lookAt(cam_eye, cam_center, Vector3(0, 1, 0));
+
+	//Check for collision of the camera
+	for (int i = 0; i < props.size(); i++) {
+
+		//if (props[i].tag == "EntityMesh") continue;
+		if (props[i].type == (int)mat_types::tree || props[i].type == (int)mat_types::house || props[i].type == (int)mat_types::tower) {
+
+
+			Vector3 collisionpoint, collision_normal;
+
+
+			if (props[i].mesh->testRayCollision(props[i].model, cam_eye, vector_eyetocenter, collisionpoint, collision_normal, length) == true) {
+
+				Vector3 collisiontocenter = (cam_center - collisionpoint).normalize();
+				float dist = (cam_center - collisionpoint).length();
+				if (dist < maxdist) {
+					maxdist = dist;
+					cam_eye = collisionpoint + collisiontocenter * 3.5;
+
+				}
+				//cam_center = cam_eye + front;
+				//this->camera->lookAt(cam_eye, cam_center, Vector3(0, 1, 0));
+				//return;
+
+
+			}
+
+			//if (props[i].mesh->testRayCollision(props[i].model, cam_eye, vector_eyetocenter, collisionpoint, collision_normal, length) == false) continue;
+
+			//Vector3 collisiontocenter = (cam_center - collisionpoint);
+			//float dist = collisiontocenter.length();
+			//collisionpoint = collisiontocenter.normalize();
+
+			//if (dist < maxdist) {
+			//	maxdist = dist;
+			//	cam_eye = collisionpoint + collisiontocenter * 3.5;
+			//}
+		}
+	}
+
+	cam_eye.x = lerp(this->camera->eye.x, cam_eye.x, 0.1);
+	cam_eye.y = lerp(this->camera->eye.y, cam_eye.y, 0.1);
+	cam_eye.z = lerp(this->camera->eye.z, cam_eye.z, 0.1);
+
 	this->camera->lookAt(cam_eye, cam_center, Vector3(0, 1, 0));
+
 }
 
 void EntityPlayer::updateAnim(float dt) {
@@ -421,7 +472,7 @@ void EntityPlayer::setPosition(float x, float y, float z)
 	this->current_position = Vector3(x, y, z);
 	this->model.translate(x, y, z);
 	updateMatrix();
-	updateCamera(Vector3(0, 10, -20));
+	//updateCamera(Vector3(0, 10, -20));
 }
 
 Vector3 EntityPlayer::getLocalVector(Vector3 v)
