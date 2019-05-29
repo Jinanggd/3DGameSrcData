@@ -94,9 +94,6 @@ void EntityPlayer::render(float time) {
 		this->mat.shader->setUniform("u_bones", bone_matrices);
 	}
 
-
-		
-
 	this->mesh->render(GL_TRIANGLES);
 	//this->mesh->renderAnimated(GL_TRIANGLES, this->anim);
 }
@@ -169,37 +166,32 @@ void EntityPlayer::update(float dt, std::vector<EntityMesh> props)
 void EntityPlayer::checkCollision(std::vector<EntityMesh> props, Vector3 newpos,float dt)
 {
 	Vector3 character_center = newpos + Vector3(0, 2, 0);
-	Vector3 camera_center = this->camera->eye;
 
 	for (int i = 0; i < props.size(); i++) {
 
-		if (props[i].tag == "EntityMesh") continue;
+		//if (props[i].tag == "EntityMesh") continue;
+		if (props[i].type == (int)mat_types::tree || props[i].type == (int)mat_types::house || props[i].type == (int)mat_types::tower) {
 
-		Vector3 collisionpoint, collision_normal;
 
-		if (props[i].mesh->testSphereCollision(props[i].model,character_center,2,collisionpoint,collision_normal) == true) {
+			Vector3 collisionpoint, collision_normal;
 
-		
-		if (props[i].tag == "PropTree" || props[i].tag == "PropHouse" || props[i].tag == "PropTower") {
-			Vector3 push_away = normalize(collisionpoint - character_center)*dt;
-			current_position = current_position - push_away;
-			return;
-		
+			if (props[i].mesh->testSphereCollision(props[i].model, character_center, 2, collisionpoint, collision_normal) == true) {
+
+				Vector3 push_away = normalize(collisionpoint - character_center)*dt;
+				current_position = current_position - push_away;
+				return;
+
+				//else if (props[i].tag == "PropBullet") {
+				//	std::cout << "Bullet Detected" << std::endl;
+				//	Matrix44 R_Yaw;
+				//	R_Yaw.setRotation(yaw*DEG2RAD, Vector3(0, 1, 0));
+				//	Vector3 right = R_Yaw * Vector3(1, 0, 0);
+				//	Vector3 up = this->camera->up;
+
+				//}
+
+			}
 		}
-		else if (props[i].tag == "PropBullet") {
-			std::cout << "Bullet Detected"<< std::endl;
-			Matrix44 R_Yaw;
-			R_Yaw.setRotation(yaw*DEG2RAD, Vector3(0, 1, 0));
-			Vector3 right = R_Yaw * Vector3(1, 0, 0);
-			Vector3 up = this->camera->up;
-
-		}
-
-		}
-
-		
-
-
 	}
 	current_position = newpos;
 

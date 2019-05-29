@@ -32,7 +32,7 @@ void main()
 
 	else color = mix(rock,water,0.8);
 
-	color *= vec4(abs(cos(u_time/100)),abs(cos(u_time/100)),abs(cos(u_time/100)),1.0);
+	//color *= vec4(abs(cos(u_time/100)),abs(cos(u_time/100)),abs(cos(u_time/100)),1.0);
 	
 	color = mix(vec4(0.2,0.2,0.2,1.0),color,visibility);
 	gl_FragColor = color;

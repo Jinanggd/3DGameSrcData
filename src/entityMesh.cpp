@@ -75,7 +75,7 @@ EntityMesh::EntityMesh( mat_types type)
 
 	case mat_types::sky:
 		this->mesh = Mesh::Get("data/sphere.obj");
-		this->mat.shader = Shader::Get("data/shaders/basic.vs", "data/shaders/texture.fs");
+		this->mat.shader = Shader::Get("data/shaders/basic.vs", "data/shaders/sky.fs");
 		this->mat.texture = Texture::Get("data/skybox.tga");
 		break;
 
