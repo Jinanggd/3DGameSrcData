@@ -175,10 +175,12 @@ void EntityPlayer::checkCollision(std::vector<EntityMesh> props, Vector3 newpos,
 
 			Vector3 collisionpoint, collision_normal;
 
-			if (props[i].mesh->testSphereCollision(props[i].model, character_center, 4.5, collisionpoint, collision_normal) == true) {
-
+			if (props[i].mesh->testSphereCollision(props[i].model, character_center, 2, collisionpoint, collision_normal) == true) {
+				
 				Vector3 push_away = normalize(collisionpoint - character_center)*dt;
+				push_away.y = 0;
 				current_position = current_position - push_away;
+				
 				return;
 
 				//else if (props[i].tag == "PropBullet") {

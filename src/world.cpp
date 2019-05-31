@@ -235,6 +235,7 @@ void World::initProps() {
 				float characterpy = py * 0.63f;
 				float bulletpy = py * 0.65f;
 				EntityMesh b = EntityMesh(mat_types::bullet);
+				
 				b.model.setTranslation(px, bulletpy, pz+20);
 				entities.push_back(b);
 				
@@ -249,6 +250,8 @@ void World::initProps() {
 				}
 
 				setPlayerPos = false;
+
+				
 			}
 
 			if (mask->image.getPixel(j, i).z == 255) {
