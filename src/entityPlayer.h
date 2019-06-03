@@ -44,9 +44,9 @@ public:
 	void render(Camera* cam);
 	void Init(Camera* cam);
 
-	void update(float dt, std::vector<EntityMesh> props);
-	void checkCollision(std::vector<EntityMesh> props,Vector3 newpos,float dt);
-	void cameracheckCollision(std::vector<EntityMesh> props, float dt);
+	void update(float dt, std::vector<EntityMesh> props, Mesh plane);
+	void checkCollision(std::vector<EntityMesh> props, Mesh plane, Vector3 newpos,float dt);
+
 	void updateCamera(std::vector<EntityMesh>props);
 	void updateMatrix();
 	void updateHPBar();

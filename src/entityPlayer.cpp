@@ -103,7 +103,7 @@ void EntityPlayer::render(Camera * cam)
 	
 }
 
-void EntityPlayer::update(float dt, std::vector<EntityMesh> props)
+void EntityPlayer::update(float dt, std::vector<EntityMesh> props, Mesh plane)
 {
 	
 	// Crear la matriz de rotatcion con la rotacion actual,
@@ -136,7 +136,7 @@ void EntityPlayer::update(float dt, std::vector<EntityMesh> props)
 
 	velocity = velocity + move*4;
 
-	checkCollision(props, current_position + velocity * dt,dt);
+	checkCollision(props, plane,current_position + velocity * dt,dt);
 	//cameracheckCollision(props, dt);
 
 	//current_position = current_position + velocity * dt;
@@ -163,9 +163,18 @@ void EntityPlayer::update(float dt, std::vector<EntityMesh> props)
 
 //Check if there is a collision to the new position of the player, if there it is, the player will keep the same position as before moving
 //Depending of the Mesh tag it will happen different kind of interactions
-void EntityPlayer::checkCollision(std::vector<EntityMesh> props, Vector3 newpos,float dt)
+void EntityPlayer::checkCollision(std::vector<EntityMesh> props, Mesh plane, Vector3 newpos,float dt)
 {
 	Vector3 character_center = newpos + Vector3(0, 2, 0);
+
+	Matrix44 m;
+	m.setIdentity();
+	m.translate(-1024, 0, -1024);
+	Vector3 plane_collision, plane_normal;
+
+	if (plane.testRayCollision(m, character_center, Vector3(0, -1, 0), plane_collision, plane_normal) == true) {
+		current_position.y = plane_collision.y;
+	}
 
 	for (int i = 0; i < props.size(); i++) {
 
@@ -199,43 +208,6 @@ void EntityPlayer::checkCollision(std::vector<EntityMesh> props, Vector3 newpos,
 
 
 }
-
-
-
-void EntityPlayer::cameracheckCollision(std::vector<EntityMesh> props, float dt)
-{
-
-	Vector3 camera_center = this->camera->eye;
-	Vector3 character_center = current_position + Vector3(0, 2, 0);
-
-	for (int i = 0; i < props.size(); i++) {
-
-		if (props[i].tag == "EntityMesh") continue;
-
-		Vector3 collisionpoint, collision_normal;
-
-
-		//if (props[i].mesh->testSphereCollision(props[i].model, camera_center, 6, collisionpoint, collision_normal) == true) {
-	    if(props[i].mesh->testRayCollision(props[i].model, camera_center, (camera->center - camera->eye).normalize(), collisionpoint, collision_normal, (camera->center-camera->eye).length() )==true) {
-
-			if (props[i].tag == "PropTree" || props[i].tag == "PropHouse" || props[i].tag == "PropTower") {
-
-
-				//this->camera->lookAt(Vector3(0,1000,0), current_position, Vector3(0, 1, 0));
-				
-				//updateCamera(Vector3(0,20,-30));
-				return;
-			}
-
-
-		}
-
-
-	}
-
-	//updateCamera( Vector3(0, 10, -20));
-}
-
 
 void EntityPlayer::updateCamera( std::vector<EntityMesh>props)
 {
@@ -275,23 +247,9 @@ void EntityPlayer::updateCamera( std::vector<EntityMesh>props)
 					cam_eye = collisionpoint + collisiontocenter * 3.5;
 
 				}
-				//cam_center = cam_eye + front;
-				//this->camera->lookAt(cam_eye, cam_center, Vector3(0, 1, 0));
-				//return;
-
 
 			}
 
-			//if (props[i].mesh->testRayCollision(props[i].model, cam_eye, vector_eyetocenter, collisionpoint, collision_normal, length) == false) continue;
-
-			//Vector3 collisiontocenter = (cam_center - collisionpoint);
-			//float dist = collisiontocenter.length();
-			//collisionpoint = collisiontocenter.normalize();
-
-			//if (dist < maxdist) {
-			//	maxdist = dist;
-			//	cam_eye = collisionpoint + collisiontocenter * 3.5;
-			//}
 		}
 	}
 
