@@ -27,10 +27,6 @@ EntityPlayer::EntityPlayer(type mytype) : Entity()
 
 }
 
-
-
-
-
 EntityPlayer::EntityPlayer() : Entity()
 {
 	mesh = Mesh::Get("data/characters/characters/male.mesh");
@@ -103,7 +99,7 @@ void EntityPlayer::render(Camera * cam)
 	
 }
 
-void EntityPlayer::update(float dt, std::vector<EntityMesh> props, Mesh plane)
+void EntityPlayer::update(float dt, std::vector<EntityMesh> props)
 {
 	
 	// Crear la matriz de rotatcion con la rotacion actual,
@@ -117,9 +113,9 @@ void EntityPlayer::update(float dt, std::vector<EntityMesh> props, Mesh plane)
 
 	if (Input::isKeyPressed(SDL_SCANCODE_S) || Input::isKeyPressed(SDL_SCANCODE_DOWN)) { move.z += dt * 10; }
 
-	if (Input::isKeyPressed(SDL_SCANCODE_A) || Input::isKeyPressed(SDL_SCANCODE_LEFT)) { yaw -= dt * 20; direction = KEY_LEFT;}
+	if (Input::isKeyPressed(SDL_SCANCODE_A) || Input::isKeyPressed(SDL_SCANCODE_LEFT)) { yaw -= dt * 30; direction = KEY_LEFT;}
 
-	if (Input::isKeyPressed(SDL_SCANCODE_D) || Input::isKeyPressed(SDL_SCANCODE_RIGHT)) { yaw += dt * 20; direction = KEY_RIGHT;}
+	if (Input::isKeyPressed(SDL_SCANCODE_D) || Input::isKeyPressed(SDL_SCANCODE_RIGHT)) { yaw += dt * 30; direction = KEY_RIGHT;}
 
 	if (Input::isKeyPressed(SDL_SCANCODE_Q) ) pitch -= dt * 30;
 
@@ -134,9 +130,12 @@ void EntityPlayer::update(float dt, std::vector<EntityMesh> props, Mesh plane)
 
 	move = R * move;
 
-	velocity = velocity + move*4;
+	velocity = iscarrying ? velocity + move * 1.5 : velocity + move * 4;
+	//velocity = velocity + move*4;
 
-	checkCollision(props, plane,current_position + velocity * dt,dt);
+	checkCollision(props,current_position + velocity * dt,dt);
+	if (iscarrying)
+		updateItem(R, Vector3(0,5,-3));
 	//cameracheckCollision(props, dt);
 
 	//current_position = current_position + velocity * dt;
@@ -163,23 +162,24 @@ void EntityPlayer::update(float dt, std::vector<EntityMesh> props, Mesh plane)
 
 //Check if there is a collision to the new position of the player, if there it is, the player will keep the same position as before moving
 //Depending of the Mesh tag it will happen different kind of interactions
-void EntityPlayer::checkCollision(std::vector<EntityMesh> props, Mesh plane, Vector3 newpos,float dt)
+void EntityPlayer::checkCollision(std::vector<EntityMesh> props, Vector3 newpos,float dt)
 {
 	Vector3 character_center = newpos + Vector3(0, 2, 0);
 
-	Matrix44 m;
-	m.setIdentity();
-	m.translate(-1024, 0, -1024);
-	Vector3 plane_collision, plane_normal;
+	//Not Working correctly - It should get the y position of the plane and set the height of the character
+	//Matrix44 m;
+	//m.setIdentity();
+	//m.translate(-1024, 0, -1024);
+	//Vector3 plane_collision, plane_normal;
 
-	if (plane.testRayCollision(m, character_center, Vector3(0, -1, 0), plane_collision, plane_normal) == true) {
-		current_position.y = plane_collision.y;
-	}
+	//if (plane.testRayCollision(m, character_center, Vector3(0, -1, 0), plane_collision, plane_normal) == true) {
+	//	current_position.y = plane_collision.y;
+	//}
 
 	for (int i = 0; i < props.size(); i++) {
 
-		//if (props[i].tag == "EntityMesh") continue;
-		if (props[i].type == (int)mat_types::tree || props[i].type == (int)mat_types::house || props[i].type == (int)mat_types::tower) {
+		if (props[i].type == (int)mat_types::tree || props[i].type == (int)mat_types::house || props[i].type == (int)mat_types::tower || 
+			props[i].type == (int)mat_types::bullet || props[i].type == (int)mat_types::cannon) {
 
 
 			Vector3 collisionpoint, collision_normal;
@@ -207,6 +207,12 @@ void EntityPlayer::checkCollision(std::vector<EntityMesh> props, Mesh plane, Vec
 	current_position = newpos;
 
 
+}
+
+void EntityPlayer::updateItem(Matrix44 r,Vector3 dir)
+{
+	Vector3 newposition = current_position + r * dir;
+	Game::instance->world.updateBullets(CarryItem, newposition);
 }
 
 void EntityPlayer::updateCamera( std::vector<EntityMesh>props)
@@ -356,21 +362,50 @@ void EntityPlayer::updateAnim(float dt) {
 
 }
 
+void EntityPlayer::grab(std::vector<EntityMesh> vector)
+{
+	Vector3 character_center = current_position + Vector3(0, 2, 0);
+	Vector3 collisionpoint,collisionnormal;
+	for (int i = 0; i < vector.size(); i++) {
+		if (vector[i].mesh->testSphereCollision(vector[i].model, character_center, 5, collisionpoint, collisionnormal) == true) {
+			switch (vector[i].type)
+			{
+			case (int)mat_types::cannon:
+				break;
+			case (int)mat_types::bullet:
+				if (iscarrying) {
+					//You cannot grab more than one bullet
+				}
+				else {
+					iscarrying = true;
+					CarryItem = i;
+				}
+				break;
+			default:
+				break;
+			}
+		}
+	}
+}
+
+void EntityPlayer::throwItem()
+{
+	if (iscarrying) {
+		Matrix44 R;
+		R.setIdentity();
+		R.setRotation((yaw + 180.0f)*DEG2RAD, Vector3(0, 1, 0));
+		updateItem(R, Vector3(5, 1, -3));
+		iscarrying = false;
+		CarryItem = -1;
+	}
+	
+}
+
 void EntityPlayer::updateMatrix()
 {
 	this->model.setTranslation(current_position.x, current_position.y, current_position.z);
 	this->model.scale(0.5f, 0.5f, 0.5f);
-	
-
-
-	//Matrix44 R_Yaw;
-	//R_Yaw.setRotation(yaw*DEG2RAD, Vector3(0, 1, 0));
-	//Vector3 right = R_Yaw * Vector3(1, 0, 0);
-
 	this->model.rotate(yaw*DEG2RAD, Vector3(0, 1, 0));
-	//this->model.rotate(pitch*DEG2RAD, right);
-
-
 }
 
 void EntityPlayer::updateHPBar()

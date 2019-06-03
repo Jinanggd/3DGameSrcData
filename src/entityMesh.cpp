@@ -66,6 +66,13 @@ EntityMesh::EntityMesh( mat_types type)
 		this->tag = "PropBullet";
 		break;
 		
+	case mat_types::cannon:
+		this->mesh = Mesh::Get("data/Cannon.obj");
+		this->mat.shader = Shader::Get("data/shaders/basic.vs", "data/shaders/texture.fs");
+		this->mat.texture = Texture::Get("data/Cannon.tga");
+		this->tag = "PropCannon";
+		break;
+
 	case mat_types::plane:
 
 		this->mat.shader = Shader::Get("data/shaders/basic.vs", "data/shaders/heightmap.fs");

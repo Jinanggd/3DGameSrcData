@@ -66,15 +66,15 @@ void World::renderentities()
 {
 
 	Matrix44 m;
-	for (int i = 0; i < entities.size(); ++i) {
-		m.setTranslation(entities[i].model.getTranslation().x, entities[i].model.getTranslation().y, entities[i].model.getTranslation().z);
-		Vector3 world_center = m*entities[i].mesh->box.center;
-		//std::cout << entities[i].model.getTranslation().x << " " << entities[i].model.getTranslation().y <<" " << entities[i].model.getTranslation().z << std::endl;
+	for (int i = 0; i < props.size(); ++i) {
+		m.setTranslation(props[i].model.getTranslation().x, props[i].model.getTranslation().y, props[i].model.getTranslation().z);
+		Vector3 world_center = m*props[i].mesh->box.center;
+		//std::cout << props[i].model.getTranslation().x << " " << props[i].model.getTranslation().y <<" " << props[i].model.getTranslation().z << std::endl;
 
 		if (!(this->camera->testSphereInFrustum(world_center, 50) == CLIP_OUTSIDE))
 		{
 
-			current_shader = entities[i].mat.shader;
+			current_shader = props[i].mat.shader;
 
 			current_shader->enable();
 
@@ -82,7 +82,7 @@ void World::renderentities()
 
 			current_shader->setUniform("u_time", *time);
 
-			entities[i].render();
+			props[i].render();
 
 			current_shader->disable();
 
@@ -202,7 +202,7 @@ void World::initProps() {
 				EntityMesh m = EntityMesh(mat_types::tree);
 				m.model.setTranslation(px, py, pz);
 				m.model.scale(7, 7, 7);
-				entities.push_back(m);
+				props.push_back(m);
 			}
 			//Building and other materials
 			if (mask->image.getPixel(j, i).x >= 162 && mask->image.getPixel(j,i).x !=255 && mask->image.getPixel(j,i).z !=255) {
@@ -213,7 +213,7 @@ void World::initProps() {
 					std::string filename = "data/house_" + std::to_string(randtext) + ".tga";
 					const char *c = filename.c_str();
 					m.mat.texture = Texture::Get(c);
-					entities.push_back(m);
+					props.push_back(m);
 				}
 
 				if (j % 7 == 0) {
@@ -227,7 +227,7 @@ void World::initProps() {
 					std::string filename = "data/house_" + std::to_string(randtext) + ".tga";
 					const char *c = filename.c_str();
 					h.mat.texture = Texture::Get(c);
-					entities.push_back(h);
+					props.push_back(h);
 				}
 			}
 
@@ -237,7 +237,9 @@ void World::initProps() {
 				EntityMesh b = EntityMesh(mat_types::bullet);
 				
 				b.model.setTranslation(px, bulletpy, pz+20);
-				entities.push_back(b);
+				b.index_propsvector = props.size();
+				props.push_back(b);
+				bullets_and_cannon.push_back(b);
 				
 				
 				this->Player->setPosition(px, characterpy, pz);
@@ -262,14 +264,14 @@ void World::initProps() {
 	}
 		
 
-	// Creas entities arboles
+	// Creas props arboles
 	//for (int i = 0; i < positions.size(); i++) {
 
 	//	EntityMesh m = EntityMesh(mat_types::tree);
 
 	//	m.model.setTranslation(positions[i].x, positions[i].y, positions[i].z);
 	//	m.model.scale(5, 5, 5);
-	//	entities.push_back(m);
+	//	props.push_back(m);
 	//}
 
 	
@@ -294,6 +296,12 @@ float World::mapping(float start1,float stop1, float start2,float stop2,float va
 	return outgoing;
 }
 
+void World::updateBullets(int index, Vector3 position)
+{
+	bullets_and_cannon[index].model.setTranslation(position.x,position.y,position.z);
+	props[bullets_and_cannon[index].index_propsvector].model.setTranslation(position.x, position.y, position.z);
+}
+
 
 void World::initAirplane() {
 
@@ -304,7 +312,7 @@ void World::initAirplane() {
 	//Vector3 eye = plane.model *   Vector3(0, 100, 0);
 	//Vector3 center = plane.model * Vector3(0, 0, 0);
 	//camera->lookAt(eye, center, Vector3(0, 1, 0));
-	//entities.push_back(plane);
+	//props.push_back(plane);
 
 }
 

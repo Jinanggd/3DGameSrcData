@@ -44,15 +44,18 @@ public:
 	void render(Camera* cam);
 	void Init(Camera* cam);
 
-	void update(float dt, std::vector<EntityMesh> props, Mesh plane);
-	void checkCollision(std::vector<EntityMesh> props, Mesh plane, Vector3 newpos,float dt);
-
+	void update(float dt, std::vector<EntityMesh> props);
+	void checkCollision(std::vector<EntityMesh> props, Vector3 newpos,float dt);
+	void updateItem(Matrix44 r,Vector3 dir);
 	void updateCamera(std::vector<EntityMesh>props);
 	void updateMatrix();
 	void updateHPBar();
 	void animateCharacter();
 	void updateAnim(float time);
 
+	void grab(std::vector<EntityMesh> vector);
+	void throwItem();
+	
 	void setPosition(float x, float y, float z);
 
 	Vector3 getLocalVector(Vector3 v);
@@ -76,7 +79,9 @@ public:
 
 	std::vector<Matrix44> bone_matrices;
 	Camera * camera;
-	bool isanimated = true;
+	bool isanimated = true, iscarrying = false, isoncannon = false;
+	int CarryItem;
+	EntityMesh Cannon;
 	
 
 };

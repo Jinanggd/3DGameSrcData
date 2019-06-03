@@ -16,7 +16,8 @@ enum class mat_types {
 	airplane,
 	tower,
 	player,
-	bullet
+	bullet,
+	cannon
 
 };
 
@@ -42,6 +43,7 @@ public:
 
 	void setPosition(Vector3 pos);
 	int type;
+	int index_propsvector;
 	Vector3 getPosition();
 
 	// model matrix 

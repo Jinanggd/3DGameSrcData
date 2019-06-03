@@ -43,6 +43,8 @@ public:
 	void printCamPos();
 	float mapping(float start1, float stop1, float start2, float stop2, float value);
 
+	void updateBullets(int index, Vector3 position);
+
 	bool load();
 	bool save();
 
@@ -50,7 +52,8 @@ public:
 	Camera * camera;
 	float* time;
 	Shader* current_shader;
-	std::vector<EntityMesh> entities;
+	std::vector<EntityMesh> props;
+	std::vector<EntityMesh> bullets_and_cannon;
 	std::vector<EntityLight> lights;
 	Matrix44 m;
 	Texture* mask;

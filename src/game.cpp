@@ -161,8 +161,15 @@ void Game::update(double seconds_elapsed)
 		if(ThirdCameraMode)
 			camera->move(Vector3(-1.0f, 0.0f, 0.0f) * speed);
 	}
-	if(!ThirdCameraMode)
-		world.Player->update(seconds_elapsed*speed,world.entities,world.plane);
+	if (!ThirdCameraMode) {
+		world.Player->update(seconds_elapsed*speed, world.props);
+		if (Input::isKeyPressed(SDL_SCANCODE_F)) {
+			world.Player->grab(world.bullets_and_cannon);
+		}
+		if (Input::isKeyPressed(SDL_SCANCODE_G)) {
+			world.Player->throwItem();
+		}
+	}
 
 	//to navigate with the mouse fixed in the middle
 	if (mouse_locked)
