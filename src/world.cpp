@@ -241,6 +241,13 @@ void World::initProps() {
 				props.push_back(b);
 				bullets_and_cannon.push_back(b);
 				
+
+				b = EntityMesh(mat_types::cannon);
+				b.model.setTranslation(px, bulletpy, pz + 50);
+				//b.model.scale(2, 2, 2);
+				b.index_propsvector = props.size();
+				props.push_back(b);
+				bullets_and_cannon.push_back(b);
 				
 				this->Player->setPosition(px, characterpy, pz);
 				
@@ -283,6 +290,8 @@ void World::printCamPos()
 {
 	//std::cout <<"("<< Player->current_position.x << "," << Player->current_position.y <<"," << Player->current_position.z << ")"<< std::endl;
 	std::cout << "(" << camera->eye.x << "," << camera->eye.y << "," << camera->eye.z << ")" << std::endl;
+	std::cout << "(" << camera->center.x << "," << camera->center.y << "," << camera->center.z << ")" << std::endl;
+	std::cout << "(" << bullets_and_cannon[1].model.getTranslation().x << "," << bullets_and_cannon[1].model.getTranslation().y << "," << bullets_and_cannon[1].model.getTranslation().z << ")" << std::endl;
 	//std::cout << "(" << Player->camera << "," << Player->current_position.y << "," << Player->current_position.z << ")" << std::endl;
 
 	//std::cout << "Pitch: " << Player->pitch << std::endl;

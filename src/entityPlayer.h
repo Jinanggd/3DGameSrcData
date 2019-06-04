@@ -63,8 +63,8 @@ public:
 	Vector3 velocity;
 
 	float speed;
-	float pitch;
-	float yaw;
+	float pitch,pitchCannon;
+	float yaw,yawCannon;
 	float * time;
 	float hp;
 

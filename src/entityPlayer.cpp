@@ -234,6 +234,21 @@ void EntityPlayer::updateCamera( std::vector<EntityMesh>props)
 	float maxdist = 1000000.0f;
 	//this->camera->lookAt(cam_eye, cam_center, Vector3(0, 1, 0));
 
+	if (isoncannon) {
+		cam_eye = Cannon.model.getTranslation() + Vector3(0, 3, -2);
+		R_Yaw.setRotation(180 * DEG2RAD, Vector3(0, 1, 0));
+		front = (+1.0f)*Cannon.model.frontVector();
+		cam_center = cam_eye + front;
+		//R_Yaw.setRotation(yawCannon*DEG2RAD, Vector3(0, 1, 0));
+		//right = R_Yaw * Vector3(1, 0, 0);
+		//R_Pitch.setRotation(pitchCannon*DEG2RAD, right);
+		//front = R_Yaw * R_Pitch * Vector3(0, 10, 20);
+		//Update the rotation of the cannon model matrix
+
+		this->camera->lookAt(cam_eye, cam_center, Vector3(0, 1, 0));
+		return;
+	}
+
 	//Check for collision of the camera
 	for (int i = 0; i < props.size(); i++) {
 
@@ -371,6 +386,15 @@ void EntityPlayer::grab(std::vector<EntityMesh> vector)
 			switch (vector[i].type)
 			{
 			case (int)mat_types::cannon:
+				if (iscarrying) {
+					isoncannon = true;
+					iscarrying = false;
+					Cannon = vector[i];
+				}
+				else {
+					//You cannot fire without bullet
+
+				}
 				break;
 			case (int)mat_types::bullet:
 				if (iscarrying) {
