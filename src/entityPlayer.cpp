@@ -41,6 +41,8 @@ EntityPlayer::EntityPlayer() : Entity()
 	//this->model.rotate(180 * DEG2RAD, Vector3(0, 1, 0));
 	//this->current_YRotation = 180 * DEG2RAD;
 	this->yaw = 0.0f;
+	this->yawCannon = 0.0f;
+	this->pitchCannon = -1.1f;
 	this->speed = 0.0f;
 	this->pitch = -1.1f;
 
@@ -101,63 +103,102 @@ void EntityPlayer::render(Camera * cam)
 
 void EntityPlayer::update(float dt, std::vector<EntityMesh> props)
 {
+	playerMovement(dt, props);
 	
+}
+
+void EntityPlayer::playerMovement(float dt, std::vector<EntityMesh> props)
+{
 	// Crear la matriz de rotatcion con la rotacion actual,
 	// Crear el movimiento, sumarla a la posicion y multiplcarla por la matriz
 	// 
-	Vector3 move;
 
-	direction = KEY_UP;
+	if (isoncannon) {
+		
+		//yawCannon = (yawCannon > 360 || yawCannon < -360) ? 0 : yawCannon;
+		Cannon.model.getRotationOnly()
 
-	if (Input::isKeyPressed(SDL_SCANCODE_W) || Input::isKeyPressed(SDL_SCANCODE_UP)) { move.z -= dt * 10; }
+		if (Input::isKeyPressed(SDL_SCANCODE_A)) { yawCannon = clamp(yawCannon - (dt *0.05f),-360,360); rotateCannon(yawCannon, Cannon.model.topVector().normalize());}
 
-	if (Input::isKeyPressed(SDL_SCANCODE_S) || Input::isKeyPressed(SDL_SCANCODE_DOWN)) { move.z += dt * 10; }
+		if (Input::isKeyPressed(SDL_SCANCODE_D)) { yawCannon = clamp(yawCannon + (dt *0.05f), -360, 360); rotateCannon(yawCannon, Cannon.model.topVector().normalize()); }
 
-	if (Input::isKeyPressed(SDL_SCANCODE_A) || Input::isKeyPressed(SDL_SCANCODE_LEFT)) { yaw -= dt * 30; direction = KEY_LEFT;}
+		if (Input::isKeyPressed(SDL_SCANCODE_Q)) { pitchCannon -= dt *0.005f; rotateCannon(pitchCannon, Cannon.model.rightVector().normalize()); }
 
-	if (Input::isKeyPressed(SDL_SCANCODE_D) || Input::isKeyPressed(SDL_SCANCODE_RIGHT)) { yaw += dt * 30; direction = KEY_RIGHT;}
+		if (Input::isKeyPressed(SDL_SCANCODE_E)){ pitchCannon += dt * 0.005f; rotateCannon(pitchCannon, Cannon.model.rightVector().normalize()); }
 
-	if (Input::isKeyPressed(SDL_SCANCODE_Q) ) pitch -= dt * 30;
+		updateCamera(props);
+		if (Input::isKeyPressed(SDL_SCANCODE_Z)) {
+			std::cout << "YAW: " <<yawCannon << " PITCH: " << pitchCannon <<std::endl;
+		}
+	}
+	else {
+		//If player is not in cannon mode, we can move the player,
+		Vector3 move;
 
-	if (Input::isKeyPressed(SDL_SCANCODE_E) ) pitch += dt * 30;
+		direction = KEY_UP;
+
+		if (Input::isKeyPressed(SDL_SCANCODE_W)) { move.z -= dt * 10; }
+
+		if (Input::isKeyPressed(SDL_SCANCODE_S)) { move.z += dt * 10; }
+
+		if (Input::isKeyPressed(SDL_SCANCODE_A)) { yaw -= dt * 30; direction = KEY_LEFT; }
+
+		if (Input::isKeyPressed(SDL_SCANCODE_D)) { yaw += dt * 30; direction = KEY_RIGHT; }
+
+		if (Input::isKeyPressed(SDL_SCANCODE_Q)) pitch -= dt * 30;
+
+		if (Input::isKeyPressed(SDL_SCANCODE_E)) pitch += dt * 30;
+
+		pitch = clamp(pitch, -15.0f, 12.5f);
+
+
+		Matrix44 R;
+
+		R.setRotation((yaw + 180.0f)*DEG2RAD, Vector3(0, 1, 0));
+
+		move = R * move;
+
+		velocity = iscarrying ? velocity + move * 1.5 : velocity + move * 4;
+
+		checkCollision(props, current_position + velocity * dt, dt);
+		if (iscarrying)
+			updateItem(R, Vector3(0, 5, -3));
+
+		//current_position = current_position + velocity * dt;
+
+		float friction = 1.0 / (1.0 + (dt * 4.5));
+
+		velocity = velocity * friction;
+
+
+		if (isanimated)updateAnim(dt);
+
+		updateMatrix();
+		updateCamera(props);
+		updateHPBar();
+
+		actionplane.model.setTranslation(current_position.x, current_position.y + 13, current_position.z);
+		actionplane.model.scale(0.1, 0.06, 1);
+		actionplane.model.rotate(90 * DEG2RAD, Vector3(1, 0, 0));
+		actionplane.model.rotate(yaw*DEG2RAD, Vector3(0, 0, 1));
+	}
 	
-	pitch = clamp(pitch, -15.0f, 12.5f);
 
-	
-	Matrix44 R;
+}
 
-	R.setRotation((yaw+180.0f)*DEG2RAD, Vector3(0, 1, 0));
+void EntityPlayer::rotateCannon(float rotation, Vector3 axis)
+{
+	//this->camera->rotate(rotation, axis);
+	//Matrix44 R;
+	//R.setRotation(rotation, axis);
+	//Cannon.model = R * Cannon.model;
 
-	move = R * move;
-
-	velocity = iscarrying ? velocity + move * 1.5 : velocity + move * 4;
-	//velocity = velocity + move*4;
-
-	checkCollision(props,current_position + velocity * dt,dt);
-	if (iscarrying)
-		updateItem(R, Vector3(0,5,-3));
-	//cameracheckCollision(props, dt);
-
-	//current_position = current_position + velocity * dt;
-
-	float friction = 1.0 / (1.0 + (dt * 4.5));
-
-	velocity = velocity * friction;
-
-
-	if (isanimated)updateAnim(dt);
-
-	updateMatrix();
-	updateCamera(props);
-	updateHPBar();
-
-	actionplane.model.setTranslation(current_position.x, current_position.y + 13, current_position.z);
-	actionplane.model.scale(0.1, 0.06, 1);
-	actionplane.model.rotate(90 * DEG2RAD, Vector3(1, 0, 0));
-	actionplane.model.rotate(yaw*DEG2RAD, Vector3(0, 0, 1));
-
-
-
+	Cannon.model.setRotation(rotation, axis);
+	Game::instance->world.bullets_and_cannon[CannonID].model = R * Game::instance->world.bullets_and_cannon[CannonID].model;
+	Game::instance->world.props[Game::instance->world.bullets_and_cannon[CannonID].index_propsvector].model = R * Game::instance->world.props[Game::instance->world.bullets_and_cannon[CannonID].index_propsvector].model;
+	//Game::instance->world.bullets_and_cannon[CannonID].model.rotate(rotation, axis);
+	//Game::instance->world.props[Game::instance->world.bullets_and_cannon[CannonID].index_propsvector].model.rotate(rotation,axis);
+	//
 }
 
 //Check if there is a collision to the new position of the player, if there it is, the player will keep the same position as before moving
@@ -233,22 +274,19 @@ void EntityPlayer::updateCamera( std::vector<EntityMesh>props)
 	vector_eyetocenter = vector_eyetocenter.normalize();
 	float maxdist = 1000000.0f;
 	//this->camera->lookAt(cam_eye, cam_center, Vector3(0, 1, 0));
-
 	if (isoncannon) {
-		cam_eye = Cannon.model.getTranslation() + Vector3(0, 3, -2);
-		R_Yaw.setRotation(180 * DEG2RAD, Vector3(0, 1, 0));
-		front = (+1.0f)*Cannon.model.frontVector();
-		cam_center = cam_eye + front;
+
 		//R_Yaw.setRotation(yawCannon*DEG2RAD, Vector3(0, 1, 0));
 		//right = R_Yaw * Vector3(1, 0, 0);
 		//R_Pitch.setRotation(pitchCannon*DEG2RAD, right);
-		//front = R_Yaw * R_Pitch * Vector3(0, 10, 20);
-		//Update the rotation of the cannon model matrix
+		//cam_eye = Cannon.model.getTranslation() + R_Yaw * Vector3(0, 7, -2);
+		//front = (+1.0f)*Cannon.model.frontVector();
 
-		this->camera->lookAt(cam_eye, cam_center, Vector3(0, 1, 0));
+		//Vector3 cam_center = cam_eye + front;
+
+		//this->camera->lookAt(cam_eye, cam_center, Vector3(0, 1, 0));
 		return;
 	}
-
 	//Check for collision of the camera
 	for (int i = 0; i < props.size(); i++) {
 
@@ -390,6 +428,12 @@ void EntityPlayer::grab(std::vector<EntityMesh> vector)
 					isoncannon = true;
 					iscarrying = false;
 					Cannon = vector[i];
+					CannonID = i;
+					Vector3 cam_eye = Cannon.model.getTranslation() + Vector3(0, 7, -2);
+					Vector3 front = (+1.0f)*Cannon.model.frontVector();
+					Vector3 cam_center = cam_eye + front;
+
+					this->camera->lookAt(cam_eye, cam_center, Vector3(0, 1, 0));
 				}
 				else {
 					//You cannot fire without bullet

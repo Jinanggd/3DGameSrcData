@@ -244,7 +244,7 @@ void World::initProps() {
 
 				b = EntityMesh(mat_types::cannon);
 				b.model.setTranslation(px, bulletpy, pz + 50);
-				//b.model.scale(2, 2, 2);
+				b.model.scale(2, 2, 2);
 				b.index_propsvector = props.size();
 				props.push_back(b);
 				bullets_and_cannon.push_back(b);

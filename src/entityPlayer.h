@@ -45,6 +45,12 @@ public:
 	void Init(Camera* cam);
 
 	void update(float dt, std::vector<EntityMesh> props);
+	void playerMovement(float dt, std::vector<EntityMesh>props);
+	void rotateCannon(float rotation, Vector3 axis);
+	void TitanMovement(float dt, std::vector<EntityMesh>props);
+	void NPCMovement(float dt, std::vector<EntityMesh>props);
+
+
 	void checkCollision(std::vector<EntityMesh> props, Vector3 newpos,float dt);
 	void updateItem(Matrix44 r,Vector3 dir);
 	void updateCamera(std::vector<EntityMesh>props);
@@ -80,7 +86,7 @@ public:
 	std::vector<Matrix44> bone_matrices;
 	Camera * camera;
 	bool isanimated = true, iscarrying = false, isoncannon = false;
-	int CarryItem;
+	int CarryItem,CannonID;
 	EntityMesh Cannon;
 	
 
