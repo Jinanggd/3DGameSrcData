@@ -71,6 +71,7 @@ public:
 	float speed;
 	float pitch,pitchCannon;
 	float yaw,yawCannon;
+	Matrix44 initialmatrixCannon;
 	float * time;
 	float hp;
 
@@ -82,6 +83,7 @@ public:
 	
 	Animation* anim;
 	Material mat;
+	
 
 	std::vector<Matrix44> bone_matrices;
 	Camera * camera;
