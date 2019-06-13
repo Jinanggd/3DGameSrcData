@@ -1,5 +1,5 @@
-#ifndef ENTITYPLAYER_H
-#define ENTITYPLAYER_H
+#ifndef ENTITYAI_H
+#define ENTITYAI_H
 
 #include "mesh.h"
 #include "camera.h"
@@ -7,37 +7,19 @@
 #include "entityMesh.h"
 #include "animation.h"
 
-enum type {
 
-	PLAYER,
-	TITAN
 
-};
-
-class EntityPlayer : public Entity
+class EntityAI : public Entity
 {
 
 
+
+
 public:
-	EntityPlayer();
-	EntityPlayer(float * time);
-	EntityPlayer(type);
-	~EntityPlayer();
+	EntityAI();
+	EntityAI(float * time);
 
-	enum direction {
-		KEY_UP,
-		KEY_DOWN,
-		KEY_RIGHT,
-		KEY_LEFT,
-	}direction;
-
-	struct ActionPlane
-	{
-		Mesh m;
-		Matrix44 model;
-		Material mat;
-		Vector3* pos;
-	};
+	~EntityAI();
 
 
 	void render(float time);
@@ -45,14 +27,12 @@ public:
 	void Init(Camera* cam);
 
 	void update(float dt, std::vector<EntityMesh> props);
-	void playerMovement(float dt, std::vector<EntityMesh>props);
-	void rotateCannon(float rotation, Vector3 axis);
 	void TitanMovement(float dt, std::vector<EntityMesh>props);
 	void NPCMovement(float dt, std::vector<EntityMesh>props);
 
 
-	void checkCollision(std::vector<EntityMesh> props, Vector3 newpos,float dt);
-	void updateItem(Matrix44 r,Vector3 dir);
+	void checkCollision(std::vector<EntityMesh> props, Vector3 newpos, float dt);
+	void updateItem(Matrix44 r, Vector3 dir);
 	void updateCamera(std::vector<EntityMesh>props);
 	void updateMatrix();
 	void updateHPBar();
@@ -61,7 +41,7 @@ public:
 
 	void grab(std::vector<EntityMesh> vector);
 	void throwItem();
-	
+
 	void setPosition(float x, float y, float z);
 
 	Vector3 getLocalVector(Vector3 v);
@@ -69,28 +49,25 @@ public:
 	Vector3 velocity;
 
 	float speed;
-	float pitch,pitchCannon;
-	float yaw,yawCannon;
+	float pitch, pitchCannon;
+	float yaw, yawCannon;
 	Matrix44 initialmatrixCannon;
 	float * time;
 	float hp;
 
 	Skeleton skeleton;
 	Mesh* mesh;
-	
-	ActionPlane actionplane;
-	ActionPlane hpbar;
-	
+
+
 	Animation* anim;
 	Material mat;
-	
+
 
 	std::vector<Matrix44> bone_matrices;
 	Camera * camera;
-	bool isanimated = true, iscarrying = false, isoncannon = false;
-	int CarryItem,CannonID;
-	EntityMesh Cannon;
-	
+	bool isanimated = true;
+
+
 
 };
 

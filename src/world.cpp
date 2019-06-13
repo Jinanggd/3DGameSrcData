@@ -27,7 +27,7 @@ World::World(Camera * camera, float* time)
 	
 	}
 
-	Titan = new EntityPlayer(TITAN);
+	Titan = new EntityAI();
 	initWorld();
 	//initTree();
 	//initAirplane();
@@ -265,6 +265,7 @@ void World::initProps() {
 
 			if (mask->image.getPixel(j, i).z == 255) {
 				// Titan Spawn
+				Titan->model.setTranslation(px,py,pz);
 			}
 
 		}

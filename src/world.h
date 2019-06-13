@@ -8,6 +8,7 @@
 #include "entityWater.h"
 #include "entityCloud.h"
 #include "entityPlayer.h"
+#include "entityAI.h"
 #include "shader.h"
 
 
@@ -68,7 +69,7 @@ public:
 	EntityMesh Skybox;
 	EntityPlayer* Player;
 	std::vector<EntityPlayer> Players;
-	EntityPlayer* Titan;
+	EntityAI* Titan;
 
 	Shader* plane_shader = NULL;
 
