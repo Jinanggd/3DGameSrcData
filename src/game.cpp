@@ -240,6 +240,16 @@ void Game::onKeyDown( SDL_KeyboardEvent event )
 
 void Game::onKeyUp(SDL_KeyboardEvent event)
 {
+	float speed = elapsed_time * 100; //the speed is defined by the seconds_elapsed so it goes constant
+	switch (event.keysym.sym)
+	{
+	case SDLK_r:
+		if (!ThirdCameraMode && world.Player->isoncannon) {
+			world.Player->shoot(elapsed_time*speed);
+		}
+		break;
+
+	}
 }
 
 void Game::onGamepadButtonDown(SDL_JoyButtonEvent event)

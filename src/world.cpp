@@ -291,7 +291,7 @@ void World::printCamPos()
 	//std::cout <<"("<< Player->current_position.x << "," << Player->current_position.y <<"," << Player->current_position.z << ")"<< std::endl;
 	std::cout << "(" << camera->eye.x << "," << camera->eye.y << "," << camera->eye.z << ")" << std::endl;
 	std::cout << "(" << camera->center.x << "," << camera->center.y << "," << camera->center.z << ")" << std::endl;
-	std::cout << "(" << bullets_and_cannon[1].model.getTranslation().x << "," << bullets_and_cannon[1].model.getTranslation().y << "," << bullets_and_cannon[1].model.getTranslation().z << ")" << std::endl;
+	//std::cout << "(" << bullets_and_cannon[1].model.getTranslation().x << "," << bullets_and_cannon[1].model.getTranslation().y << "," << bullets_and_cannon[1].model.getTranslation().z << ")" << std::endl;
 	//std::cout << "(" << Player->camera << "," << Player->current_position.y << "," << Player->current_position.z << ")" << std::endl;
 
 	//std::cout << "Pitch: " << Player->pitch << std::endl;
@@ -309,6 +309,56 @@ void World::updateBullets(int index, Vector3 position)
 {
 	bullets_and_cannon[index].model.setTranslation(position.x,position.y,position.z);
 	props[bullets_and_cannon[index].index_propsvector].model.setTranslation(position.x, position.y, position.z);
+}
+
+void World::removeBullet(int index)
+{
+	props.erase(props.begin() + bullets_and_cannon[index].index_propsvector);
+	bullets_and_cannon.erase(bullets_and_cannon.begin() + index);
+	int indexatbulletvector = 0;
+	//update the bullets_and_cannon vector
+	for (int i = 0; i < props.size(); i++) {
+		if (props[i].type == (int)mat_types::bullet || props[i].type == (int)mat_types::cannon) {
+			bullets_and_cannon[indexatbulletvector].index_propsvector = i;
+			indexatbulletvector++;
+		}
+	}
+}
+
+void World::shotBullet(int index, float dt, Vector3 direction)
+{
+	Vector3 currentposition = bullets_and_cannon[index].model.getTranslation();
+	if (abs(currentposition.x) > 3000 || abs(currentposition.y) > 2000 || abs(currentposition.z) > 3000) {
+		// Explosion GUI
+		removeBullet(index);
+		std::cout << "Too far away" << std::endl;
+		return;
+	}
+	Vector3 collisionpoint, collisionnormal;
+	//Search on propsvector
+
+	//Hacer con test ray collision
+	for (int i = 0; i < props.size(); i++) {
+		if (bullets_and_cannon[index].index_propsvector == i) continue;
+		if (props[i].mesh->testSphereCollision(props[i].model, bullets_and_cannon[index].model.getTranslation(), 2,
+			collisionpoint, collisionnormal)) {
+			if (props[i].type == (int)mat_types::cannon || props[i].type == (int)mat_types::bullet) continue;
+			//Explosion GUI
+
+			//Remove the bullet from the the vectors
+			removeBullet(index);
+			std::cout << "Collision contra props" << std::endl;
+			return;
+		}
+	}
+	//Search on Titans vector
+
+
+	Vector3 newpoint = currentposition + 4.0f*dt*direction;
+	bullets_and_cannon[index].model.setTranslation(newpoint.x, newpoint.y, newpoint.z);
+	props[bullets_and_cannon[index].index_propsvector].model.setTranslation(newpoint.x, newpoint.y, newpoint.z);
+	//props[bullets_and_cannon[index].index_propsvector].model.scale(50, 50, 50);
+	
 }
 
 

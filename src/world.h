@@ -44,6 +44,8 @@ public:
 	float mapping(float start1, float stop1, float start2, float stop2, float value);
 
 	void updateBullets(int index, Vector3 position);
+	void removeBullet(int index);
+	void shotBullet(int index, float dt, Vector3 direction);
 
 	bool load();
 	bool save();

@@ -147,7 +147,7 @@ void EntityPlayer::playerMovement(float dt, std::vector<EntityMesh> props)
 		}
 
 		updateCamera(props);
-		if (Input::isKeyPressed(SDL_SCANCODE_Z)) {
+		if (Input::wasKeyPressed(SDL_SCANCODE_Z)) {
 			std::cout << "YAW: " <<yawCannon << " PITCH: " << pitchCannon <<std::endl;
 		}
 	}
@@ -453,11 +453,6 @@ void EntityPlayer::grab(std::vector<EntityMesh> vector)
 					iscarrying = false;
 					Cannon = vector[i];
 					CannonID = i;
-					Vector3 cam_eye = Cannon.model.getTranslation() + Vector3(0, 7, -2);
-					Vector3 front = (+1.0f)*Cannon.model.frontVector();
-					Vector3 cam_center = cam_eye + front;
-					initialmatrixCannon = Cannon.model;
-					this->camera->lookAt(cam_eye, cam_center, Vector3(0, 1, 0));
 				}
 				else {
 					//You cannot fire without bullet
@@ -497,6 +492,14 @@ void EntityPlayer::throwItem()
 		Game::instance->world.props[Game::instance->world.bullets_and_cannon[CannonID].index_propsvector].model = initialmatrixCannon;
 	}
 	
+}
+
+void EntityPlayer::shoot(float dt)
+{
+	Game::instance->world.bullets_and_cannon[CarryItem].model.setTranslation(camera->eye.x, camera->eye.y, camera->eye.z);
+	Game::instance->world.props[Game::instance->world.bullets_and_cannon[CarryItem].index_propsvector].model.setTranslation(camera->eye.x, camera->eye.y, camera->eye.z);
+	Vector3 direction = (this->camera->center - this->camera->eye).normalize();
+	Game::instance->world.shotBullet(CarryItem, dt, direction);
 }
 
 void EntityPlayer::updateMatrix()

@@ -61,6 +61,7 @@ public:
 
 	void grab(std::vector<EntityMesh> vector);
 	void throwItem();
+	void shoot(float dt);
 	
 	void setPosition(float x, float y, float z);
 
