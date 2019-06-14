@@ -20,11 +20,7 @@ EntityAI::EntityAI() : Entity()
 	anim = Animation::Get("data/characters/characters/crouch_walking.skanim");
 
 
-	this->current_position = Vector3(0, 40, 0);
-
 	this->yaw = 0.0f;
-	this->yawCannon = 0.0f;
-	this->pitchCannon = -1.1f;
 	this->speed = 0.0f;
 	this->pitch = -1.1f;
 
@@ -42,6 +38,13 @@ EntityAI::EntityAI() : Entity()
 EntityAI::EntityAI(float *time) : EntityAI()
 {
 
+	this->time = time;
+}
+
+
+EntityAI::EntityAI(float *time, Vector3 * target) : EntityAI()
+{
+	this->target = target;
 	this->time = time;
 }
 
@@ -76,39 +79,45 @@ void EntityAI::render() {
 void EntityAI::update(float dt, std::vector<EntityMesh> props)
 {
 	updateAnim(dt);
-	//TitanMovement(dt, props);
+	updatedirection(dt, props);
 }
 
-void EntityAI::TitanMovement(float dt, std::vector<EntityMesh> props)
+void EntityAI::updatedirection(float dt, std::vector<EntityMesh> props)
 {
+	Vector3 mytarget = *target;
+
+	current_position = this->model.getTranslation();
+
+	direction = mytarget - current_position;
+
+	if (direction.length>10) {
 
 
-	//const int start = 1;
-	//const int end = 127;
-	//
-	//uint8* map = new uint8[128*128];
+		direction.normalize();
 
-	//for (int i = 0; i < 128; ++i)
-	//	for (int j = 0; j < 128; ++j)
-	//		map[i + j*128] = 255;
+		direction.y = 0;
 
-	//int output[100];
+		checkCollision(props, current_position + velocity * dt, dt);
+
+		Vector3 AIfront = this->model.frontVector().normalize();
+
+		AIfront.y = 0;
+
+		float angle = acos(dot(AIfront, direction))*RAD2DEG;
 
 
-	//int path_steps = AStarFindPathNoTieDiag(
-	//	start, start, //origin (tienen que ser enteros)
-	//	end, end, //target (tienen que ser enteros)
-	//	map, //pointer to map data
-	//	128, 128, //map width and height
-	//	(int*)output, //pointer where the final path will be stored
-	//	100); //max supported steps of the final path
+		/*Matrix44 R;
 
-	//if (path_steps != -1)
-	//{
-	//	for (int i = 0; i < path_steps; ++i)
-	//		std::cout << "X: " << (output[i] % 128) << ", Y: " << floor(output[i] / 128) << std::endl;
-	//}
-	//
+		R.setRotation(angle, Vector3(0,1,0));*/
+
+		yaw += angle;
+
+		current_position = current_position + (dt)*direction;
+
+		updateMatrix();
+
+
+	}
 	
 }
 
@@ -143,6 +152,7 @@ void EntityAI::checkCollision(std::vector<EntityMesh> props, Vector3 newpos, flo
 			}
 		}
 	}
+
 	current_position = newpos;
 
 
@@ -283,7 +293,6 @@ void EntityAI::updateAnim(float dt) {
 void EntityAI::updateMatrix()
 {
 	this->model.setTranslation(current_position.x, current_position.y, current_position.z);
-	this->model.scale(0.5f, 0.5f, 0.5f);
 	this->model.rotate(yaw*DEG2RAD, Vector3(0, 1, 0));
 }
 

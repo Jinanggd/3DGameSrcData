@@ -18,7 +18,7 @@ class EntityAI : public Entity
 public:
 	EntityAI();
 	EntityAI(float * time);
-
+	EntityAI(float * time, Vector3 * target);
 
 	~EntityAI();
 
@@ -29,7 +29,7 @@ public:
 	void Init(Camera* cam);
 
 	void update(float dt, std::vector<EntityMesh> props);
-	void TitanMovement(float dt, std::vector<EntityMesh>props);
+	void updatedirection(float dt, std::vector<EntityMesh>props);
 	void NPCMovement(float dt, std::vector<EntityMesh>props);
 
 
@@ -48,11 +48,11 @@ public:
 
 	Vector3 getLocalVector(Vector3 v);
 	Vector3 current_position;
-	Vector3 velocity;
+	Vector3 velocity, direction;
+	Vector3 *target;
 
 	float speed;
-	float pitch, pitchCannon;
-	float yaw, yawCannon;
+	float pitch, yaw;
 	Matrix44 initialmatrixCannon;
 	float * time;
 	float hp;

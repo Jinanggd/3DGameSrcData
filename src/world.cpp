@@ -27,7 +27,7 @@ World::World(Camera * camera, float* time)
 	
 	}
 
-	Titan = new EntityAI(time);
+	Titan = new EntityAI(time, &Player->current_position);
 	initWorld();
 	//initTree();
 	//initAirplane();
