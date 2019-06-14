@@ -19,11 +19,13 @@ public:
 	EntityAI();
 	EntityAI(float * time);
 
+
 	~EntityAI();
 
 
 	void render(float time);
-	void render(Camera* cam);
+	void render();
+	
 	void Init(Camera* cam);
 
 	void update(float dt, std::vector<EntityMesh> props);

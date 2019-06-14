@@ -19,8 +19,6 @@ EntityAI::EntityAI() : Entity()
 	mat.texture = Texture::Get("data/characters/characters/male.png");
 	anim = Animation::Get("data/characters/characters/crouch_walking.skanim");
 
-	anim->skeleton.getBoneMatrix("mixamorig_Head").scale(2, 2, 2);
-	anim->skeleton.getBoneMatrix("mixamorig_Spine2").scale(2, 2, 2);
 
 	this->current_position = Vector3(0, 40, 0);
 
@@ -33,7 +31,10 @@ EntityAI::EntityAI() : Entity()
 
 	updateMatrix();
 	this->camera = new Camera();
+	camera->lookAt(Vector3(0.f, 100.f, 100.f), Vector3(0.f, 0.f, 0.f), Vector3(0.f, 1.f, 0.f)); //position the camera and point to 0,0,0
 	this->camera->setPerspective(70.f, 800.0f / (float)600.0f, 0.1f, 10000.f);
+	camera->enable();
+
 
 
 }
@@ -45,12 +46,14 @@ EntityAI::EntityAI(float *time) : EntityAI()
 }
 
 
+
+
 EntityAI::~EntityAI()
 {
 
 }
 
-void EntityAI::render(float time) {
+void EntityAI::render() {
 
 	this->mat.shader->setUniform("u_color", Vector4(1, 1, 1, 1));
 	this->mat.shader->setUniform("u_texture", this->mat.texture);
@@ -58,6 +61,8 @@ void EntityAI::render(float time) {
 
 	if (isanimated) {
 
+		anim->skeleton.getBoneMatrix("mixamorig_Head").scale(2, 2, 2);
+		anim->skeleton.getBoneMatrix("mixamorig_Spine2").scale(2, 2, 2);
 		skeleton.computeFinalBoneMatrices(bone_matrices, mesh);
 		this->mat.shader->setUniform("u_bones", bone_matrices);
 	}
@@ -68,32 +73,46 @@ void EntityAI::render(float time) {
 
 
 
-void EntityAI::TitanMovement(float dt, std::vector<EntityMesh> props)
-{
-	/*
-	uint8* map = new uint8[W*H];
-
-	int path_steps = AStarFindPathNoTieDiag(
-		start.x, start.y, //origin (tienen que ser enteros)
-		target.x, target.y, //target (tienen que ser enteros)
-		map, //pointer to map data
-		W, H, //map width and height
-		output, //pointer where the final path will be stored
-		100); //max supported steps of the final path
-
-	if (path_steps != -1)
-	{
-		for (int i = 0; i < path_steps; ++i)
-			std::cout << "X: " << (output[i] % W) << ", Y: " << floor(output[i] / W) << std::endl;
-	}
-
-	*/
-}
-
 void EntityAI::update(float dt, std::vector<EntityMesh> props)
 {
-	TitanMovement(dt, props);
+	updateAnim(dt);
+	//TitanMovement(dt, props);
 }
+
+void EntityAI::TitanMovement(float dt, std::vector<EntityMesh> props)
+{
+
+
+	//const int start = 1;
+	//const int end = 127;
+	//
+	//uint8* map = new uint8[128*128];
+
+	//for (int i = 0; i < 128; ++i)
+	//	for (int j = 0; j < 128; ++j)
+	//		map[i + j*128] = 255;
+
+	//int output[100];
+
+
+	//int path_steps = AStarFindPathNoTieDiag(
+	//	start, start, //origin (tienen que ser enteros)
+	//	end, end, //target (tienen que ser enteros)
+	//	map, //pointer to map data
+	//	128, 128, //map width and height
+	//	(int*)output, //pointer where the final path will be stored
+	//	100); //max supported steps of the final path
+
+	//if (path_steps != -1)
+	//{
+	//	for (int i = 0; i < path_steps; ++i)
+	//		std::cout << "X: " << (output[i] % 128) << ", Y: " << floor(output[i] / 128) << std::endl;
+	//}
+	//
+	
+}
+
+
 
 
 
@@ -189,8 +208,6 @@ void EntityAI::updateCamera(std::vector<EntityMesh>props)
 void EntityAI::updateAnim(float dt) {
 
 
-
-
 	//update anim
 
 	float t = *time;
@@ -213,13 +230,15 @@ void EntityAI::updateAnim(float dt) {
 	const char* idle_name = "data/characters/characters/idle.skanim";
 
 
-
-
 	if (speed < 0.01) //idle
 	{
 		anim = Animation::Get(idle_name);
 		anim->assignTime(t);
+
+		anim->skeleton.getBoneMatrix("mixamorig_Head").scale(2, 2, 2);
+		anim->skeleton.getBoneMatrix("mixamorig_Spine2").scale(2, 2, 2);
 		skeleton = anim->skeleton;
+
 	}
 	else if (speed < 0.8) //walk
 	{

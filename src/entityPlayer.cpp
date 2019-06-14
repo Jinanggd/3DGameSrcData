@@ -35,6 +35,7 @@ EntityPlayer::EntityPlayer() : Entity()
 	//mat.shader = Shader::Get("data/shaders/skinning.vs", "data/shaders/texture.fs");
 	mat.texture = Texture::Get("data/characters/characters/male.png");
 	anim = Animation::Get("data/characters/characters/crouch_walking.skanim");
+	skeleton.computeFinalBoneMatrices(bone_matrices, mesh);
 
 	
 	this->current_position = Vector3(0, 40, 0);
@@ -51,6 +52,7 @@ EntityPlayer::EntityPlayer() : Entity()
 	this->camera = new Camera();
 	//this->camera->lookAt(Vector3(current_position.x, current_position.y + 40, current_position.z +50),current_position, Vector3(0.f, 1.f, 0.f)); //position the camera and point to 0,0,0
 	this->camera->setPerspective(70.f, 800.0f / (float)600.0f, 0.1f, 10000.f);
+	
 	//updateCamera(Vector3(0, 10, -20));
 
 	actionplane.m.createPlane(10);
