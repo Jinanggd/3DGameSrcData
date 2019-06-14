@@ -171,6 +171,9 @@ void Game::update(double seconds_elapsed)
 		}
 	}
 
+	world.Player->updateAnim(time);
+	world.update(elapsed_time);
+
 	//to navigate with the mouse fixed in the middle
 	if (mouse_locked)
 		Input::centerMouse(); 

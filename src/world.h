@@ -43,6 +43,8 @@ public:
 	void printCamPos();
 	float mapping(float start1, float stop1, float start2, float stop2, float value);
 
+	void update(float dt);
+
 	void updateBullets(int index, Vector3 position);
 	void removeBullet(int index);
 	void shotBullet(int index, float dt, Vector3 direction);
@@ -56,6 +58,7 @@ public:
 	Shader* current_shader;
 	std::vector<EntityMesh> props;
 	std::vector<EntityMesh> bullets_and_cannon;
+	int shootedBullet;
 	std::vector<EntityLight> lights;
 	Matrix44 m;
 	Texture* mask;
@@ -73,6 +76,7 @@ public:
 	EntityPlayer* Titan;
 
 	Shader* plane_shader = NULL;
+	
 
 //private:
 //	static World* instance;

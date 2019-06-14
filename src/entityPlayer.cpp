@@ -114,42 +114,45 @@ void EntityPlayer::playerMovement(float dt, std::vector<EntityMesh> props)
 	// 
 
 	if (isoncannon) {
-		
-		//yawCannon = (yawCannon > 360 || yawCannon < -360) ? 0 : yawCannon;
-		Cannon.model.getRotationOnly();
 
+		Matrix44 R_YAW;
 		if (Input::isKeyPressed(SDL_SCANCODE_A)) {
 			yawCannon -= 9.0f*dt;
-			yawCannon = clamp(yawCannon, -63.0f, 63.0f);
-			if (yawCannon > -63.0f)
+			yawCannon = clamp(yawCannon, yaw-63.0f,yaw+ 63.0f);
+			if (yawCannon > yaw-63.0f)
 				rotateCannon(-9.0f*dt,Vector3(0,1,0));
 		}
 
 		else if (Input::isKeyPressed(SDL_SCANCODE_D)) { 
 			yawCannon += 9.0f*dt;
-			yawCannon = clamp(yawCannon, -63.0f, 63.0f);
-			if (yawCannon < 63.0f)
+			yawCannon = clamp(yawCannon, yaw-63.0f,yaw+ 63.0f);
+			if (yawCannon <yaw+ 63.0f)
 				rotateCannon(9.0f*dt,Vector3(0,1,0));
 		}
 
 		else if (Input::isKeyPressed(SDL_SCANCODE_Q)) { 
+			R_YAW.setRotation(yawCannon, Vector3(0, 1, 0));
+			Vector3 right = cross(Cannon.model.frontVector().normalize(), Vector3(0, 1, 0));
 			pitchCannon += 9.0f*dt;
 			pitchCannon = clamp(pitchCannon, 0.0f, 27.0f);
 			if (pitchCannon < 27.0f)
-				rotateCannon(9.0f*dt, Cannon.model.rightVector());
+				rotateCannon(9.0f*dt, Cannon.model.rotateVector(Vector3(1,0,0)));
 		}
 
 		else if (Input::isKeyPressed(SDL_SCANCODE_E)){
+			R_YAW.setRotation(yawCannon, Vector3(0, 1, 0));
+			Vector3 right = cross(Cannon.model.rightVector().normalize(), Vector3(0, 1, 0));
+			R_YAW.setRotation(yawCannon, Vector3(0, 1, 0));
 			pitchCannon -= 9.0f*dt;
 			pitchCannon = clamp(pitchCannon, 0.0f, 27.0f);
 			if (pitchCannon > 0.0f)
-				rotateCannon(-9.0f*dt, Cannon.model.rightVector());
+				rotateCannon(-9.0f*dt, Cannon.model.rotateVector(Vector3(1, 0, 0)));
 		}
 
 		updateCamera(props);
-		if (Input::wasKeyPressed(SDL_SCANCODE_Z)) {
-			std::cout << "YAW: " <<yawCannon << " PITCH: " << pitchCannon <<std::endl;
-		}
+		//if (Input::wasKeyPressed(SDL_SCANCODE_Z)) {
+		//	std::cout << "YAW: " <<yawCannon << " PITCH: " << pitchCannon <<std::endl;
+		//}
 	}
 	else {
 		//If player is not in cannon mode, we can move the player,
@@ -297,18 +300,18 @@ void EntityPlayer::updateCamera( std::vector<EntityMesh>props)
 	//this->camera->lookAt(cam_eye, cam_center, Vector3(0, 1, 0));
 	if (isoncannon) {
 
-		R_Yaw.setRotation(yawCannon*DEG2RAD, Vector3(0, 1, 0));
-		right = R_Yaw * Vector3(1, 0, 0);
-		R_Pitch.setRotation(pitchCannon*DEG2RAD, right);
-		Vector3 modelpos = Cannon.model.getTranslation();
-		Matrix44 Rotation = Cannon.model.getRotationOnly();
-		cam_eye = Cannon.model.getTranslation()  +  R_Yaw*Vector3(0, 7, -2);
+		//R_Yaw.setRotation(yawCannon*DEG2RAD, Vector3(0, 1, 0));
+		//right = R_Yaw * Vector3(1, 0, 0);
+		//R_Pitch.setRotation(pitchCannon*DEG2RAD, right);
+		//Vector3 modelpos = Cannon.model.getTranslation();
+		//Matrix44 Rotation = Cannon.model.getRotationOnly();
+		//cam_eye = Cannon.model.getTranslation()  +  R_Yaw*Vector3(0, 7, -2);
 
-		//front = Cannon.model.frontVector();
-		front = R_Yaw * R_Pitch * Vector3(0, 5, 30);
-		Vector3 cam_center = cam_eye + front;
+		////front = Cannon.model.frontVector();
+		//front = R_Yaw * R_Pitch * Vector3(0, 5, 30);
+		//Vector3 cam_center = cam_eye + front;
 
-		this->camera->lookAt(cam_eye, cam_center, Vector3(0, 1, 0));
+		//this->camera->lookAt(cam_eye, cam_center, Vector3(0, 1, 0));
 		return;
 	}
 	//Check for collision of the camera
@@ -453,6 +456,21 @@ void EntityPlayer::grab(std::vector<EntityMesh> vector)
 					iscarrying = false;
 					Cannon = vector[i];
 					CannonID = i;
+
+					Vector3 frontCannon = Cannon.model.frontVector().normalize();
+					Vector3 frontPlayer = model.frontVector().normalize();
+					current_position = Cannon.model.getTranslation() - frontCannon*4;
+					frontPlayer.y = 0;
+					frontCannon.y = 0;
+					
+					float angle = acos(dot(frontPlayer, frontCannon))*RAD2DEG;
+					
+					yaw += angle;
+					yawCannon = yaw;
+
+					updateMatrix();
+
+					initialmatrixCannon = Cannon.model;
 				}
 				else {
 					//You cannot fire without bullet
@@ -496,10 +514,22 @@ void EntityPlayer::throwItem()
 
 void EntityPlayer::shoot(float dt)
 {
-	Game::instance->world.bullets_and_cannon[CarryItem].model.setTranslation(camera->eye.x, camera->eye.y, camera->eye.z);
-	Game::instance->world.props[Game::instance->world.bullets_and_cannon[CarryItem].index_propsvector].model.setTranslation(camera->eye.x, camera->eye.y, camera->eye.z);
-	Vector3 direction = (this->camera->center - this->camera->eye).normalize();
-	Game::instance->world.shotBullet(CarryItem, dt, direction);
+	if (CarryItem > -1) {
+		Game::instance->world.bullets_and_cannon[CarryItem].model.setTranslation(Cannon.model.getTranslation().x, Cannon.model.getTranslation().y, Cannon.model.getTranslation().z);
+		Game::instance->world.props[Game::instance->world.bullets_and_cannon[CarryItem].index_propsvector].model.setTranslation(Cannon.model.getTranslation().x, Cannon.model.getTranslation().y, Cannon.model.getTranslation().z);
+		Vector3 direction = (this->camera->center - Cannon.model.getTranslation()).normalize();
+
+		Game::instance->world.bullets_and_cannon[CarryItem].Direction = direction;
+		Game::instance->world.props[Game::instance->world.bullets_and_cannon[CarryItem].index_propsvector].Direction = direction;
+		//Game::instance->world.bullets_and_cannon[CarryItem].isShooted = true;
+		//Game::instance->world.props[Game::instance->world.bullets_and_cannon[CarryItem].index_propsvector].isShooted = true;
+		Game::instance->world.shootedBullet = CarryItem;
+
+		CarryItem = -1;
+	}
+
+	
+	//Game::instance->world.shotBullet(CarryItem, dt, direction);
 }
 
 void EntityPlayer::updateMatrix()

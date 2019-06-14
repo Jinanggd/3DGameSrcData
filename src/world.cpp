@@ -243,7 +243,11 @@ void World::initProps() {
 				
 
 				b = EntityMesh(mat_types::cannon);
+
 				b.model.setTranslation(px, bulletpy, pz + 50);
+				b.model.rotate(90 * DEG2RAD, Vector3(0, 1, 0));
+				b.model.setUpAndOrthonormalize(Vector3(0, 1, 0));
+
 				b.model.scale(2, 2, 2);
 				b.index_propsvector = props.size();
 				props.push_back(b);
@@ -305,6 +309,51 @@ float World::mapping(float start1,float stop1, float start2,float stop2,float va
 	return outgoing;
 }
 
+void World::update(float dt)
+{
+	if (shootedBullet > -1) {
+		Vector3 currentposition = bullets_and_cannon[shootedBullet].model.getTranslation();
+		
+		if (abs(currentposition.x) > 3000 || abs(currentposition.y) > 2000 || abs(currentposition.z) > 3000) {
+			// Explosion GUI
+			removeBullet(shootedBullet);
+			std::cout << "Too far away" << std::endl;
+			return;
+		}
+		Vector3 newposition = currentposition + 100.0f*dt*bullets_and_cannon[shootedBullet].Direction;
+		float distance = (newposition - currentposition).length();
+
+		Vector3 collisionpoint, collisionnormal;
+		//Search on propsvector
+
+		//Hacer con test ray collision
+		for (int i = 0; i < props.size(); i++) {
+			//Skip Cannons and bullets
+			if (bullets_and_cannon[shootedBullet].index_propsvector == i || 
+				props[i].type == (int)mat_types::cannon || 
+				props[i].type == (int)mat_types::bullet) 
+				continue;
+
+			//A Ray from the current point to the new position
+			if (props[i].mesh->testRayCollision(props[i].model, currentposition, bullets_and_cannon[shootedBullet].Direction,
+				collisionpoint, collisionnormal, distance)) {
+				//Explosion GUI
+
+				//Remove the bullet from the the vectors
+				removeBullet(shootedBullet);
+				std::cout << "Collision contra props" << std::endl;
+				return;
+			}
+		}
+		//Search on Titans vector
+
+		bullets_and_cannon[shootedBullet].model.setTranslation(newposition.x, newposition.y, newposition.z);
+		props[bullets_and_cannon[shootedBullet].index_propsvector].model.setTranslation(newposition.x, newposition.y, newposition.z);
+		//props[bullets_and_cannon[index].index_propsvector].model.scale(50, 50, 50);
+	}
+
+}
+
 void World::updateBullets(int index, Vector3 position)
 {
 	bullets_and_cannon[index].model.setTranslation(position.x,position.y,position.z);
@@ -323,6 +372,8 @@ void World::removeBullet(int index)
 			indexatbulletvector++;
 		}
 	}
+	Player->CannonID--;
+	shootedBullet = -1;
 }
 
 void World::shotBullet(int index, float dt, Vector3 direction)
