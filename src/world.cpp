@@ -2,6 +2,7 @@
 #include <fstream>
 #include <iostream>
 
+
 //World* World::Instance() {
 //	return instance;
 //}
@@ -27,7 +28,7 @@ World::World(Camera * camera, float* time)
 	
 	}
 
-	Titan = new EntityPlayer(TITAN);
+	Titan = new EntityAI(time,&Player->current_position);
 	initWorld();
 	//initTree();
 	//initAirplane();
@@ -98,7 +99,7 @@ void World::renderentities()
 
 	current_shader->setUniform("u_time", *time);
 	Player->render(*time);
-	//Titan->render(*time);
+	Titan->render();
 	current_shader->disable();
 
 	//current_shader = Player->actionplane.mat.shader;
@@ -265,6 +266,7 @@ void World::initProps() {
 				
 				this->Player->setPosition(px, characterpy, pz);
 				
+				Titan->setPosition(px + 20, characterpy, pz);
 				for (int i = 0; i < Players.size(); i++) {
 
 
