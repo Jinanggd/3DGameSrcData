@@ -384,6 +384,7 @@ void Matrix44::lookAt(Vector3& eye, Vector3& center, Vector3& up)
 	translate(-eye.x, -eye.y, -eye.z);
 }
 
+
 //double check this functions
 void Matrix44::perspective(float fov, float aspect, float near_plane, float far_plane)
 {

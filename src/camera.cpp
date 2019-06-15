@@ -64,6 +64,12 @@ void Camera::move(Vector3 delta)
 	updateViewMatrix();
 }
 
+void Camera::moveCenter(Vector3 delta) {
+	Vector3 localDelta = getLocalVector(delta);
+	center = center - localDelta;
+	updateViewMatrix();
+}
+
 void Camera::rotate(float angle, const Vector3& axis)
 {
 	Matrix44 R;

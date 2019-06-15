@@ -244,11 +244,21 @@ void World::initProps() {
 
 				b = EntityMesh(mat_types::cannon);
 
-				b.model.setTranslation(px, bulletpy, pz + 50);
-				b.model.rotate(90 * DEG2RAD, Vector3(0, 1, 0));
-				b.model.setUpAndOrthonormalize(Vector3(0, 1, 0));
+				//b.model.setTranslation(px, bulletpy, pz + 50);
+				Matrix44 R,S,T;
+				T.setTranslation(px, bulletpy, pz + 50);
+				S.setScale(2, 2, 2);
+				R.setRotation(90 * DEG2RAD, Vector3(0, 1, 0));
+				b.model = S*R*T;
 
-				b.model.scale(2, 2, 2);
+				//b.model.setUpAndOrthonormalize(Vector3(0, 1, 0));
+				//b.model.rotate(90 * DEG2RAD, Vector3(0, 1, 0));
+				//b.model =R* b.model;
+				
+				//b.model.translate(px, bulletpy, pz + 50);
+
+
+				//b.model.scale(2,2, 2);
 				b.index_propsvector = props.size();
 				props.push_back(b);
 				bullets_and_cannon.push_back(b);
