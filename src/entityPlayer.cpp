@@ -242,16 +242,6 @@ void EntityPlayer::checkCollision(std::vector<EntityMesh> props, Vector3 newpos,
 {
 	Vector3 character_center = newpos + Vector3(0, 2, 0);
 
-	//Not Working correctly - It should get the y position of the plane and set the height of the character
-	//Matrix44 m;
-	//m.setIdentity();
-	//m.translate(-1024, 0, -1024);
-	//Vector3 plane_collision, plane_normal;
-
-	//if (plane.testRayCollision(m, character_center, Vector3(0, -1, 0), plane_collision, plane_normal) == true) {
-	//	current_position.y = plane_collision.y;
-	//}
-
 	for (int i = 0; i < props.size(); i++) {
 
 		if (props[i].type == (int)mat_types::tree || props[i].type == (int)mat_types::house || props[i].type == (int)mat_types::tower || 
@@ -265,6 +255,31 @@ void EntityPlayer::checkCollision(std::vector<EntityMesh> props, Vector3 newpos,
 				Vector3 push_away = normalize(collisionpoint - character_center)*dt;
 				push_away.y = 0;
 				current_position = current_position - push_away;
+
+				//Create GUI in case of Bullet or Cannon
+				switch (props[i].type)
+				{
+				case (int)mat_types::cannon:
+					if (iscarrying) {
+						//You need to be carrying a bullet
+
+					}
+					else {
+						//You can Charge the Cannon
+
+					}
+					break;
+				case (int)mat_types::bullet:
+					if (iscarrying) {
+						//You can throw the bullet
+					}
+					else {
+						//You can carry the bullet
+					}
+					break;
+				default:
+					break;
+				}
 				
 				return;
 
