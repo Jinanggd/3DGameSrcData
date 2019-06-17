@@ -2,6 +2,7 @@
 #include <fstream>
 #include <iostream>
 
+
 //World* World::Instance() {
 //	return instance;
 //}
@@ -17,7 +18,16 @@ World::~World()
 World::World(Camera * camera, float* time)
 {
 	this->camera = camera;
+	this->camera2D = new Camera();
+	this->camera2D->setOrthographic(0, 800, 0, 600, -1, 1);
 	this->time = time;
+
+	//Load all the GUIs
+	initGUIs();
+
+
+
+
 	Player = new EntityPlayer(time);
 
 	for (int i = 0; i < 10; i++) {
@@ -27,7 +37,9 @@ World::World(Camera * camera, float* time)
 	
 	}
 
-	Titan = new EntityAI(time, &Player->current_position);
+
+	Titan = new EntityAI(time,&Player->current_position);
+
 	initWorld();
 	//initTree();
 	//initAirplane();
@@ -60,6 +72,29 @@ void World::renderSkybox() {
 
 	current_shader->disable();
 
+}
+
+void World::renderGUI()
+{
+	Matrix44 mGUI;
+	mGUI.setIdentity();
+	glDisable(GL_DEPTH_TEST);
+	for (int i = 0; i < GUIs.size(); i++) {
+		if (GUIs[i].enable) {
+			//We render the GUI if it is enabled
+			current_shader = GUIs[i].shader;
+			current_shader->enable();
+			if(!GUIs[i].isHUD)
+				current_shader->setUniform("u_viewprojection", camera2D->viewprojection_matrix);
+			else
+				current_shader->setUniform("u_viewprojection", mGUI);
+			current_shader->setUniform("u_time", *time);
+			GUIs[i].render();
+			current_shader->disable();
+			
+		}
+	}
+	glEnable(GL_DEPTH_TEST);
 }
 
 void World::renderentities()
@@ -242,8 +277,22 @@ void World::initProps() {
 				
 
 				b = EntityMesh(mat_types::cannon);
-				b.model.setTranslation(px, bulletpy, pz + 50);
-				b.model.scale(2, 2, 2);
+
+				//b.model.setTranslation(px, bulletpy, pz + 50);
+				Matrix44 R,S,T;
+				T.setTranslation(px, bulletpy, pz + 50);
+				S.setScale(2, 2, 2);
+				R.setRotation(90 * DEG2RAD, Vector3(0, 1, 0));
+				b.model = S*R*T;
+
+				//b.model.setUpAndOrthonormalize(Vector3(0, 1, 0));
+				//b.model.rotate(90 * DEG2RAD, Vector3(0, 1, 0));
+				//b.model =R* b.model;
+				
+				//b.model.translate(px, bulletpy, pz + 50);
+
+
+				//b.model.scale(2,2, 2);
 				b.index_propsvector = props.size();
 				props.push_back(b);
 				bullets_and_cannon.push_back(b);
@@ -252,6 +301,7 @@ void World::initProps() {
 
 				Titan->model.setTranslation(px, characterpy , pz+20);
 				
+				Titan->setPosition(px + 20, characterpy, pz);
 				for (int i = 0; i < Players.size(); i++) {
 
 
@@ -271,21 +321,30 @@ void World::initProps() {
 
 		}
 	}
-		
+}
 
-	// Creas props arboles
-	//for (int i = 0; i < positions.size(); i++) {
+void World::initGUIs() {
+	GUI g = GUI(Vector2(800 / 2, 600 / 2), Vector2(800 / 2, 600 / 2), true, GUI_Types::instruct_building);
+	GUIs.push_back(g);
+	g = GUI(Vector2(800 / 2, 600 / 2), Vector2(800 / 2, 600 / 2), true, GUI_Types::instruct_attack);
+	GUIs.push_back(g);
+	g = GUI(Vector2(800 / 2, 600 / 2), Vector2(800 / 2, 600 / 2), true, GUI_Types::instruct_titan);
+	GUIs.push_back(g);
+	g = GUI(Vector2(800 / 2, 600 / 2), Vector2(800 / 2, 600 / 2), true, GUI_Types::instruct_mov);
+	GUIs.push_back(g);
 
-	//	EntityMesh m = EntityMesh(mat_types::tree);
-
-	//	m.model.setTranslation(positions[i].x, positions[i].y, positions[i].z);
-	//	m.model.scale(5, 5, 5);
-	//	props.push_back(m);
-	//}
-
-	
-
-
+	g = GUI(Vector2(800 / 2, 600 / 2), Vector2(800 / 2, 600 / 2), false, GUI_Types::BulletKeysNC);
+	GUIs.push_back(g);
+	g = GUI(Vector2(800 / 2, 600 / 2), Vector2(800 / 2, 600 / 2), false, GUI_Types::BulletKeysC);
+	GUIs.push_back(g);
+	g = GUI(Vector2(800 / 2, 600 / 2), Vector2(800 / 2, 600 / 2), false, GUI_Types::CannonKeysNC);
+	GUIs.push_back(g);
+	g = GUI(Vector2(800 / 2, 600 / 2), Vector2(800 / 2, 600 / 2), false, GUI_Types::CannonKeysC);
+	GUIs.push_back(g);
+	g = GUI(Vector2(800 / 2, 600 / 2), Vector2(800 / 2, 600 / 2), false, GUI_Types::Building);
+	GUIs.push_back(g);
+	g = GUI(Vector2(800 / 2, 600 / 2), Vector2(800, 600), true, GUI_Types::OverallKeys);
+	GUIs.push_back(g);
 }
 
 void World::printCamPos()
@@ -293,7 +352,7 @@ void World::printCamPos()
 	//std::cout <<"("<< Player->current_position.x << "," << Player->current_position.y <<"," << Player->current_position.z << ")"<< std::endl;
 	std::cout << "(" << camera->eye.x << "," << camera->eye.y << "," << camera->eye.z << ")" << std::endl;
 	std::cout << "(" << camera->center.x << "," << camera->center.y << "," << camera->center.z << ")" << std::endl;
-	std::cout << "(" << bullets_and_cannon[1].model.getTranslation().x << "," << bullets_and_cannon[1].model.getTranslation().y << "," << bullets_and_cannon[1].model.getTranslation().z << ")" << std::endl;
+	//std::cout << "(" << bullets_and_cannon[1].model.getTranslation().x << "," << bullets_and_cannon[1].model.getTranslation().y << "," << bullets_and_cannon[1].model.getTranslation().z << ")" << std::endl;
 	//std::cout << "(" << Player->camera << "," << Player->current_position.y << "," << Player->current_position.z << ")" << std::endl;
 
 	//std::cout << "Pitch: " << Player->pitch << std::endl;
@@ -307,10 +366,132 @@ float World::mapping(float start1,float stop1, float start2,float stop2,float va
 	return outgoing;
 }
 
+void World::update(float dt)
+{
+
+	if (shootedBullet > -1) {
+		Vector3 currentposition = bullets_and_cannon[shootedBullet].model.getTranslation();
+		
+		if (abs(currentposition.x) > 3000 || abs(currentposition.y) > 2000 || abs(currentposition.z) > 3000) {
+			// Explosion GUI
+			removeBullet(shootedBullet);
+			std::cout << "Too far away" << std::endl;
+			return;
+		}
+		Vector3 newposition = currentposition + 100.0f*dt*bullets_and_cannon[shootedBullet].Direction;
+		float distance = (newposition - currentposition).length();
+
+		Vector3 collisionpoint, collisionnormal;
+		//Search on propsvector
+
+		//Hacer con test ray collision
+		for (int i = 0; i < props.size(); i++) {
+			//Skip Cannons and bullets
+			if (bullets_and_cannon[shootedBullet].index_propsvector == i || 
+				props[i].type == (int)mat_types::cannon || 
+				props[i].type == (int)mat_types::bullet) 
+				continue;
+
+			//A Ray from the current point to the new position
+			if (props[i].mesh->testRayCollision(props[i].model, currentposition, bullets_and_cannon[shootedBullet].Direction,
+				collisionpoint, collisionnormal, distance)) {
+				//Explosion GUI
+
+				//Remove the bullet from the the vectors
+				removeBullet(shootedBullet);
+				std::cout << "Collision contra props" << std::endl;
+				return;
+			}
+		}
+		//Search on Titans vector
+
+		bullets_and_cannon[shootedBullet].model.setTranslation(newposition.x, newposition.y, newposition.z);
+		props[bullets_and_cannon[shootedBullet].index_propsvector].model.setTranslation(newposition.x, newposition.y, newposition.z);
+		//props[bullets_and_cannon[index].index_propsvector].model.scale(50, 50, 50);
+	}
+
+	//update GUIs
+	for (int i = 0; i < GUIs.size(); i++) {
+		if (!GUIs[i].enable) continue;
+		//Explosion GUI
+		if (GUIs[i].starttime > 0 && *time > (GUIs[i].starttime+GUIs[i].duration)) {
+			GUIs[i].enable = false;
+			GUIs[i].starttime = -1;
+		}
+		if (GUIs[i].type > (int)GUI_Types::instruct_titan && GUIs[i].type < (int)GUI_Types::OverallKeys) {
+			GUIs[i].enable = isNearFromPlayer();
+		}
+	}
+
+}
+
 void World::updateBullets(int index, Vector3 position)
 {
 	bullets_and_cannon[index].model.setTranslation(position.x,position.y,position.z);
 	props[bullets_and_cannon[index].index_propsvector].model.setTranslation(position.x, position.y, position.z);
+}
+
+void World::removeBullet(int index)
+{
+	props.erase(props.begin() + bullets_and_cannon[index].index_propsvector);
+	bullets_and_cannon.erase(bullets_and_cannon.begin() + index);
+	int indexatbulletvector = 0;
+	//update the bullets_and_cannon vector
+	for (int i = 0; i < props.size(); i++) {
+		if (props[i].type == (int)mat_types::bullet || props[i].type == (int)mat_types::cannon) {
+			bullets_and_cannon[indexatbulletvector].index_propsvector = i;
+			indexatbulletvector++;
+		}
+	}
+	Player->CannonID--;
+	shootedBullet = -1;
+}
+
+void World::shotBullet(int index, float dt, Vector3 direction)
+{
+	Vector3 currentposition = bullets_and_cannon[index].model.getTranslation();
+	if (abs(currentposition.x) > 3000 || abs(currentposition.y) > 2000 || abs(currentposition.z) > 3000) {
+		// Explosion GUI
+		removeBullet(index);
+		std::cout << "Too far away" << std::endl;
+		return;
+	}
+	Vector3 collisionpoint, collisionnormal;
+	//Search on propsvector
+
+	//Hacer con test ray collision
+	for (int i = 0; i < props.size(); i++) {
+		if (bullets_and_cannon[index].index_propsvector == i) continue;
+		if (props[i].mesh->testSphereCollision(props[i].model, bullets_and_cannon[index].model.getTranslation(), 2,
+			collisionpoint, collisionnormal)) {
+			if (props[i].type == (int)mat_types::cannon || props[i].type == (int)mat_types::bullet) continue;
+			//Explosion GUI
+
+			//Remove the bullet from the the vectors
+			removeBullet(index);
+			std::cout << "Collision contra props" << std::endl;
+			return;
+		}
+	}
+	//Search on Titans vector
+
+
+	Vector3 newpoint = currentposition + 4.0f*dt*direction;
+	bullets_and_cannon[index].model.setTranslation(newpoint.x, newpoint.y, newpoint.z);
+	props[bullets_and_cannon[index].index_propsvector].model.setTranslation(newpoint.x, newpoint.y, newpoint.z);
+	//props[bullets_and_cannon[index].index_propsvector].model.scale(50, 50, 50);
+	
+}
+
+bool World::isNearFromPlayer()
+{
+	Vector3 playercenter = Player->current_position + Vector3(0, 2, 0),collisionpoint,collisionnormal;
+
+	for (int i = 0; i < bullets_and_cannon.size(); i++) {
+		if (bullets_and_cannon[i].mesh->testSphereCollision(bullets_and_cannon[i].model, playercenter, 2, collisionpoint, collisionnormal))
+			return true;
+	}
+	return false;
 }
 
 

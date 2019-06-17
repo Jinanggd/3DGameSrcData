@@ -105,6 +105,7 @@ void Game::render(void)
 		world.renderentities();
 
 		world.renderplane();
+		world.renderGUI();
 
 		//world.water.render();
 		
@@ -174,6 +175,8 @@ void Game::update(double seconds_elapsed)
 	world.Player->updateAnim(time);
 
 	world.Titan->update(seconds_elapsed*speed, world.props);
+	world.update(elapsed_time);
+
 
 	//to navigate with the mouse fixed in the middle
 	if (mouse_locked)
@@ -244,6 +247,16 @@ void Game::onKeyDown( SDL_KeyboardEvent event )
 
 void Game::onKeyUp(SDL_KeyboardEvent event)
 {
+	float speed = elapsed_time * 100; //the speed is defined by the seconds_elapsed so it goes constant
+	switch (event.keysym.sym)
+	{
+	case SDLK_r:
+		if (!ThirdCameraMode && world.Player->isoncannon) {
+			world.Player->shoot(elapsed_time*speed);
+		}
+		break;
+
+	}
 }
 
 void Game::onGamepadButtonDown(SDL_JoyButtonEvent event)

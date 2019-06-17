@@ -25,7 +25,6 @@ public:
 
 	void render(float time);
 	void render();
-	
 	void Init(Camera* cam);
 
 	void update(float dt, std::vector<EntityMesh> props);
@@ -74,4 +73,6 @@ public:
 };
 
 
+
 #endif
+

@@ -4,7 +4,6 @@
 #include "camera.h"
 #include "input.h"
 #include "game.h"
-#include "pathfinders.h"
 #include <cmath>     
 
 
@@ -84,6 +83,7 @@ void EntityAI::update(float dt, std::vector<EntityMesh> props)
 
 void EntityAI::updatedirection(float dt, std::vector<EntityMesh> props)
 {
+
 	Vector3 mytarget = *target;
 
 	current_position = this->model.getTranslation();
@@ -119,6 +119,7 @@ void EntityAI::updatedirection(float dt, std::vector<EntityMesh> props)
 
 	}
 	
+
 }
 
 

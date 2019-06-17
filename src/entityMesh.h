@@ -56,6 +56,7 @@ public:
 	//Firs person camera
 	Camera * camera;
 	Vector3 front;
+	Vector3 Direction;
 
 
 };
