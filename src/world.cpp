@@ -37,7 +37,9 @@ World::World(Camera * camera, float* time)
 	
 	}
 
+
 	Titan = new EntityAI(time,&Player->current_position);
+
 	initWorld();
 	//initTree();
 	//initAirplane();
@@ -128,7 +130,6 @@ void World::renderentities()
 	current_shader = Player->mat.shader;
 	current_shader->enable();
 	current_shader->setUniform("u_viewprojection", camera->viewprojection_matrix);
-
 	current_shader->setUniform("u_time", *time);
 	Player->render(*time);
 	Titan->render();
@@ -297,6 +298,8 @@ void World::initProps() {
 				bullets_and_cannon.push_back(b);
 				
 				this->Player->setPosition(px, characterpy, pz);
+
+				Titan->model.setTranslation(px, characterpy , pz+20);
 				
 				Titan->setPosition(px + 20, characterpy, pz);
 				for (int i = 0; i < Players.size(); i++) {
@@ -313,6 +316,7 @@ void World::initProps() {
 
 			if (mask->image.getPixel(j, i).z == 255) {
 				// Titan Spawn
+				
 			}
 
 		}
