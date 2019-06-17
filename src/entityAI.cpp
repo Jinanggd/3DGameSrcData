@@ -83,41 +83,39 @@ void EntityAI::update(float dt, std::vector<EntityMesh> props)
 
 void EntityAI::updatedirection(float dt, std::vector<EntityMesh> props)
 {
+	//Vector3 mytarget = *target;
 
-	Vector3 mytarget = *target;
+	//current_position = this->model.getTranslation();
 
-	current_position = this->model.getTranslation();
-
-	direction = mytarget - current_position;
-
-	if (direction.length>10) {
+	//direction = mytarget - current_position;
 
 
-		direction.normalize();
-
-		direction.y = 0;
-
-		checkCollision(props, current_position + velocity * dt, dt);
-
-		Vector3 AIfront = this->model.frontVector().normalize();
-
-		AIfront.y = 0;
-
-		float angle = acos(dot(AIfront, direction))*RAD2DEG;
 
 
-		/*Matrix44 R;
+	//	direction.normalize();
 
-		R.setRotation(angle, Vector3(0,1,0));*/
+	//	direction.y = 0;
 
-		yaw += angle;
+	//	checkCollision(props, current_position + velocity * dt, dt);
 
-		current_position = current_position + (dt)*direction;
+	//	Vector3 AIfront = this->model.frontVector().normalize();
 
-		updateMatrix();
+	//	AIfront.y = 0;
+
+	//	float angle = acos(dot(AIfront, direction))*RAD2DEG;
 
 
-	}
+	//	/*Matrix44 R;
+
+	//	R.setRotation(angle, Vector3(0,1,0));*/
+
+	//	yaw += angle;
+
+	//	current_position = current_position + (dt)*direction;
+
+	//	updateMatrix();
+
+
 	
 
 }
@@ -321,4 +319,3 @@ Vector3 EntityAI::getLocalVector(Vector3 v)
 	Vector3 result = iV.rotateVector(v);
 	return result;
 }
-
