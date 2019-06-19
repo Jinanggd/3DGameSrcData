@@ -15,7 +15,7 @@ EntityAI::EntityAI() : Entity()
 	mesh = Mesh::Get("data/characters/characters/male.mesh");
 	mat.shader = isanimated ? Shader::Get("data/shaders/skinning.vs", "data/shaders/texture.fs") : Shader::Get("data/shaders/basic.vs", "data/shaders/texture.fs");
 
-	mat.texture = Texture::Get("data/characters/characters/male.png");
+	mat.texture = Texture::Get("data/characters/characters/titan.png");
 	anim = Animation::Get("data/characters/characters/crouch_walking.skanim");
 
 
