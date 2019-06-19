@@ -10,7 +10,6 @@
 #include "entityPlayer.h"
 #include "entityAI.h"
 #include "shader.h"
-#include "GUI.h"
 
 
 class World
@@ -37,12 +36,10 @@ public:
 	void renderentities();
 	void renderplane();
 	void renderSkybox();
-	void renderGUI();
 
 	void initProps();
 	void initAirplane();
 	void initWorld();
-	void initGUIs();
 
 	void printCamPos();
 	float mapping(float start1, float stop1, float start2, float stop2, float value);
@@ -53,19 +50,15 @@ public:
 	void removeBullet(int index);
 	void shotBullet(int index, float dt, Vector3 direction);
 
-	bool isNearFromPlayer();
-
 	bool load();
 	bool save();
 
 	//static World* Instance();
 	Camera * camera;
-	Camera * camera2D;
 	float* time;
 	Shader* current_shader;
 	std::vector<EntityMesh> props;
 	std::vector<EntityMesh> bullets_and_cannon;
-	std::vector<GUI> GUIs;
 	int shootedBullet;
 	std::vector<EntityLight> lights;
 	Matrix44 m;
