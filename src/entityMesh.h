@@ -17,7 +17,10 @@ enum class mat_types {
 	tower,
 	player,
 	bullet,
-	cannon
+	cannon,
+	buildable,
+	tower1,
+	tower2
 
 };
 

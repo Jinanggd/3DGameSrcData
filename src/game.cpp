@@ -105,7 +105,7 @@ void Game::render(void)
 		world.renderentities();
 
 		world.renderplane();
-		//world.renderGUI();
+		world.renderGUI();
 
 		//world.water.render();
 		

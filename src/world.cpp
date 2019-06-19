@@ -329,18 +329,18 @@ void World::initGUIs() {
 	g = GUI(Vector2(800 / 2, 600 / 2), Vector2(800 / 2, 600 / 2), true, GUI_Types::instruct_mov);
 	GUIs.push_back(g);
 
-	g = GUI(Vector2(800 / 2, 600 / 2), Vector2(800 / 2, 600 / 2), false, GUI_Types::BulletKeysNC);
-	GUIs.push_back(g);
-	g = GUI(Vector2(800 / 2, 600 / 2), Vector2(800 / 2, 600 / 2), false, GUI_Types::BulletKeysC);
-	GUIs.push_back(g);
-	g = GUI(Vector2(800 / 2, 600 / 2), Vector2(800 / 2, 600 / 2), false, GUI_Types::CannonKeysNC);
-	GUIs.push_back(g);
-	g = GUI(Vector2(800 / 2, 600 / 2), Vector2(800 / 2, 600 / 2), false, GUI_Types::CannonKeysC);
-	GUIs.push_back(g);
-	g = GUI(Vector2(800 / 2, 600 / 2), Vector2(800 / 2, 600 / 2), false, GUI_Types::Building);
-	GUIs.push_back(g);
-	g = GUI(Vector2(800 / 2, 600 / 2), Vector2(800, 600), true, GUI_Types::OverallKeys);
-	GUIs.push_back(g);
+	//g = GUI(Vector2(800 / 2, 600 / 2), Vector2(800 / 2, 600 / 2), false, GUI_Types::BulletKeysNC);
+	//GUIs.push_back(g);
+	//g = GUI(Vector2(800 / 2, 600 / 2), Vector2(800 / 2, 600 / 2), false, GUI_Types::BulletKeysC);
+	//GUIs.push_back(g);
+	//g = GUI(Vector2(800 / 2, 600 / 2), Vector2(800 / 2, 600 / 2), false, GUI_Types::CannonKeysNC);
+	//GUIs.push_back(g);
+	//g = GUI(Vector2(800 / 2, 600 / 2), Vector2(800 / 2, 600 / 2), false, GUI_Types::CannonKeysC);
+	//GUIs.push_back(g);
+	//g = GUI(Vector2(800 / 2, 600 / 2), Vector2(800 / 2, 600 / 2), false, GUI_Types::Building);
+	//GUIs.push_back(g);
+	//g = GUI(Vector2(800 / 2, 600 / 2), Vector2(800, 600), true, GUI_Types::OverallKeys);
+	//GUIs.push_back(g);
 }
 
 void World::printCamPos()
