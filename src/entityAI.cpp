@@ -20,7 +20,7 @@ EntityAI::EntityAI() : Entity()
 
 
 	this->yaw = 0.0f;
-	this->speed = 0.0f;
+	this->speed = 2.0f;
 	this->pitch = -1.1f;
 
 
@@ -78,45 +78,60 @@ void EntityAI::render() {
 void EntityAI::update(float dt, std::vector<EntityMesh> props)
 {
 	updateAnim(dt);
-	updatedirection(dt, props);
+
+	checkCollision(props, current_position + (velocity * dt), dt);
+
+	updatedirection(dt , props);
+	
+
 }
 
 void EntityAI::updatedirection(float dt, std::vector<EntityMesh> props)
+
 {
-	//Vector3 mytarget = *target;
 
-	//current_position = this->model.getTranslation();
+	Vector3 mytarget = *target;
 
-	//direction = mytarget - current_position;
+	current_position = this->model.getTranslation();
 
+	direction = mytarget - current_position;
 
+	direction.normalize();
 
+	direction.y = 0;
 
-	//	direction.normalize();
+	Vector3 AIfront = this->model.frontVector().normalize();
 
-	//	direction.y = 0;
+	AIfront.y = 0;
 
-	//	checkCollision(props, current_position + velocity * dt, dt);
+	Vector2 a, b;
 
-	//	Vector3 AIfront = this->model.frontVector().normalize();
+	a = Vector2(direction.x, direction.z);
+	b = Vector2(AIfront.x, AIfront.z);
 
-	//	AIfront.y = 0;
-
-	//	float angle = acos(dot(AIfront, direction))*RAD2DEG;
-
-
-	//	/*Matrix44 R;
-
-	//	R.setRotation(angle, Vector3(0,1,0));*/
-
-	//	yaw += angle;
-
-	//	current_position = current_position + (dt)*direction;
-
-	//	updateMatrix();
+	float angle = ComputeSignedAngle(a,b);
 
 
-	
+	velocity = velocity + direction * 7;
+
+	speed = velocity.length() * 0.1;
+
+	current_position = current_position + (dt*speed)*direction;
+
+	Matrix44 R;
+
+	yaw += angle;
+
+	this->model.setTranslation(current_position.x, current_position.y, current_position.z);
+	this->model.rotate(yaw*DEG2RAD, Vector3(0, 1, 0));
+
+
+
+	float friction = 1.0 / (1.0 + (dt * 4.5));
+
+	velocity = velocity * friction;
+
+
 
 }
 
@@ -128,7 +143,7 @@ void EntityAI::updatedirection(float dt, std::vector<EntityMesh> props)
 //Depending of the Mesh tag it will happen different kind of interactions
 void EntityAI::checkCollision(std::vector<EntityMesh> props, Vector3 newpos, float dt)
 {
-	Vector3 character_center = newpos + Vector3(0, 2, 0);
+	Vector3 character_center = newpos + Vector3(0, 4, 0);
 
 
 	for (int i = 0; i < props.size(); i++) {
@@ -139,16 +154,38 @@ void EntityAI::checkCollision(std::vector<EntityMesh> props, Vector3 newpos, flo
 
 			Vector3 collisionpoint, collision_normal;
 
-			if (props[i].mesh->testSphereCollision(props[i].model, character_center, 2, collisionpoint, collision_normal) == true) {
+			if (props[i].mesh->testSphereCollision(props[i].model, character_center, 5, collisionpoint, collision_normal) == true) {
 
 				Vector3 push_away = normalize(collisionpoint - character_center)*dt;
 				push_away.y = 0;
 				current_position = current_position - push_away;
 
+
+
+				Vector3 right = this->model.frontVector();
+
+				float dot_result = dot(push_away.normalize(), right);
+
+				float angle = acos(clamp(dot_result,-1,1))*RAD2DEG;
+
+				if(angle<90) this->model.translate(-(0.5f)*push_away);
+
+				else { 
+					
+					this->model.translate(-(0.5f)*push_away.x,0, -(0.5f)*push_away.z);
+
+				
+				}
+
+
+				
 				return;
+				
 
 
 			}
+
+
 		}
 	}
 
@@ -260,6 +297,9 @@ void EntityAI::updateAnim(float dt) {
 		else
 			animB->assignTime(-t);
 		blendSkeleton(&anim->skeleton, &animB->skeleton, w, &skeleton);
+
+		skeleton.getBoneMatrix("mixamorig_Head").scale(2, 2, 2);
+		skeleton.getBoneMatrix("mixamorig_Spine2").scale(2, 2, 2);
 	}
 
 
@@ -278,6 +318,8 @@ void EntityAI::updateAnim(float dt) {
 		else
 			animB->assignTime(-(t / anim->duration) * animB->duration);
 		blendSkeleton(&anim->skeleton, &animB->skeleton, 0.8, &skeleton);
+		skeleton.getBoneMatrix("mixamorig_Head").scale(2, 2, 2);
+		skeleton.getBoneMatrix("mixamorig_Spine2").scale(2, 2, 2);
 
 	}
 
@@ -306,9 +348,8 @@ void EntityAI::animateCharacter()
 void EntityAI::setPosition(float x, float y, float z)
 {
 	this->current_position = Vector3(x, y, z);
-	this->model.translate(x, y, z);
-	updateMatrix();
-	//updateCamera(Vector3(0, 10, -20));
+	this->model.setTranslation(x, y, z);
+	
 }
 
 Vector3 EntityAI::getLocalVector(Vector3 v)
