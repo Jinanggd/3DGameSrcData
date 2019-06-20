@@ -306,6 +306,10 @@ void EntityPlayer::checkCollision(std::vector<EntityMesh> props, Vector3 newpos,
 					}
 					else {
 						//You can carry the bullet
+						Vector3 centerGUI = props[i].model.rotateVector(Vector3(5, 5, 0));
+						Game::instance->world.GUIs[4].setPositionfrom3D(current_position + Vector3(0, 5, 0) , Vector2(0.1,0.05),
+							this->camera->viewprojection_matrix);
+						Game::instance->world.GUIs[4].enable = true;
 					}
 					break;
 				default:

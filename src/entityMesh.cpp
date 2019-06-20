@@ -105,8 +105,96 @@ EntityMesh::EntityMesh( mat_types type)
 
 	case mat_types::buildable:
 		
+		//We are gonna build ourself the vertices with 
+		float w = 20.0f, h = 100.0f;
+		this->mesh->vertices.clear();
+		this->mesh->uvs.clear();
+		this->mesh->normals.clear();
+
+		//vertices.push_back(Vector3(size, 0, size));
+		//vertices.push_back(Vector3(size, 0, -size));
+		//vertices.push_back(Vector3(-size, 0, -size));
+		//vertices.push_back(Vector3(-size, 0, size));
+		//vertices.push_back(Vector3(size, 0, size));
+		//vertices.push_back(Vector3(-size, 0, -size));
+
+		//****5,2-------------3********
+		//****4---------------1,6*******
+
+
+		//We just build the pointsby hand
+		{
+
+
+			this->mesh->vertices.push_back(Vector3(w, 0, 0));
+			this->mesh->vertices.push_back(Vector3(0, h, 0));
+			this->mesh->vertices.push_back(Vector3(w, h, 0));
+
+			this->mesh->vertices.push_back(Vector3(0, 0, 0));
+			this->mesh->vertices.push_back(Vector3(0, h, 0));
+			this->mesh->vertices.push_back(Vector3(w, 0, 0));
+
+			this->mesh->vertices.push_back(Vector3(w, 0, w));
+			this->mesh->vertices.push_back(Vector3(w, h, 0));
+			this->mesh->vertices.push_back(Vector3(w, h, w));
+
+			this->mesh->vertices.push_back(Vector3(w, 0, 0));
+			this->mesh->vertices.push_back(Vector3(w, h, 0));
+			this->mesh->vertices.push_back(Vector3(w, 0, w));
+
+			this->mesh->vertices.push_back(Vector3(0, 0, w));
+			this->mesh->vertices.push_back(Vector3(w, h, w));
+			this->mesh->vertices.push_back(Vector3(0, h, w));
+
+			this->mesh->vertices.push_back(Vector3(w, 0, w));
+			this->mesh->vertices.push_back(Vector3(w, h, w));
+			this->mesh->vertices.push_back(Vector3(0, 0, w));
+
+			this->mesh->vertices.push_back(Vector3(0, 0, 0));
+			this->mesh->vertices.push_back(Vector3(0, h, w));
+			this->mesh->vertices.push_back(Vector3(0, h, 0));
+
+			this->mesh->vertices.push_back(Vector3(0, 0, w));
+			this->mesh->vertices.push_back(Vector3(0, h, w));
+			this->mesh->vertices.push_back(Vector3(0, 0, 0));
+
+			//UVS
+			this->mesh->uvs.push_back(Vector2(1, 0));
+			this->mesh->uvs.push_back(Vector2(0, 1));
+			this->mesh->uvs.push_back(Vector2(1, 1));
+
+			this->mesh->uvs.push_back(Vector2(0, 0));
+			this->mesh->uvs.push_back(Vector2(0, 1));
+			this->mesh->uvs.push_back(Vector2(1, 0));
+
+			this->mesh->uvs.push_back(Vector2(1, 0));
+			this->mesh->uvs.push_back(Vector2(0, 1));
+			this->mesh->uvs.push_back(Vector2(1, 1));
+
+			this->mesh->uvs.push_back(Vector2(0, 0));
+			this->mesh->uvs.push_back(Vector2(0, 1));
+			this->mesh->uvs.push_back(Vector2(1, 0));
+
+			this->mesh->uvs.push_back(Vector2(1, 0));
+			this->mesh->uvs.push_back(Vector2(0, 1));
+			this->mesh->uvs.push_back(Vector2(1, 1));
+
+			this->mesh->uvs.push_back(Vector2(0, 0));
+			this->mesh->uvs.push_back(Vector2(0, 1));
+			this->mesh->uvs.push_back(Vector2(1, 0));
+
+			this->mesh->uvs.push_back(Vector2(1, 0));
+			this->mesh->uvs.push_back(Vector2(0, 1));
+			this->mesh->uvs.push_back(Vector2(1, 1));
+
+			this->mesh->uvs.push_back(Vector2(0, 0));
+			this->mesh->uvs.push_back(Vector2(0, 1));
+			this->mesh->uvs.push_back(Vector2(1, 0));
+		}
+
+
 		this->mesh = Mesh::Get("data/box.ASE");
-		this->mat.shader = Shader::Get("data/shaders/basic.vs", "data/shaders/flat.fs");
+		//this->mat.shader = Shader::Get("data/shaders/basic.vs", "data/shaders/flat.fs");
 		break;
 	}
 	

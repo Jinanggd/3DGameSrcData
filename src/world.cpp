@@ -299,10 +299,10 @@ void World::initProps() {
 				
 				Titan->setPosition(px + 20, characterpy, pz);
 
-				b = EntityMesh(mat_types::buildable);
-				b.model.setTranslation(px, py+20, pz);
-				b.model.scale(0.25, 0.5, 0.25);
-				props.push_back(b);
+				//b = EntityMesh(mat_types::buildable);
+				//b.model.setTranslation(px, py+20, pz);
+				//b.model.scale(0.25, 0.5, 0.25);
+				//props.push_back(b);
 				for (int i = 0; i < Players.size(); i++) {
 
 
@@ -333,18 +333,18 @@ void World::initGUIs() {
 	g = GUI(Vector2(800 / 2, 600 / 2), Vector2(800 / 1.5f, 600 / 1.5f), true, GUI_Types::instruct_mov);
 	GUIs.push_back(g);
 
-	//g = GUI(Vector2(800 / 2, 600 / 2), Vector2(800 / 2, 600 / 2), false, GUI_Types::BulletKeysNC);
-	//GUIs.push_back(g);
-	//g = GUI(Vector2(800 / 2, 600 / 2), Vector2(800 / 2, 600 / 2), false, GUI_Types::BulletKeysC);
-	//GUIs.push_back(g);
-	//g = GUI(Vector2(800 / 2, 600 / 2), Vector2(800 / 2, 600 / 2), false, GUI_Types::CannonKeysNC);
-	//GUIs.push_back(g);
-	//g = GUI(Vector2(800 / 2, 600 / 2), Vector2(800 / 2, 600 / 2), false, GUI_Types::CannonKeysC);
-	//GUIs.push_back(g);
-	//g = GUI(Vector2(800 / 2, 600 / 2), Vector2(800 / 2, 600 / 2), false, GUI_Types::Building);
-	//GUIs.push_back(g);
-	//g = GUI(Vector2(800 / 2, 600 / 2), Vector2(800, 600), true, GUI_Types::OverallKeys);
-	//GUIs.push_back(g);
+	g = GUI(Vector2(800 / 2, 600 / 2), Vector2(800 / 2, 600 / 2), false, GUI_Types::BulletKeysNC);
+	GUIs.push_back(g);
+	g = GUI(Vector2(800 / 2, 600 / 2), Vector2(800 / 2, 600 / 2), false, GUI_Types::BulletKeysC);
+	GUIs.push_back(g);
+	g = GUI(Vector2(800 / 2, 600 / 2), Vector2(800 / 2, 600 / 2), false, GUI_Types::CannonKeysNC);
+	GUIs.push_back(g);
+	g = GUI(Vector2(800 / 2, 600 / 2), Vector2(800 / 2, 600 / 2), false, GUI_Types::CannonKeysC);
+	GUIs.push_back(g);
+	g = GUI(Vector2(800 / 2, 600 / 2), Vector2(800 / 2, 600 / 2), false, GUI_Types::Building);
+	GUIs.push_back(g);
+	g = GUI(Vector2(800 / 2, 600 / 2), Vector2(800, 600), true, GUI_Types::OverallKeys);
+	GUIs.push_back(g);
 }
 
 void World::printCamPos()
@@ -411,17 +411,17 @@ void World::update(float dt)
 	}
 
 	//update GUIs
-	for (int i = 0; i < GUIs.size(); i++) {
-		if (!GUIs[i].enable) continue;
-		//Explosion GUI
-		if (GUIs[i].starttime > 0 && *time > (GUIs[i].starttime+GUIs[i].duration)) {
-			GUIs[i].enable = false;
-			GUIs[i].starttime = -1;
-		}
-		if (GUIs[i].type > (int)GUI_Types::instruct_titan && GUIs[i].type < (int)GUI_Types::OverallKeys) {
-			GUIs[i].enable = isNearFromPlayer();
-		}
-	}
+	//for (int i = 0; i < GUIs.size(); i++) {
+	//	if (!GUIs[i].enable) continue;
+	//	Explosion GUI
+	//	if (GUIs[i].starttime > 0 && *time > (GUIs[i].starttime+GUIs[i].duration)) {
+	//		GUIs[i].enable = false;
+	//		GUIs[i].starttime = -1;
+	//	}
+	//	if (GUIs[i].type > (int)GUI_Types::instruct_titan && GUIs[i].type < (int)GUI_Types::OverallKeys) {
+	//		GUIs[i].enable = isNearFromPlayer();
+	//	}
+	//}
 
 }
 
