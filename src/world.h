@@ -65,6 +65,7 @@ public:
 	Shader* current_shader;
 	std::vector<EntityMesh> props;
 	std::vector<EntityMesh> bullets_and_cannon;
+	std::vector<EntityMesh> buildables;
 	std::vector<GUI> GUIs;
 	int shootedBullet;
 	std::vector<EntityLight> lights;

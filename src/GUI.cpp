@@ -15,6 +15,7 @@ GUI::GUI(Vector2 o, Vector2 s, bool en, GUI_Types t)
 	//this->shader = Shader::Get("data/shaders/GUI_Vertex.vs", "data/shaders/GUI_Fragment_basic.fs");
 	this->shader = t == GUI_Types::basic? Shader::Get("data/shaders/GUI_Vertex.vs", "data/shaders/GUI_Fragment_basic.fs"):
 		Shader::Get("data/shaders/GUI_Vertex.vs","data/shaders/GUI_Fragment_texture.fs");
+
 	buildQuad();
 	switch (t) {
 	case GUI_Types::basic:
@@ -183,5 +184,15 @@ void GUI::setPositionfrom3D(Vector3 pos3D, Vector2 size, Matrix44 vpm)
 
 void GUI::buildQuad()
 {
-	this->mesh->createQuad(origin.x, origin.y, size.x, size.y, false);
+	//this->mesh->createQuad(origin.x, origin.y, size.x, size.y, false);
+
+	this->mesh->vertices.clear();
+	float center_x = origin.x, center_y = origin.y, w = size.x, h = size.y;
+
+	this->mesh->vertices.push_back(Vector3(center_x + w * 0.5f, center_y - h * 0.5f, 0.0f));
+	this->mesh->vertices.push_back(Vector3(center_x - w * 0.5f, center_y + h * 0.5f, 0.0f));
+	this->mesh->vertices.push_back(Vector3(center_x + w * 0.5f, center_y + h * 0.5f, 0.0f));
+	this->mesh->vertices.push_back(Vector3(center_x - w * 0.5f, center_y - h * 0.5f, 0.0f));
+	this->mesh->vertices.push_back(Vector3(center_x - w * 0.5f, center_y + h * 0.5f, 0.0f));
+	this->mesh->vertices.push_back(Vector3(center_x + w * 0.5f, center_y - h * 0.5f, 0.0f));
 }

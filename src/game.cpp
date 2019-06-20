@@ -19,6 +19,7 @@ float angle = 0;
 Game* Game::instance = NULL;
 
 bool ThirdCameraMode = TRUE;
+int instructions = 3;
 
 
 Game::Game(int window_width, int window_height, SDL_Window* window)
@@ -57,6 +58,8 @@ Game::Game(int window_width, int window_height, SDL_Window* window)
 	//cam->enable();
 
 	world = World(camera, &time);
+
+
 
 	//world2 = World(cam, &time);
 	//world.entities.push_back(EntityMesh(Mesh::Get("data/box.ASE"), mat_types::rock));
@@ -105,6 +108,7 @@ void Game::render(void)
 		world.renderentities();
 
 		world.renderplane();
+		
 		world.renderGUI();
 
 		//world.water.render();
@@ -253,6 +257,11 @@ void Game::onKeyUp(SDL_KeyboardEvent event)
 			world.Player->shoot(elapsed_time*speed);
 		}
 		break;
+	case SDLK_SPACE:
+		if (instructions > -1) {
+			world.GUIs[instructions].enable = false;
+			instructions--;
+		}
 
 	}
 }

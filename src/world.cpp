@@ -25,9 +25,6 @@ World::World(Camera * camera, float* time)
 	//Load all the GUIs
 	initGUIs();
 
-
-
-
 	Player = new EntityPlayer(time);
 
 	for (int i = 0; i < 10; i++) {
@@ -37,7 +34,7 @@ World::World(Camera * camera, float* time)
 	
 	}
 
-	Titan = new EntityAI(time,&Player->current_position);
+	Titan = new EntityAI(time,&Player->model);
 	initWorld();
 	//initTree();
 	//initAirplane();
@@ -118,7 +115,8 @@ void World::renderentities()
 			props[i].render();
 
 			current_shader->disable();
-
+			if (props[i].type == (int)mat_types::buildable)
+				glDisable(GL_BLEND);
 
 		}
 
@@ -237,6 +235,7 @@ void World::initProps() {
 				m.model.scale(7, 7, 7);
 				props.push_back(m);
 			}
+			
 			//Building and other materials
 			if (mask->image.getPixel(j, i).x >= 162 && mask->image.getPixel(j,i).x !=255 && mask->image.getPixel(j,i).z !=255) {
 				if (j % 3 == 0) {
@@ -299,6 +298,11 @@ void World::initProps() {
 				this->Player->setPosition(px, characterpy, pz);
 				
 				Titan->setPosition(px + 20, characterpy, pz);
+
+				b = EntityMesh(mat_types::buildable);
+				b.model.setTranslation(px, py+20, pz);
+				b.model.scale(0.25, 0.5, 0.25);
+				props.push_back(b);
 				for (int i = 0; i < Players.size(); i++) {
 
 
@@ -320,13 +324,13 @@ void World::initProps() {
 }
 
 void World::initGUIs() {
-	GUI g = GUI(Vector2(800 / 2, 600 / 2), Vector2(800 / 2, 600 / 2), true, GUI_Types::instruct_building);
+	GUI g = GUI(Vector2(800 / 2, 600 / 2), Vector2(800 / 1.5f, 600 / 1.5f), true, GUI_Types::instruct_building);
 	GUIs.push_back(g);
-	g = GUI(Vector2(800 / 2, 600 / 2), Vector2(800 / 2, 600 / 2), true, GUI_Types::instruct_attack);
+	g = GUI(Vector2(800 / 2, 600 / 2), Vector2(800 / 1.5f, 600 / 1.5f), true, GUI_Types::instruct_attack);
 	GUIs.push_back(g);
-	g = GUI(Vector2(800 / 2, 600 / 2), Vector2(800 / 2, 600 / 2), true, GUI_Types::instruct_titan);
+	g = GUI(Vector2(800 / 2, 600 / 2), Vector2(800 / 1.5f, 600 / 1.5f), true, GUI_Types::instruct_titan);
 	GUIs.push_back(g);
-	g = GUI(Vector2(800 / 2, 600 / 2), Vector2(800 / 2, 600 / 2), true, GUI_Types::instruct_mov);
+	g = GUI(Vector2(800 / 2, 600 / 2), Vector2(800 / 1.5f, 600 / 1.5f), true, GUI_Types::instruct_mov);
 	GUIs.push_back(g);
 
 	//g = GUI(Vector2(800 / 2, 600 / 2), Vector2(800 / 2, 600 / 2), false, GUI_Types::BulletKeysNC);
@@ -517,6 +521,7 @@ void World::initWorld()
 
 	initProps();
 
+	
 
 }
 
