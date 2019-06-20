@@ -12,13 +12,13 @@
 class EntityAI : public Entity
 {
 
-
+ 
 
 
 public:
 	EntityAI();
 	EntityAI(float * time);
-	EntityAI(float * time, Vector3 * target);
+	EntityAI(float * time, Matrix44 * target);
 
 	~EntityAI();
 
@@ -43,17 +43,19 @@ public:
 
 	void grab(std::vector<EntityMesh> vector);
 	void throwItem();
+	bool isnear();
 
 	void setPosition(float x, float y, float z);
 
 	Vector3 getLocalVector(Vector3 v);
 	Vector3 current_position;
 	Vector3 velocity, direction;
-	Vector3 *target;
+	Matrix44 *target;
+	enum { IDLE, SEARCH, ATTACK } state;
 
 	float speed;
 	float pitch, yaw;
-	Matrix44 initialmatrixCannon;
+
 	float * time;
 	float hp;
 
@@ -70,8 +72,6 @@ public:
 	bool isanimated = true;
 
 
-
-	bool isnear();
 
 };
 
