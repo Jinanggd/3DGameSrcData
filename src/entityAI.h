@@ -71,6 +71,8 @@ public:
 
 
 
+	bool isnear();
+
 };
 
 
