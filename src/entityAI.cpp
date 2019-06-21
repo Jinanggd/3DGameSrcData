@@ -15,15 +15,17 @@ EntityAI::EntityAI() : Entity()
 
 	mesh = Mesh::Get("data/characters/characters/male.mesh");
 	mat.shader = isanimated ? Shader::Get("data/shaders/skinning.vs", "data/shaders/texture.fs") : Shader::Get("data/shaders/basic.vs", "data/shaders/texture.fs");
+	mesh->box.halfsize *= 2;
 
 	mat.texture = Texture::Get("data/characters/characters/titan.png");
 	anim = Animation::Get("data/characters/characters/crouch_walking.skanim");
 
 
+
 	this->yaw = 0.0f;
 	this->speed = 2.0f;
 	this->pitch = -1.1f;
-
+	animtime = 0;
 
 	updateMatrix();
 	this->camera = new Camera();
@@ -71,29 +73,41 @@ void EntityAI::render() {
 	}
 
 	this->mesh->render(GL_TRIANGLES);
-
+	//this->mesh->renderAnimated(GL_TRIANGLES, this->anim);
 }
-
 
 
 void EntityAI::update(float dt, std::vector<EntityMesh> props)
 {
+	float t;
 
+	
 
 	if (state == HURT) {
 
-		 updateAnim(dt);
+
+		t = *time - animtime;
+
+		updateAnim(t);
+
 	}
 	else {
+		
 
 		if (state == IDLE) updateAnim(dt);
 	
 
 		if (isnear()) {
 
-			state = ATTACK;
 
+			state = ATTACK;
+			
+			
 			updatedirection(dt, props);
+	
+
+			updateAnim(t);
+			
 
 		}
 
@@ -101,12 +115,14 @@ void EntityAI::update(float dt, std::vector<EntityMesh> props)
 
 			state = SEARCH;
 
-			updatedirection(dt, props);
+			//updatedirection(dt, props);
+
+			updateAnim(dt);
 		}
 
 	}
 
-	updateAnim(dt);
+	
 
 	checkCollision(props, current_position + (velocity * dt), dt);
 
@@ -296,6 +312,9 @@ void EntityAI::updateAnim(float dt) {
 	//update anim
 
 	float t = *time;
+
+
+
 	float speed = velocity.length() * 0.1;
 	float w = 0.0;
 
@@ -326,6 +345,7 @@ void EntityAI::updateAnim(float dt) {
 		skeleton = anim->skeleton;
 
 		break;
+
 	case EntityAI::SEARCH:
 
 		if (speed < 0.8) //walk
@@ -372,7 +392,9 @@ void EntityAI::updateAnim(float dt) {
 	case EntityAI::ATTACK:
 
 		anim = Animation::Get("data/characters/characters/attack.skanim");
+		
 		anim->assignTime(t);
+
 		anim->skeleton.getBoneMatrix("mixamorig_Head").scale(2, 2, 2);
 		anim->skeleton.getBoneMatrix("mixamorig_Spine2").scale(2, 2, 2);
 		skeleton = anim->skeleton;
@@ -381,14 +403,16 @@ void EntityAI::updateAnim(float dt) {
 	case EntityAI::HURT:
 
 		anim = Animation::Get("data/characters/characters/reaction_hit.skanim");
-		anim->assignTime(t);
+		
+		if (dt > anim->duration) state = IDLE;
+		anim->assignTime(dt,false);
 		anim->skeleton.getBoneMatrix("mixamorig_Head").scale(2, 2, 2);
 		anim->skeleton.getBoneMatrix("mixamorig_Spine2").scale(2, 2, 2);
 		skeleton = anim->skeleton;
 
-
 		break;
 	default:
+
 		break;
 	}
 

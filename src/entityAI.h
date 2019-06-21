@@ -57,6 +57,7 @@ public:
 	float pitch, yaw;
 
 	float * time;
+	float animtime;
 	float hp;
 
 	Skeleton skeleton;

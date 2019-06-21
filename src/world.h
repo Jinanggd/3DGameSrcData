@@ -75,6 +75,7 @@ public:
 	gamestate mygameState;
 
 	EntityWater* water;
+	EntityMesh* explosion;
 	EntityCloud* cloud;
 
 

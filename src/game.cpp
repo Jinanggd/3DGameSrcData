@@ -176,9 +176,11 @@ void Game::update(double seconds_elapsed)
 		}
 	}
 
+
+	world.update(elapsed_time);
+
 	world.Player->updateAnim(time);
 	world.Titan->update(seconds_elapsed*speed, world.props);
-	world.update(elapsed_time);
 
 	//to navigate with the mouse fixed in the middle
 	if (mouse_locked)

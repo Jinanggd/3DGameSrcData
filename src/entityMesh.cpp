@@ -24,6 +24,7 @@ EntityMesh::EntityMesh( mat_types type)
 	this->tag = "EntityMesh";
 	this->name = "UndefName";
 	this->type = (int)type;
+	Matrix44 R;
 	switch (type)
 
 	{
@@ -103,6 +104,33 @@ EntityMesh::EntityMesh( mat_types type)
 	
 		break;
 
+	case mat_types::explosion:
+
+		this->mesh = new Mesh();
+		this->mesh->createQuad(0, 0, 20, 20, true);
+
+		
+
+		R.setRotation(90.0f*DEG2RAD, Vector3(0, 1, 0));
+
+		this->mesh2 = new Mesh();
+
+		this->mesh2->uvs = this->mesh->uvs;
+
+		for (int i = 0; i < this->mesh->vertices.size(); i++) {
+
+			this->mesh2->vertices.push_back(R*this->mesh->vertices[i]);
+			this->mesh2->normals.push_back(R*this->mesh->normals[i]);
+
+		}
+
+
+		this->mat.shader = Shader::Get("data/shaders/basic.vs", "data/shaders/explosion.fs");
+		this->mat.texture = Texture::Get("data/Explosion.tga");
+		this->mat.texture2 = Texture::Get("data/Explosion.tga");
+
+		break;
+
 	case mat_types::buildable:
 		
 		//We are gonna build ourself the vertices with 
@@ -111,13 +139,6 @@ EntityMesh::EntityMesh( mat_types type)
 		this->mesh->vertices.clear();
 		this->mesh->uvs.clear();
 		this->mesh->normals.clear();
-
-		//vertices.push_back(Vector3(size, 0, size));
-		//vertices.push_back(Vector3(size, 0, -size));
-		//vertices.push_back(Vector3(-size, 0, -size));
-		//vertices.push_back(Vector3(-size, 0, size));
-		//vertices.push_back(Vector3(size, 0, size));
-		//vertices.push_back(Vector3(-size, 0, -size));
 
 		//****5,2-------------3********
 		//****4---------------1,6*******
@@ -197,6 +218,9 @@ EntityMesh::EntityMesh( mat_types type)
 		this->mesh = Mesh::Get("data/box.ASE");
 		//this->mat.shader = Shader::Get("data/shaders/basic.vs", "data/shaders/flat.fs");
 		break;
+
+	
+
 	}
 	
 }
@@ -205,7 +229,7 @@ EntityMesh::EntityMesh( mat_types type)
 
 void EntityMesh::render() {
 
-	if (!(type == (int)mat_types::tree) && !(type == (int)mat_types::buildable)) {
+	if (!(type == (int)mat_types::tree) && !(type == (int)mat_types::buildable) &&!(type==(int)mat_types::explosion)) {
 	
 
 		this->mat.shader->setUniform("u_color", Vector4(1, 1, 1, 1));

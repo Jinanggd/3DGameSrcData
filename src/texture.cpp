@@ -10,6 +10,36 @@
 #include "extra/picopng.h"
 #include <cassert>
 
+//bilinear interpolation
+Color Image::getPixelInterpolated(float x, float y, bool repeat) {
+	int ix = repeat ? fmod(x,width) : clamp(x,0,width-1);
+	int iy = repeat ? fmod(y,height) : clamp(y, 0, height - 1);
+	if (ix < 0) ix += width;
+	if (iy < 0) iy += height;
+	float fx = (x - (int)x);
+	float fy = (y - (int)y);
+	int ix2 = ix < width - 1 ? ix + 1 : 0;
+	int iy2 = iy < height - 1 ? iy + 1 : 0;
+	Color top = lerp( getPixel(ix, iy), getPixel(ix2, iy), fx );
+	Color bottom = lerp( getPixel(ix, iy2), getPixel(ix2, iy2), fx);
+	return lerp(top, bottom, fy);
+};
+
+Vector4 Image::getPixelInterpolatedHigh(float x, float y, bool repeat) {
+	int ix = repeat ? fmod(x, width) : clamp(x, 0, width - 1);
+	int iy = repeat ? fmod(y, height) : clamp(y, 0, height - 1);
+	if (ix < 0) ix += width;
+	if (iy < 0) iy += height;
+	float fx = (x - (int)x);
+	float fy = (y - (int)y);
+	int ix2 = ix < width - 1 ? ix + 1 : 0;
+	int iy2 = iy < height - 1 ? iy + 1 : 0;
+	Vector4 top = lerp( getPixel(ix, iy).toVector4(), getPixel(ix2, iy).toVector4(), fx);
+	Vector4 bottom = lerp(getPixel(ix, iy2).toVector4(), getPixel(ix2, iy2).toVector4(), fx);
+	return lerp(top, bottom, fy);
+};
+
+
 std::map<std::string, Texture*> Texture::sTexturesLoaded;
 int Texture::default_mag_filter = GL_LINEAR;
 int Texture::default_min_filter = GL_LINEAR_MIPMAP_LINEAR;
@@ -75,7 +105,7 @@ void Texture::create(unsigned int width, unsigned int height, unsigned int forma
 	assert(glGetError() == GL_NO_ERROR && "Error creating texture");
 }
 
-Texture* Texture::Get(const char* filename, bool mipmaps, bool wrap, bool upload_to_vram)
+Texture* Texture::Get(const char* filename, bool mipmaps, bool wrap)
 {
 	assert(filename);
 
@@ -86,7 +116,7 @@ Texture* Texture::Get(const char* filename, bool mipmaps, bool wrap, bool upload
 
 	//load it
 	Texture* texture = new Texture();
-	if (!texture->load(filename, mipmaps,wrap, upload_to_vram))
+	if (!texture->load(filename, mipmaps,wrap))
 	{
 		delete texture;
 		return NULL;
@@ -95,7 +125,7 @@ Texture* Texture::Get(const char* filename, bool mipmaps, bool wrap, bool upload
 	return texture;
 }
 
-bool Texture::load(const char* filename, bool mipmaps, bool wrap, bool upload_to_vram)
+bool Texture::load(const char* filename, bool mipmaps, bool wrap)
 {
 	std::string str = filename;
 	std::string ext = str.substr(str.size() - 4, 4);
@@ -110,7 +140,7 @@ bool Texture::load(const char* filename, bool mipmaps, bool wrap, bool upload_to
 	if (ext == ".tga" || ext == ".TGA")
 		found = image->loadTGA(filename);
 	else if (ext == ".png" || ext == ".PNG")
-		found = image->loadPNG(filename, upload_to_vram);
+		found = image->loadPNG(filename, true);
 	else
 	{
 		std::cout << "[ERROR]: unsupported format" << std::endl;
@@ -124,12 +154,6 @@ bool Texture::load(const char* filename, bool mipmaps, bool wrap, bool upload_to
 	}
 
 	this->filename = filename;
-
-	if (!upload_to_vram) //used to load images without uploading them
-	{
-		std::cout << " [TO RAM]" << std::endl;
-		return true;
-	}
 
 	//upload to VRAM
 	upload( image->width, image->height, (image->bytes_per_pixel == 3 ? GL_RGB : GL_RGBA), GL_UNSIGNED_BYTE, mipmaps, image->data );
@@ -297,12 +321,54 @@ FBO* Texture::getGlobalFBO(Texture* texture)
 	return global_fbo;
 }
 
+Texture* Texture::getBlackTexture()
+{
+	static Texture* black = NULL;
+	if (black)
+		return black;
+	const Uint8 data[3] = { 0,0,0 };
+	black = new Texture(1, 1, GL_RGB, GL_UNSIGNED_BYTE, true, (Uint8*)data);
+	return black;
+}
+
 void Texture::blit(Texture* destination, Shader* shader)
 {
 	FBO* fbo = getGlobalFBO(destination);
 	fbo->bind();
 	toViewport(shader);
 	fbo->unbind();
+}
+
+void Image::fromScreen(int width, int height)
+{
+	if (data && (width != this->width || height != this->height))
+		clear();
+
+	if (!data)
+	{
+		this->width = width;
+		this->height = height;
+		data = new uint8[width * height * 4];
+	}
+
+	glReadPixels(0,0,width, height, GL_RGBA, GL_UNSIGNED_BYTE, data);
+}
+
+void Image::fromTexture(Texture* texture)
+{
+	assert(texture);
+
+	if(data && (width != texture->width || height != texture->height ))
+		clear();
+
+	if (!data)
+	{
+		width = texture->width;
+		height = texture->height;
+		data = new uint8[width * height * 4];
+	}
+	
+	glGetTexImage(GL_TEXTURE_2D, 0, GL_RGBA, GL_UNSIGNED_BYTE, data);
 }
 
 //TGA format from: http://www.paulbourke.net/dataformats/tga/
@@ -420,6 +486,48 @@ bool Image::loadPNG(const char* filename, bool flip_y)
 	if (flip_y)
 		flipY();
 
+	return true;
+}
+
+// Saves the image to a TGA file
+bool Image::saveTGA(const char* filename, bool flip_y)
+{
+	unsigned char TGAheader[12] = { 0, 0, 2, 0, 0, 0, 0, 0, 0, 0, 0, 0 };
+
+	FILE *file = fopen(filename, "wb");
+	if (file == NULL)
+	{
+		fclose(file);
+		return false;
+	}
+
+	unsigned short header_short[3];
+	header_short[0] = width;
+	header_short[1] = height;
+	unsigned char* header = (unsigned char*)header_short;
+	header[4] = 32; //bitsperpixel
+	header[5] = 0;
+
+	fwrite(TGAheader, 1, sizeof(TGAheader), file);
+	fwrite(header, 1, 6, file);
+
+	//convert pixels to unsigned char
+	unsigned char* bytes = new unsigned char[width*height * 4];
+	for (unsigned int y = 0; y < height; ++y)
+		for (unsigned int x = 0; x < width; ++x)
+		{
+			Uint8* p = data + (height - y - 1)*width*4 + x*4;
+			unsigned int pos = (y*width + x) * 4;
+			if(flip_y)
+				pos = ((height - y - 1)*width + x) * 4;
+			bytes[pos + 2] = *p;
+			bytes[pos + 1] = *(p+1);
+			bytes[pos] = *(p+2);
+			bytes[pos + 3] = *(p+3);
+		}
+
+	fwrite(bytes, 1, width*height * 4, file);
+	fclose(file);
 	return true;
 }
 
