@@ -73,7 +73,7 @@ public:
 	~Animation();	//we need the dtor to remove the keyframes memory
 
 	//change the skeleton to the given pose according to time
-	void assignTime(float time, bool loop = true, bool interpolate = true, uint8 layers = 0xFF);
+	void assignTime(float time, bool loop = false, bool interpolate = true, uint8 layers = 0xFF);
 
 	//storage
 	bool load(const char* filename);

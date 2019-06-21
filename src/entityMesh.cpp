@@ -102,8 +102,102 @@ EntityMesh::EntityMesh( mat_types type)
 
 	
 		break;
+
+	case mat_types::buildable:
+		
+		//We are gonna build ourself the vertices with 
+
+		float w = 20.0f, h = 100.0f;
+		this->mesh->vertices.clear();
+		this->mesh->uvs.clear();
+		this->mesh->normals.clear();
+
+		//vertices.push_back(Vector3(size, 0, size));
+		//vertices.push_back(Vector3(size, 0, -size));
+		//vertices.push_back(Vector3(-size, 0, -size));
+		//vertices.push_back(Vector3(-size, 0, size));
+		//vertices.push_back(Vector3(size, 0, size));
+		//vertices.push_back(Vector3(-size, 0, -size));
+
+		//****5,2-------------3********
+		//****4---------------1,6*******
+
+
+		//We just build the pointsby hand
+		{
+
+
+			this->mesh->vertices.push_back(Vector3(w, 0, 0));
+			this->mesh->vertices.push_back(Vector3(0, h, 0));
+			this->mesh->vertices.push_back(Vector3(w, h, 0));
+
+			this->mesh->vertices.push_back(Vector3(0, 0, 0));
+			this->mesh->vertices.push_back(Vector3(0, h, 0));
+			this->mesh->vertices.push_back(Vector3(w, 0, 0));
+
+			this->mesh->vertices.push_back(Vector3(w, 0, w));
+			this->mesh->vertices.push_back(Vector3(w, h, 0));
+			this->mesh->vertices.push_back(Vector3(w, h, w));
+
+			this->mesh->vertices.push_back(Vector3(w, 0, 0));
+			this->mesh->vertices.push_back(Vector3(w, h, 0));
+			this->mesh->vertices.push_back(Vector3(w, 0, w));
+
+			this->mesh->vertices.push_back(Vector3(0, 0, w));
+			this->mesh->vertices.push_back(Vector3(w, h, w));
+			this->mesh->vertices.push_back(Vector3(0, h, w));
+
+			this->mesh->vertices.push_back(Vector3(w, 0, w));
+			this->mesh->vertices.push_back(Vector3(w, h, w));
+			this->mesh->vertices.push_back(Vector3(0, 0, w));
+
+			this->mesh->vertices.push_back(Vector3(0, 0, 0));
+			this->mesh->vertices.push_back(Vector3(0, h, w));
+			this->mesh->vertices.push_back(Vector3(0, h, 0));
+
+			this->mesh->vertices.push_back(Vector3(0, 0, w));
+			this->mesh->vertices.push_back(Vector3(0, h, w));
+			this->mesh->vertices.push_back(Vector3(0, 0, 0));
+
+			//UVS
+			this->mesh->uvs.push_back(Vector2(1, 0));
+			this->mesh->uvs.push_back(Vector2(0, 1));
+			this->mesh->uvs.push_back(Vector2(1, 1));
+
+			this->mesh->uvs.push_back(Vector2(0, 0));
+			this->mesh->uvs.push_back(Vector2(0, 1));
+			this->mesh->uvs.push_back(Vector2(1, 0));
+
+			this->mesh->uvs.push_back(Vector2(1, 0));
+			this->mesh->uvs.push_back(Vector2(0, 1));
+			this->mesh->uvs.push_back(Vector2(1, 1));
+
+			this->mesh->uvs.push_back(Vector2(0, 0));
+			this->mesh->uvs.push_back(Vector2(0, 1));
+			this->mesh->uvs.push_back(Vector2(1, 0));
+
+			this->mesh->uvs.push_back(Vector2(1, 0));
+			this->mesh->uvs.push_back(Vector2(0, 1));
+			this->mesh->uvs.push_back(Vector2(1, 1));
+
+			this->mesh->uvs.push_back(Vector2(0, 0));
+			this->mesh->uvs.push_back(Vector2(0, 1));
+			this->mesh->uvs.push_back(Vector2(1, 0));
+
+			this->mesh->uvs.push_back(Vector2(1, 0));
+			this->mesh->uvs.push_back(Vector2(0, 1));
+			this->mesh->uvs.push_back(Vector2(1, 1));
+
+			this->mesh->uvs.push_back(Vector2(0, 0));
+			this->mesh->uvs.push_back(Vector2(0, 1));
+			this->mesh->uvs.push_back(Vector2(1, 0));
+		}
+
+
+		this->mesh = Mesh::Get("data/box.ASE");
+		//this->mat.shader = Shader::Get("data/shaders/basic.vs", "data/shaders/flat.fs");
+		break;
 	}
-	
 	
 }
 
@@ -111,7 +205,7 @@ EntityMesh::EntityMesh( mat_types type)
 
 void EntityMesh::render() {
 
-	if (!(type == (int)mat_types::tree)) {
+	if (!(type == (int)mat_types::tree) && !(type == (int)mat_types::buildable)) {
 	
 
 		this->mat.shader->setUniform("u_color", Vector4(1, 1, 1, 1));
@@ -120,10 +214,15 @@ void EntityMesh::render() {
 		this->mesh->render(GL_TRIANGLES);
 	
 	}
-
+	else if (type == (int)mat_types::buildable) {
+		glEnable(GL_BLEND);
+		glBlendFunc(GL_SRC_ALPHA, GL_ONE);
+		this->mat.shader->setUniform("u_color", Vector4(0, 0, 1, 0.1f));
+		this->mat.shader->setUniform("u_model", model);
+		this->mesh->render(GL_TRIANGLES);
+		//glDisable(GL_BLEND);
+	}
 	else {
-	
-	
 		this->mat.shader->setUniform("u_color", Vector4(1, 1, 1, 1));
 		this->mat.shader->setUniform("u_texture", this->mat.texture);
 		this->mat.shader->setUniform("u_model", model);
@@ -131,8 +230,6 @@ void EntityMesh::render() {
 
 		this->mat.shader->setUniform("u_texture", this->mat.texture2);
 		this->mesh2->render(GL_TRIANGLES);
-
-	
 	}
 
 

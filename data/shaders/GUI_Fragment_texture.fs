@@ -14,6 +14,7 @@ uniform bool is3D;
 void main()
 {
 	vec2 uv = v_uv;
+	
 	if(texture2D(u_texture,uv).w <0.3)
 		discard;
 	vec4 color = texture2D(u_texture,uv);

@@ -40,6 +40,7 @@ public:
 	void render();
 	void setPositionfrom3D(Vector3 pos3D, Vector2 size, Matrix44 vpm);
 	void buildQuad();
+	void buildQuadUVS(float minX, float maxX, float minY, float maxY);
 
 	// model matrix 
 	Matrix44 model;

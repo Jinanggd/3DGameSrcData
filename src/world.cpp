@@ -18,7 +18,13 @@ World::~World()
 World::World(Camera * camera, float* time)
 {
 	this->camera = camera;
+	this->camera2D = new Camera();
+	this->camera2D->setOrthographic(0, 800, 0, 600, -1, 1);
 	this->time = time;
+
+	//Load all the GUIs
+	initGUIs();
+
 	Player = new EntityPlayer(time);
 
 	for (int i = 0; i < 10; i++) {
@@ -28,7 +34,7 @@ World::World(Camera * camera, float* time)
 	
 	}
 
-	Titan = new EntityAI(time,&Player->current_position);
+	Titan = new EntityAI(time,&Player->model);
 	initWorld();
 	//initTree();
 	//initAirplane();
@@ -63,6 +69,29 @@ void World::renderSkybox() {
 
 }
 
+void World::renderGUI()
+{
+	Matrix44 mGUI;
+	mGUI.setIdentity();
+	glDisable(GL_DEPTH_TEST);
+	for (int i = 0; i < GUIs.size(); i++) {
+		if (GUIs[i].enable) {
+			//We render the GUI if it is enabled
+			current_shader = GUIs[i].shader;
+			current_shader->enable();
+			if(!GUIs[i].isHUD)
+				current_shader->setUniform("u_viewprojection", camera2D->viewprojection_matrix);
+			else
+				current_shader->setUniform("u_viewprojection", mGUI);
+			current_shader->setUniform("u_time", *time);
+			GUIs[i].render();
+			current_shader->disable();
+			
+		}
+	}
+	glEnable(GL_DEPTH_TEST);
+}
+
 void World::renderentities()
 {
 
@@ -86,7 +115,8 @@ void World::renderentities()
 			props[i].render();
 
 			current_shader->disable();
-
+			if (props[i].type == (int)mat_types::buildable)
+				glDisable(GL_BLEND);
 
 		}
 
@@ -205,6 +235,7 @@ void World::initProps() {
 				m.model.scale(7, 7, 7);
 				props.push_back(m);
 			}
+			
 			//Building and other materials
 			if (mask->image.getPixel(j, i).x >= 162 && mask->image.getPixel(j,i).x !=255 && mask->image.getPixel(j,i).z !=255) {
 				if (j % 3 == 0) {
@@ -267,6 +298,11 @@ void World::initProps() {
 				this->Player->setPosition(px, characterpy, pz);
 				
 				Titan->setPosition(px + 20, characterpy, pz);
+
+				//b = EntityMesh(mat_types::buildable);
+				//b.model.setTranslation(px, py+20, pz);
+				//b.model.scale(0.25, 0.5, 0.25);
+				//props.push_back(b);
 				for (int i = 0; i < Players.size(); i++) {
 
 
@@ -285,21 +321,30 @@ void World::initProps() {
 
 		}
 	}
-		
+}
 
-	// Creas props arboles
-	//for (int i = 0; i < positions.size(); i++) {
+void World::initGUIs() {
+	GUI g = GUI(Vector2(800 / 2, 600 / 2), Vector2(800 / 1.5f, 600 / 1.5f), true, GUI_Types::instruct_building);
+	GUIs.push_back(g);
+	g = GUI(Vector2(800 / 2, 600 / 2), Vector2(800 / 1.5f, 600 / 1.5f), true, GUI_Types::instruct_attack);
+	GUIs.push_back(g);
+	g = GUI(Vector2(800 / 2, 600 / 2), Vector2(800 / 1.5f, 600 / 1.5f), true, GUI_Types::instruct_titan);
+	GUIs.push_back(g);
+	g = GUI(Vector2(800 / 2, 600 / 2), Vector2(800 / 1.5f, 600 / 1.5f), true, GUI_Types::instruct_mov);
+	GUIs.push_back(g);
 
-	//	EntityMesh m = EntityMesh(mat_types::tree);
-
-	//	m.model.setTranslation(positions[i].x, positions[i].y, positions[i].z);
-	//	m.model.scale(5, 5, 5);
-	//	props.push_back(m);
-	//}
-
-	
-
-
+	g = GUI(Vector2(800 / 2, 600 / 2), Vector2(800 / 2, 600 / 2), false, GUI_Types::BulletKeysNC);
+	GUIs.push_back(g);
+	g = GUI(Vector2(800 / 2, 600 / 2), Vector2(800 / 2, 600 / 2), false, GUI_Types::BulletKeysC);
+	GUIs.push_back(g);
+	g = GUI(Vector2(800 / 2, 600 / 2), Vector2(800 / 2, 600 / 2), false, GUI_Types::CannonKeysNC);
+	GUIs.push_back(g);
+	g = GUI(Vector2(800 / 2, 600 / 2), Vector2(800 / 2, 600 / 2), false, GUI_Types::CannonKeysC);
+	GUIs.push_back(g);
+	g = GUI(Vector2(800 / 2, 600 / 2), Vector2(800 / 2, 600 / 2), false, GUI_Types::Building);
+	GUIs.push_back(g);
+	g = GUI(Vector2(800 / 2, 600 / 2), Vector2(800, 600), true, GUI_Types::OverallKeys);
+	GUIs.push_back(g);
 }
 
 void World::printCamPos()
@@ -323,6 +368,7 @@ float World::mapping(float start1,float stop1, float start2,float stop2,float va
 
 void World::update(float dt)
 {
+
 	if (shootedBullet > -1) {
 		Vector3 currentposition = bullets_and_cannon[shootedBullet].model.getTranslation();
 		
@@ -363,6 +409,19 @@ void World::update(float dt)
 		props[bullets_and_cannon[shootedBullet].index_propsvector].model.setTranslation(newposition.x, newposition.y, newposition.z);
 		//props[bullets_and_cannon[index].index_propsvector].model.scale(50, 50, 50);
 	}
+
+	//update GUIs
+	//for (int i = 0; i < GUIs.size(); i++) {
+	//	if (!GUIs[i].enable) continue;
+	//	Explosion GUI
+	//	if (GUIs[i].starttime > 0 && *time > (GUIs[i].starttime+GUIs[i].duration)) {
+	//		GUIs[i].enable = false;
+	//		GUIs[i].starttime = -1;
+	//	}
+	//	if (GUIs[i].type > (int)GUI_Types::instruct_titan && GUIs[i].type < (int)GUI_Types::OverallKeys) {
+	//		GUIs[i].enable = isNearFromPlayer();
+	//	}
+	//}
 
 }
 
@@ -417,11 +476,23 @@ void World::shotBullet(int index, float dt, Vector3 direction)
 	//Search on Titans vector
 
 
+
 	Vector3 newpoint = currentposition + 4.0f*dt*direction;
 	bullets_and_cannon[index].model.setTranslation(newpoint.x, newpoint.y, newpoint.z);
 	props[bullets_and_cannon[index].index_propsvector].model.setTranslation(newpoint.x, newpoint.y, newpoint.z);
 	//props[bullets_and_cannon[index].index_propsvector].model.scale(50, 50, 50);
 	
+}
+
+bool World::isNearFromPlayer()
+{
+	Vector3 playercenter = Player->current_position + Vector3(0, 2, 0),collisionpoint,collisionnormal;
+
+	for (int i = 0; i < bullets_and_cannon.size(); i++) {
+		if (bullets_and_cannon[i].mesh->testSphereCollision(bullets_and_cannon[i].model, playercenter, 2, collisionpoint, collisionnormal))
+			return true;
+	}
+	return false;
 }
 
 
@@ -451,6 +522,7 @@ void World::initWorld()
 
 	initProps();
 
+	
 
 }
 

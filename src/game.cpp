@@ -19,6 +19,7 @@ float angle = 0;
 Game* Game::instance = NULL;
 
 bool ThirdCameraMode = TRUE;
+int instructions = 3;
 
 
 Game::Game(int window_width, int window_height, SDL_Window* window)
@@ -57,6 +58,8 @@ Game::Game(int window_width, int window_height, SDL_Window* window)
 	//cam->enable();
 
 	world = World(camera, &time);
+
+
 
 	//world2 = World(cam, &time);
 	//world.entities.push_back(EntityMesh(Mesh::Get("data/box.ASE"), mat_types::rock));
@@ -105,6 +108,8 @@ void Game::render(void)
 		world.renderentities();
 
 		world.renderplane();
+		
+		//world.renderGUI();
 
 		//world.water.render();
 		
@@ -124,7 +129,7 @@ void Game::render(void)
 
 void Game::update(double seconds_elapsed)
 {
-	float speed = seconds_elapsed * 100; //the speed is defined by the seconds_elapsed so it goes constant
+	float speed = seconds_elapsed * 50; //the speed is defined by the seconds_elapsed so it goes constant
 
 	//example
 	angle += (float)seconds_elapsed * 10.0f;
@@ -173,7 +178,6 @@ void Game::update(double seconds_elapsed)
 
 	world.Player->updateAnim(time);
 	world.Titan->update(seconds_elapsed*speed, world.props);
-
 	world.update(elapsed_time);
 
 	//to navigate with the mouse fixed in the middle
@@ -253,6 +257,11 @@ void Game::onKeyUp(SDL_KeyboardEvent event)
 			world.Player->shoot(elapsed_time*speed);
 		}
 		break;
+	case SDLK_SPACE:
+		if (instructions > -1) {
+			world.GUIs[instructions].enable = false;
+			instructions--;
+		}
 
 	}
 }

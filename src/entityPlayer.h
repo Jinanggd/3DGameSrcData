@@ -42,13 +42,10 @@ public:
 
 	void render(float time);
 	void render(Camera* cam);
-	void Init(Camera* cam);
 
 	void update(float dt, std::vector<EntityMesh> props);
 	void playerMovement(float dt, std::vector<EntityMesh>props);
-	void rotateCannon(float rotation, Vector3 axis);
-	void TitanMovement(float dt, std::vector<EntityMesh>props);
-	void NPCMovement(float dt, std::vector<EntityMesh>props);
+	void rotateCannon();
 
 
 	void checkCollision(std::vector<EntityMesh> props, Vector3 newpos,float dt);

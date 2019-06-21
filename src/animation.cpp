@@ -177,10 +177,12 @@ void Animation::assignTime(float t, bool loop, bool interpolate, uint8 layers)
 {
 	assert(keyframes && skeleton.num_bones);
 
+	loop = false;
+
 	if (loop)
 	{
 		t = fmod(t, duration);
-		if (t < 0)
+		if (t > 0)
 			t = duration + t;
 	}
 	else

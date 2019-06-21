@@ -13,6 +13,7 @@ uniform bool is3D;
 void main()
 {
 	vec2 uv = v_uv;
+	
 	vec4 color = v_color;
 	if(is3D)
 		color = mix(vec4(0.2,0.2,0.2,1.0),color,visibility);
