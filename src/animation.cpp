@@ -179,12 +179,17 @@ void Animation::assignTime(float t, bool loop, bool interpolate, uint8 layers)
 
 	if (loop)
 	{
+		
 		t = fmod(t, duration);
 		if (t < 0)
 			t = duration + t;
 	}
 	else
-		t = clamp( t, 0.0f, duration - (1.0/samples_per_second) );
+	{
+		t = clamp(t, 0.0f, duration - (1.0 / samples_per_second));
+		
+	}
+
 	float v = samples_per_second * t;
 	int index = clamp(floor(v), 0, num_keyframes - 1);
 	int index2 = index + 1;

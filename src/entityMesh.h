@@ -4,8 +4,9 @@
 #include "mesh.h";
 #include "camera.h"
 #include "entity.h"
-#include "texture.h"
 #include "shader.h"
+#include "texture.h"
+
 
 
 enum class mat_types {
@@ -22,7 +23,9 @@ enum class mat_types {
 	cannon,
 	buildable,
 	tower1,
-	tower2
+
+	tower2,
+	explosion
 
 };
 

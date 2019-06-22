@@ -36,6 +36,10 @@ World::World(Camera * camera, float* time)
 
 	Titan = new EntityAI(time,&Player->model);
 	initWorld();
+
+	explosion = new EntityMesh(mat_types::explosion);
+	explosion->model.setTranslation(0, -1000, 0);
+
 	//initTree();
 	//initAirplane();
 
@@ -125,11 +129,16 @@ void World::renderentities()
 	current_shader->enable();
 	current_shader->setUniform("u_viewprojection", camera->viewprojection_matrix);
 
-	//renderGUI();
-
 	current_shader->setUniform("u_time", *time);
 	Player->render(*time);
 	Titan->render();
+	current_shader->disable();
+
+	current_shader = explosion->mat.shader;
+	current_shader->enable();
+	current_shader->setUniform("u_viewprojection", camera->viewprojection_matrix);
+	current_shader->setUniform("u_time", *time);
+	explosion->render();
 	current_shader->disable();
 
 	//current_shader = Player->actionplane.mat.shader;
@@ -297,7 +306,9 @@ void World::initProps() {
 				
 				this->Player->setPosition(px, characterpy, pz);
 				
-				Titan->setPosition(px + 20, characterpy, pz);
+
+				Titan->setPosition(px - 30, characterpy, pz+70);
+
 
 				b = EntityMesh(mat_types::buildable);
 				b.model.setTranslation(px, py, pz+50);
@@ -370,7 +381,7 @@ void World::update(float dt)
 
 	if (shootedBullet > -1) {
 		Vector3 currentposition = bullets_and_cannon[shootedBullet].model.getTranslation();
-		
+
 		if (abs(currentposition.x) > 3000 || abs(currentposition.y) > 2000 || abs(currentposition.z) > 3000) {
 			// Explosion GUI
 			removeBullet(shootedBullet);
@@ -386,9 +397,9 @@ void World::update(float dt)
 		//Hacer con test ray collision
 		for (int i = 0; i < props.size(); i++) {
 			//Skip Cannons and bullets
-			if (bullets_and_cannon[shootedBullet].index_propsvector == i || 
-				props[i].type == (int)mat_types::cannon || 
-				props[i].type == (int)mat_types::bullet) 
+			if (bullets_and_cannon[shootedBullet].index_propsvector == i ||
+				props[i].type == (int)mat_types::cannon ||
+				props[i].type == (int)mat_types::bullet)
 				continue;
 
 			//A Ray from the current point to the new position
@@ -403,6 +414,32 @@ void World::update(float dt)
 			}
 		}
 		//Search on Titans vector
+		if (Titan->mesh->testRayCollision(Titan->model, currentposition, bullets_and_cannon[shootedBullet].Direction,
+			collisionpoint, collisionnormal, distance)){
+			
+			explosion->model.setTranslation(collisionpoint.x, collisionpoint.y, collisionpoint.z);
+	
+			//Vector3 dir = (-1.0)*bullets_and_cannon[shootedBullet].Direction;
+			//dir.y = 0;
+
+			//dir.normalize();
+			//Vector3 front = Titan->model.frontVector();
+			//front.y = 0;
+			//front.normalize();
+			//
+			//Matrix44 R;
+			//R.setRotation(acos(dot( dir, front )), Vector3(0, 1, 0));
+
+			//Titan->model = R * Titan->model;
+
+			Titan->state = EntityAI::HURT;
+			Titan->animtime =*time;
+			removeBullet(shootedBullet);
+
+			return;
+		
+		
+		}
 
 		bullets_and_cannon[shootedBullet].model.setTranslation(newposition.x, newposition.y, newposition.z);
 		props[bullets_and_cannon[shootedBullet].index_propsvector].model.setTranslation(newposition.x, newposition.y, newposition.z);
@@ -410,6 +447,7 @@ void World::update(float dt)
 	}
 
 	//update GUIs
+
 	for (int i = 0; i < GUIs.size(); i++) {
 		if (!GUIs[i].enable)continue;
 
@@ -418,6 +456,7 @@ void World::update(float dt)
 				this->camera->viewprojection_matrix);
 		}
 	}
+
 
 	setAllGUItofalse();
 
@@ -476,7 +515,23 @@ void World::setAllGUItofalse()
 			GUIs[i].index = -1; 
 		}
 	}
-		
+
+	Vector3 newpoint = currentposition + 4.0f*dt*direction;
+	bullets_and_cannon[index].model.setTranslation(newpoint.x, newpoint.y, newpoint.z);
+	props[bullets_and_cannon[index].index_propsvector].model.setTranslation(newpoint.x, newpoint.y, newpoint.z);
+	//props[bullets_and_cannon[index].index_propsvector].model.scale(50, 50, 50);
+	
+}
+
+bool World::isNearFromPlayer()
+{
+	Vector3 playercenter = Player->current_position + Vector3(0, 2, 0),collisionpoint,collisionnormal;
+
+	for (int i = 0; i < bullets_and_cannon.size(); i++) {
+		if (bullets_and_cannon[i].mesh->testSphereCollision(bullets_and_cannon[i].model, playercenter, 2, collisionpoint, collisionnormal))
+			return true;
+	}
+	return false;
 }
 
 

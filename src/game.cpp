@@ -129,7 +129,7 @@ void Game::render(void)
 
 void Game::update(double seconds_elapsed)
 {
-	float speed = seconds_elapsed * 100; //the speed is defined by the seconds_elapsed so it goes constant
+	float speed = seconds_elapsed * 50; //the speed is defined by the seconds_elapsed so it goes constant
 
 	//example
 	angle += (float)seconds_elapsed * 10.0f;
@@ -179,7 +179,6 @@ void Game::update(double seconds_elapsed)
 	world.Player->updateAnim(time);
 	world.Titan->update(seconds_elapsed*speed, world.props);
 	world.update(elapsed_time);
-
 	//to navigate with the mouse fixed in the middle
 	if (mouse_locked)
 		Input::centerMouse(); 

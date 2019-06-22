@@ -15,15 +15,17 @@ EntityAI::EntityAI() : Entity()
 
 	mesh = Mesh::Get("data/characters/characters/male.mesh");
 	mat.shader = isanimated ? Shader::Get("data/shaders/skinning.vs", "data/shaders/texture.fs") : Shader::Get("data/shaders/basic.vs", "data/shaders/texture.fs");
+	mesh->box.halfsize *= 2;
 
 	mat.texture = Texture::Get("data/characters/characters/titan.png");
 	anim = Animation::Get("data/characters/characters/crouch_walking.skanim");
 
 
+
 	this->yaw = 0.0f;
 	this->speed = 2.0f;
 	this->pitch = -1.1f;
-
+	animtime = 0;
 
 	updateMatrix();
 	this->camera = new Camera();
@@ -75,27 +77,54 @@ void EntityAI::render() {
 }
 
 
-
 void EntityAI::update(float dt, std::vector<EntityMesh> props)
 {
 
-	if (state == IDLE) updateAnim(dt);
+	float t;
 
-	if (isnear()) {
+	
 
-		state = ATTACK;
-		updatedirection(dt, props);
+	if (state == HURT) {
+
+
+		t = *time - animtime;
+
+		updateAnim(t);
 
 	}
-
 	else {
+		
 
-		state = SEARCH;
+		if (state == IDLE) updateAnim(dt);
+	
 
-		updatedirection(dt, props);
+		if (isnear()) {
+
+
+			state = ATTACK;
+			
+			
+			updatedirection(dt, props);
+	
+
+			updateAnim(t);
+			
+
+		}
+
+		else {
+
+			state = SEARCH;
+
+			//updatedirection(dt, props);
+
+			updateAnim(dt);
+		}
+
 	}
 
-	updateAnim(dt);
+	
+
 
 	checkCollision(props, current_position + (velocity * dt), dt);
 
@@ -198,7 +227,6 @@ void EntityAI::checkCollision(std::vector<EntityMesh> props, Vector3 newpos, flo
 
 				else {
 
-					std::cout << angle << std::endl;
 					right.x = -right.x;
 					right.z = -right.z;
 					this->model.translate((0.2f)*(push_away + right));
@@ -285,6 +313,9 @@ void EntityAI::updateAnim(float dt) {
 	//update anim
 
 	float t = *time;
+
+
+
 	float speed = velocity.length() * 0.1;
 	float w = 0.0;
 
@@ -303,30 +334,23 @@ void EntityAI::updateAnim(float dt) {
 		vel = R * vel;
 	}
 
-	if (state == ATTACK) {
-
-		anim = Animation::Get("data/characters/characters/attack.skanim");
-		anim->assignTime(t);
-		anim->skeleton.getBoneMatrix("mixamorig_Head").scale(2, 2, 2);
-		anim->skeleton.getBoneMatrix("mixamorig_Spine2").scale(2, 2, 2);
-		skeleton = anim->skeleton;
 
 
-	}
-
-	else if (state == IDLE) //idle
-
+	switch (state)
 	{
-		anim = Animation::Get(idle_name);
+	case EntityAI::IDLE:
+
+		anim = Animation::Get("data/characters/characters/reaction_hit.skanim");
+
 		anim->assignTime(t);
 		anim->skeleton.getBoneMatrix("mixamorig_Head").scale(2, 2, 2);
 		anim->skeleton.getBoneMatrix("mixamorig_Spine2").scale(2, 2, 2);
 		skeleton = anim->skeleton;
 
-	}
 
-	else if (state == SEARCH) {
+		break;
 
+	case EntityAI::SEARCH:
 
 
 		if (speed < 0.8) //walk
@@ -368,9 +392,33 @@ void EntityAI::updateAnim(float dt) {
 
 		}
 
+		break;
+	case EntityAI::ATTACK:
 
 
+		anim = Animation::Get("data/characters/characters/attack.skanim");
+		
+		anim->assignTime(t);
 
+		anim->skeleton.getBoneMatrix("mixamorig_Head").scale(2, 2, 2);
+		anim->skeleton.getBoneMatrix("mixamorig_Spine2").scale(2, 2, 2);
+		skeleton = anim->skeleton;
+
+		break;
+	case EntityAI::HURT:
+
+		anim = Animation::Get("data/characters/characters/reaction_hit.skanim");
+		
+		if (dt > anim->duration) state = IDLE;
+		anim->assignTime(dt,false);
+		anim->skeleton.getBoneMatrix("mixamorig_Head").scale(2, 2, 2);
+		anim->skeleton.getBoneMatrix("mixamorig_Spine2").scale(2, 2, 2);
+		skeleton = anim->skeleton;
+
+		break;
+	default:
+
+		break;
 	}
 
 
@@ -395,7 +443,7 @@ bool EntityAI::isnear() {
 
 	float distance = (mytarget - mypost).length();
 
-	//std::cout << distance << std::endl;
+
 
 	if (distance < 15) return true;
 

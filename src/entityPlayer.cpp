@@ -14,11 +14,6 @@ EntityPlayer::EntityPlayer(type mytype) : Entity()
 	case PLAYER:
 		hp = 100.0f; // Default health 
 		break;
-	case TITAN:
-		EntityPlayer();
-		//anim->skeleton.getBoneMatrix("mixamorig_Head").scale(2,2,2);
-		//anim->skeleton.getBoneMatrix("mixamorig_Spine2").scale(2, 2, 2);
-		break;
 	default:
 
 		EntityPlayer();
@@ -83,13 +78,10 @@ void EntityPlayer::render(float time) {
 	this->mat.shader->setUniform("u_model", this->model);
 
 	if (isanimated) {
-		/*
-		anim->assignTime(time);
-		anim->skeleton.getBoneMatrix("mixamorig_Head").scale(2, 2, 2);
-		anim->skeleton.getBoneMatrix("mixamorig_Spine2").scale(2, 2, 2);
-		*/
+
 		skeleton.computeFinalBoneMatrices(bone_matrices, mesh);
 		this->mat.shader->setUniform("u_bones", bone_matrices);
+
 	}
 
 	this->mesh->render(GL_TRIANGLES);
@@ -198,15 +190,15 @@ void EntityPlayer::playerMovement(float dt, std::vector<EntityMesh> props)
 		velocity = iscarrying ? velocity + move * 1.5 : velocity + move * 4;
 
 		checkCollision(props, current_position + velocity * dt, dt);
-		if (iscarrying)
-			updateItem(R, Vector3(0, 5, -3));
-
+		
 		//current_position = current_position + velocity * dt;
 
 		float friction = 1.0 / (1.0 + (dt * 4.5));
 
 		velocity = velocity * friction;
 
+		if (iscarrying)
+			updateItem(R, Vector3(0, 7, -1));
 
 		if (isanimated)updateAnim(dt);
 
@@ -415,10 +407,13 @@ void EntityPlayer::updateAnim(float dt) {
 	float w = 0.0;
 
 	Vector3 vel = velocity;
+
+
 	
 	
 	if (velocity.length() > 0.01)
 	{
+
 		normalize(velocity); //vel in local space
 		Matrix44 R;
 		R.rotate(-yaw * DEG2RAD, Vector3(0, 1, 0));
@@ -431,23 +426,29 @@ void EntityPlayer::updateAnim(float dt) {
 
 
 	
-
 	if (speed < 0.01) //idle
 	{
-		anim = Animation::Get(idle_name);
+
+		anim = iscarrying ? Animation::Get("data/characters/characters/carrying_idle.skanim") : Animation::Get(idle_name);
 		anim->assignTime(t);
 		skeleton = anim->skeleton;
+
 	}
 	else if (speed < 0.8) //walk
 	{
-		anim = Animation::Get(idle_name);
+		anim = iscarrying ? Animation::Get("data/characters/characters/carrying_idle.skanim") : Animation::Get(idle_name);
 		anim->assignTime(t);
 		w = clamp(speed, 0, 1);
-		animB = Animation::Get("data/characters/characters/walking.skanim");
+
+		animB = iscarrying ? Animation::Get("data/characters/characters/carrying_walking.skanim") : Animation::Get("data/characters/characters/walking.skanim");
+
 		if (vel.z < 0)
 			animB->assignTime(t);
 		else
 			animB->assignTime(-t);
+
+		if (iscarrying) w *= 2;
+		
 		blendSkeleton(&anim->skeleton, &animB->skeleton, w, &skeleton);
 	}
 
@@ -552,7 +553,6 @@ void EntityPlayer::grab(std::vector<EntityMesh> vector)
 					Game::instance->world.GUIs[7].enable = true;
 					Game::instance->world.GUIs[7].index = Game::instance->world.GUIs[6].index;
 					Game::instance->world.GUIs[6].index = -1;
-
 				}
 				else {
 					//You cannot fire without bullet
@@ -692,7 +692,7 @@ void EntityPlayer::setPosition(float x, float y, float z)
 	this->current_position = Vector3(x, y, z);
 	this->model.translate(x, y, z);
 	updateMatrix();
-	//updateCamera(Vector3(0, 10, -20));
+	
 }
 
 Vector3 EntityPlayer::getLocalVector(Vector3 v)
