@@ -93,13 +93,13 @@ void EntityPlayer::render(Camera * cam)
 	
 }
 
-void EntityPlayer::update(float dt, std::vector<EntityMesh> props)
+void EntityPlayer::update(float dt, std::vector<EntityMesh> props, std::vector<EntityMesh> bc)
 {
 	playerMovement(dt, props);
 	
 }
 
-void EntityPlayer::playerMovement(float dt, std::vector<EntityMesh> props)
+void EntityPlayer::playerMovement(float dt, std::vector<EntityMesh> props, std::vector<EntityMesh> bc)
 {
 	// Crear la matriz de rotatcion con la rotacion actual,
 	// Crear el movimiento, sumarla a la posicion y multiplcarla por la matriz
@@ -261,7 +261,7 @@ void EntityPlayer::rotateCannon()
 
 //Check if there is a collision to the new position of the player, if there it is, the player will keep the same position as before moving
 //Depending of the Mesh tag it will happen different kind of interactions
-void EntityPlayer::checkCollision(std::vector<EntityMesh> props, Vector3 newpos,float dt)
+void EntityPlayer::checkCollision(std::vector<EntityMesh> props, std::vector<EntityMesh> bc, Vector3 newpos,float dt)
 {
 	Vector3 character_center = newpos + Vector3(0, 2, 0);
 
