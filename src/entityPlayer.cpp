@@ -93,13 +93,13 @@ void EntityPlayer::render(Camera * cam)
 	
 }
 
-void EntityPlayer::update(float dt, std::vector<EntityMesh> props)
+void EntityPlayer::update(float dt, std::vector<EntityMesh> props, std::vector<EntityMesh> bc)
 {
-	playerMovement(dt, props);
+	playerMovement(dt, props,bc);
 	
 }
 
-void EntityPlayer::playerMovement(float dt, std::vector<EntityMesh> props)
+void EntityPlayer::playerMovement(float dt, std::vector<EntityMesh> props, std::vector<EntityMesh> bc)
 {
 	// Crear la matriz de rotatcion con la rotacion actual,
 	// Crear el movimiento, sumarla a la posicion y multiplcarla por la matriz
@@ -189,7 +189,7 @@ void EntityPlayer::playerMovement(float dt, std::vector<EntityMesh> props)
 
 		velocity = iscarrying ? velocity + move * 1.5 : velocity + move * 4;
 
-		checkCollision(props, current_position + velocity * dt, dt);
+		checkCollision(props,bc, current_position + velocity * dt, dt);
 		
 		//current_position = current_position + velocity * dt;
 
@@ -235,7 +235,7 @@ void EntityPlayer::rotateCannon()
 	newmodel = R * Cannon.model;
 	Cannon.model = newmodel;
 	Game::instance->world.bullets_and_cannon[CannonID].model = newmodel;
-	Game::instance->world.props[Game::instance->world.bullets_and_cannon[CannonID].index_propsvector].model = newmodel;
+	//Game::instance->world.props[Game::instance->world.bullets_and_cannon[CannonID].index_propsvector].model = newmodel;
 
 	
 	//Matrix44 cR,R,S,T,newmodel;
@@ -261,16 +261,14 @@ void EntityPlayer::rotateCannon()
 
 //Check if there is a collision to the new position of the player, if there it is, the player will keep the same position as before moving
 //Depending of the Mesh tag it will happen different kind of interactions
-void EntityPlayer::checkCollision(std::vector<EntityMesh> props, Vector3 newpos,float dt)
+void EntityPlayer::checkCollision(std::vector<EntityMesh> props, std::vector<EntityMesh> bc, Vector3 newpos,float dt)
 {
 	Vector3 character_center = newpos + Vector3(0, 2, 0);
 
+	//Collision with props
 	for (int i = 0; i < props.size(); i++) {
 
-		if (props[i].type == (int)mat_types::tree || props[i].type == (int)mat_types::house || props[i].type == (int)mat_types::tower || 
-			props[i].type == (int)mat_types::bullet || props[i].type == (int)mat_types::cannon) {
-
-
+		if (props[i].type == (int)mat_types::tree || props[i].type == (int)mat_types::house || props[i].type == (int)mat_types::tower) {
 			Vector3 collisionpoint, collision_normal;
 
 			if (props[i].mesh->testSphereCollision(props[i].model, character_center, 2, collisionpoint, collision_normal) == true) {
@@ -278,40 +276,57 @@ void EntityPlayer::checkCollision(std::vector<EntityMesh> props, Vector3 newpos,
 				Vector3 push_away = normalize(collisionpoint - character_center)*dt;
 				push_away.y = 0;
 				current_position = current_position - push_away;
-
-				//Create GUI in case of Bullet or Cannon
-				switch (props[i].type)
-				{
-				case (int)mat_types::cannon:
-					if (iscarrying) {
-						//You can Charge the Cannon
-						//Game::instance->world.GUIs[5].enable = false;
-						//Game::instance->world.GUIs[5].index = -1;
-						Game::instance->world.GUIs[6].enable = true;
-						Game::instance->world.GUIs[6].index = i;
-
-					}
-					else {
-						// TEXT - You need to be carrying a bullet
-
-					}
-					break;
-				case (int)mat_types::bullet:
-					if (!iscarrying) {
-						//You can carry the bullet
-						Game::instance->world.GUIs[4].enable = true;
-						Game::instance->world.GUIs[4].index = i;
-					}
-					break;
-				default:
-					break;
-				}
-				
 				return;
 
 			}
 		}
 	}
+
+	//Collision with bullet and cannon
+	for (int i = 0; i < bc.size(); i++) {
+
+		Vector3 collisionpoint, collision_normal;
+
+		if (bc[i].mesh->testSphereCollision(bc[i].model, character_center, 2, collisionpoint, collision_normal) == true) {
+
+			Vector3 push_away = normalize(collisionpoint - character_center)*dt;
+			push_away.y = 0;
+			current_position = current_position - push_away;
+
+			//Create GUI in case of Bullet or Cannon
+			switch (bc[i].type)
+			{
+			case (int)mat_types::cannon:
+				if (iscarrying) {
+					//You can Charge the Cannon
+					//Game::instance->world.GUIs[5].enable = false;
+					//Game::instance->world.GUIs[5].index = -1;
+					Game::instance->world.GUIs[6].enable = true;
+					Game::instance->world.GUIs[6].index = i;
+
+				}
+				else {
+					// TEXT - You need to be carrying a bullet
+
+				}
+				break;
+			case (int)mat_types::bullet:
+				if (!iscarrying) {
+					//You can carry the bullet
+					Game::instance->world.GUIs[4].enable = true;
+					Game::instance->world.GUIs[4].index = i;
+				}
+				break;
+			default:
+				break;
+			}
+
+			return;
+
+		}
+		
+	}
+
 	//No collision
 	current_position = newpos;
 
@@ -507,16 +522,23 @@ void EntityPlayer::grab(std::vector<EntityMesh> vector)
 			switch (vector[i].type)
 			{
 			case (int)mat_types::cannon:
-				if ((iscarrying&&!isoncannon) || vector[i].chargeditem >0) {
+				if ((iscarrying&&!isoncannon) || vector[i].munition.size() >0) {
 					isoncannon = true;
 					iscarrying = false;
 					Cannon = vector[i];
 					CannonID = i;
 
+					Game::instance->world.bullets_and_cannon[CarryItem].model.translate(Vector3(0, -20, 0));
+					if (CarryItem >= 0) {
+						Cannon.munition.push_back(CarryItem);
+						Game::instance->world.bullets_and_cannon[CannonID].munition.push_back(CarryItem);
+						CarryItem = -1;
+					}
+
 					//position of the player
 					Vector3 frontCannon = Cannon.model.frontVector().normalize();
 					Vector3 frontPlayer = model.frontVector().normalize();
-					current_position = Cannon.model.getTranslation() - frontCannon*4;
+					current_position = Cannon.model.getTranslation() - frontCannon*6;
 					frontPlayer.y = 0;
 					frontCannon.y = 0;
 					
@@ -545,7 +567,7 @@ void EntityPlayer::grab(std::vector<EntityMesh> vector)
 					//initial model matrix
 					initialmatrixCannon = Cannon.model;
 
-					rotateCannon();
+					//rotateCannon();
 
 					Game::instance->world.GUIs[5].enable = false;
 					Game::instance->world.GUIs[5].index = -1;
@@ -596,32 +618,44 @@ void EntityPlayer::throwItem()
 
 	if (isoncannon) {
 		isoncannon = false;
+		
 		if (CarryItem > 0) {
-			Game::instance->world.bullets_and_cannon[CannonID].chargeditem = CarryItem;
-
+			Game::instance->world.bullets_and_cannon[CannonID].munition.push_back( CarryItem );
 		}
 		Game::instance->world.bullets_and_cannon[CannonID].model = initialmatrixCannon;
-		Game::instance->world.props[Game::instance->world.bullets_and_cannon[CannonID].index_propsvector].model = initialmatrixCannon;
+		CannonID = -1;
+		//Game::instance->world.props[Game::instance->world.bullets_and_cannon[CannonID].index_propsvector].model = initialmatrixCannon;
 	}
 	
 }
 
 void EntityPlayer::shoot(float dt)
 {
-	if (CarryItem > -1) {
-		Game::instance->world.bullets_and_cannon[CarryItem].model.setTranslation(Cannon.model.getTranslation().x, Cannon.model.getTranslation().y, Cannon.model.getTranslation().z);
-		Game::instance->world.props[Game::instance->world.bullets_and_cannon[CarryItem].index_propsvector].model.setTranslation(Cannon.model.getTranslation().x, Cannon.model.getTranslation().y, Cannon.model.getTranslation().z);
+	//if (CarryItem > -1) {
+	//	Game::instance->world.bullets_and_cannon[CarryItem].model.setTranslation(Cannon.model.getTranslation().x, Cannon.model.getTranslation().y, Cannon.model.getTranslation().z);
+	//	Game::instance->world.props[Game::instance->world.bullets_and_cannon[CarryItem].index_propsvector].model.setTranslation(Cannon.model.getTranslation().x, Cannon.model.getTranslation().y, Cannon.model.getTranslation().z);
+	//	Vector3 direction = (this->camera->center - Cannon.model.getTranslation()).normalize();
+	//	//Vector3 direction = Cannon.model.frontVector().normalize();
+	//	Game::instance->world.bullets_and_cannon[CarryItem].Direction = direction;
+	//	Game::instance->world.props[Game::instance->world.bullets_and_cannon[CarryItem].index_propsvector].Direction = direction;
+	//	//Game::instance->world.bullets_and_cannon[CarryItem].isShooted = true;
+	//	//Game::instance->world.props[Game::instance->world.bullets_and_cannon[CarryItem].index_propsvector].isShooted = true;
+	//	Game::instance->world.shootedBullet = CarryItem;
+
+	//	CarryItem = -1;
+	//}
+
+	if (Cannon.munition.size() > 0) {
+
+		int shootedBulletindex = Cannon.munition[0];
+		Game::instance->world.bullets_and_cannon[shootedBulletindex].model.setTranslation(Cannon.model.getTranslation());
 		Vector3 direction = (this->camera->center - Cannon.model.getTranslation()).normalize();
-		//Vector3 direction = Cannon.model.frontVector().normalize();
-		Game::instance->world.bullets_and_cannon[CarryItem].Direction = direction;
-		Game::instance->world.props[Game::instance->world.bullets_and_cannon[CarryItem].index_propsvector].Direction = direction;
-		//Game::instance->world.bullets_and_cannon[CarryItem].isShooted = true;
-		//Game::instance->world.props[Game::instance->world.bullets_and_cannon[CarryItem].index_propsvector].isShooted = true;
-		Game::instance->world.shootedBullet = CarryItem;
+		Game::instance->world.bullets_and_cannon[shootedBulletindex].Direction = direction;
+		Game::instance->world.bullets_and_cannon[CannonID].munition.erase(Game::instance->world.bullets_and_cannon[CannonID].munition.begin());
+		Cannon.munition.erase(Cannon.munition.begin());
+		Game::instance->world.shootedBullet = shootedBulletindex;
 
-		CarryItem = -1;
 	}
-
 	
 	//Game::instance->world.shotBullet(CarryItem, dt, direction);
 }

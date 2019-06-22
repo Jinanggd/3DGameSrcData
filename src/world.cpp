@@ -93,6 +93,7 @@ void World::renderGUI()
 			
 		}
 	}
+
 	glEnable(GL_DEPTH_TEST);
 }
 
@@ -103,8 +104,6 @@ void World::renderentities()
 	for (int i = 0; i < props.size(); ++i) {
 		m.setTranslation(props[i].model.getTranslation().x, props[i].model.getTranslation().y, props[i].model.getTranslation().z);
 		Vector3 world_center = m*props[i].mesh->box.center;
-		//std::cout << props[i].model.getTranslation().x << " " << props[i].model.getTranslation().y <<" " << props[i].model.getTranslation().z << std::endl;
-
 		if (!(this->camera->testSphereInFrustum(world_center, 50) == CLIP_OUTSIDE))
 		{
 
@@ -121,8 +120,46 @@ void World::renderentities()
 			current_shader->disable();
 
 		}
+	}
 
-	
+	for (int i = 0; i < bullets_and_cannon.size(); ++i) {
+		m.setTranslation(bullets_and_cannon[i].model.getTranslation().x, bullets_and_cannon[i].model.getTranslation().y, bullets_and_cannon[i].model.getTranslation().z);
+		Vector3 world_center = m * bullets_and_cannon[i].mesh->box.center;
+		if (!(this->camera->testSphereInFrustum(world_center, 50) == CLIP_OUTSIDE))
+		{
+
+			current_shader = bullets_and_cannon[i].mat.shader;
+
+			current_shader->enable();
+
+			current_shader->setUniform("u_viewprojection", camera->viewprojection_matrix);
+
+			current_shader->setUniform("u_time", *time);
+
+			bullets_and_cannon[i].render();
+
+			current_shader->disable();
+
+		}
+	}
+
+	m.setTranslation(Titan->model.getTranslation());
+	Vector3 wc = m * Titan->mesh->box.center;
+	if (!(this->camera->testSphereInFrustum(wc, 50) == CLIP_OUTSIDE)) {
+		current_shader = Titan->mat.shader;
+		current_shader->enable();
+		current_shader->setUniform("u_viewprojection", camera->viewprojection_matrix);
+		current_shader->setUniform("u_time", *time);
+		Titan->render();
+		current_shader->disable();
+
+		current_shader = Titan->hpbar.shader;
+		current_shader->enable();
+		m.setIdentity();
+		current_shader->setUniform("u_viewprojection", m);
+		current_shader->setUniform("u_time", *time);
+		Titan->hpbar.render();
+		current_shader->disable();
 	}
 
 	current_shader = Player->mat.shader;
@@ -131,7 +168,7 @@ void World::renderentities()
 
 	current_shader->setUniform("u_time", *time);
 	Player->render(*time);
-	Titan->render();
+	//Titan->render();
 	current_shader->disable();
 
 	current_shader = explosion->mat.shader;
@@ -279,9 +316,20 @@ void World::initProps() {
 				
 				b.model.setTranslation(px, bulletpy, pz+20);
 				b.index_propsvector = props.size();
-				props.push_back(b);
+				//props.push_back(b);
 				bullets_and_cannon.push_back(b);
 				
+				b = EntityMesh(mat_types::bullet);
+				b.model.setTranslation(px+20, bulletpy, pz + 20);
+				b.index_propsvector = props.size();
+				//props.push_back(b);
+				bullets_and_cannon.push_back(b);
+
+				b = EntityMesh(mat_types::bullet);
+				b.model.setTranslation(px -20, bulletpy, pz + 20);
+				b.index_propsvector = props.size();
+				//props.push_back(b);
+				bullets_and_cannon.push_back(b);
 
 				b = EntityMesh(mat_types::cannon);
 
@@ -301,7 +349,7 @@ void World::initProps() {
 
 				//b.model.scale(2,2, 2);
 				b.index_propsvector = props.size();
-				props.push_back(b);
+				//props.push_back(b);
 				bullets_and_cannon.push_back(b);
 				
 				this->Player->setPosition(px, characterpy, pz);
@@ -396,11 +444,6 @@ void World::update(float dt)
 
 		//Hacer con test ray collision
 		for (int i = 0; i < props.size(); i++) {
-			//Skip Cannons and bullets
-			if (bullets_and_cannon[shootedBullet].index_propsvector == i ||
-				props[i].type == (int)mat_types::cannon ||
-				props[i].type == (int)mat_types::bullet)
-				continue;
 
 			//A Ray from the current point to the new position
 			if (props[i].mesh->testRayCollision(props[i].model, currentposition, bullets_and_cannon[shootedBullet].Direction,
@@ -413,8 +456,12 @@ void World::update(float dt)
 				return;
 			}
 		}
+
+
 		//Search on Titans vector
-		if (Titan->mesh->testRayCollision(Titan->model, currentposition, bullets_and_cannon[shootedBullet].Direction,
+		Matrix44 SS;
+		SS.scale(5, 2, 2);
+		if (Titan->mesh->testRayCollision(SS*Titan->model, currentposition, bullets_and_cannon[shootedBullet].Direction,
 			collisionpoint, collisionnormal, distance)){
 			
 			explosion->model.setTranslation(collisionpoint.x, collisionpoint.y, collisionpoint.z);
@@ -442,7 +489,7 @@ void World::update(float dt)
 		}
 
 		bullets_and_cannon[shootedBullet].model.setTranslation(newposition.x, newposition.y, newposition.z);
-		props[bullets_and_cannon[shootedBullet].index_propsvector].model.setTranslation(newposition.x, newposition.y, newposition.z);
+		//props[bullets_and_cannon[shootedBullet].index_propsvector].model.setTranslation(newposition.x, newposition.y, newposition.z);
 		//props[bullets_and_cannon[index].index_propsvector].model.scale(50, 50, 50);
 	}
 
@@ -465,22 +512,29 @@ void World::update(float dt)
 void World::updateBullets(int index, Vector3 position)
 {
 	bullets_and_cannon[index].model.setTranslation(position.x,position.y,position.z);
-	props[bullets_and_cannon[index].index_propsvector].model.setTranslation(position.x, position.y, position.z);
+	//props[bullets_and_cannon[index].index_propsvector].model.setTranslation(position.x, position.y, position.z);
 }
 
 void World::removeBullet(int index)
 {
-	props.erase(props.begin() + bullets_and_cannon[index].index_propsvector);
+	//props.erase(props.begin() + bullets_and_cannon[index].index_propsvector);
 	bullets_and_cannon.erase(bullets_and_cannon.begin() + index);
 	int indexatbulletvector = 0;
 	//update the bullets_and_cannon vector
-	for (int i = 0; i < props.size(); i++) {
-		if (props[i].type == (int)mat_types::bullet || props[i].type == (int)mat_types::cannon) {
-			bullets_and_cannon[indexatbulletvector].index_propsvector = i;
-			indexatbulletvector++;
+
+	for (int i = 0; i < bullets_and_cannon.size(); i++) {
+		if (bullets_and_cannon[i].type == (int)mat_types::cannon) {
+			if(bullets_and_cannon[i].munition.size() >0)
+				for (int j = 0; j < bullets_and_cannon[i].munition.size(); j++) {
+					if (bullets_and_cannon[i].munition[j] > index)
+
+						bullets_and_cannon[i].munition[j]--;
+				}
 		}
 	}
-	Player->CannonID--;
+	if(Player->CannonID > index)
+		Player->CannonID--;
+
 	shootedBullet = -1;
 }
 
@@ -510,29 +564,19 @@ void World::setAllGUItofalse()
 		default:
 			break;
 		}
-		if (!m.mesh->testSphereCollision(m.model, position, 4, collisionpoint, collisionnormal)) {
+		if (!m.mesh->testSphereCollision(m.model, position, 6, collisionpoint, collisionnormal)) {
 			GUIs[i].enable = false;
 			GUIs[i].index = -1; 
 		}
 	}
 
-	Vector3 newpoint = currentposition + 4.0f*dt*direction;
-	bullets_and_cannon[index].model.setTranslation(newpoint.x, newpoint.y, newpoint.z);
-	props[bullets_and_cannon[index].index_propsvector].model.setTranslation(newpoint.x, newpoint.y, newpoint.z);
-	//props[bullets_and_cannon[index].index_propsvector].model.scale(50, 50, 50);
+	//Vector3 newpoint = currentposition + 4.0f*dt*direction;
+	//bullets_and_cannon[index].model.setTranslation(newpoint.x, newpoint.y, newpoint.z);
+	//props[bullets_and_cannon[index].index_propsvector].model.setTranslation(newpoint.x, newpoint.y, newpoint.z);
+	////props[bullets_and_cannon[index].index_propsvector].model.scale(50, 50, 50);
 	
 }
 
-bool World::isNearFromPlayer()
-{
-	Vector3 playercenter = Player->current_position + Vector3(0, 2, 0),collisionpoint,collisionnormal;
-
-	for (int i = 0; i < bullets_and_cannon.size(); i++) {
-		if (bullets_and_cannon[i].mesh->testSphereCollision(bullets_and_cannon[i].model, playercenter, 2, collisionpoint, collisionnormal))
-			return true;
-	}
-	return false;
-}
 
 
 void World::initAirplane() {

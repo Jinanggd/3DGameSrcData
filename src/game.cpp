@@ -51,18 +51,18 @@ Game::Game(int window_width, int window_height, SDL_Window* window)
 
 	//Gl viewport test  
 
-	//glViewport(window_width / 2.0f, 0, window_width/2.0f, window_height);
-	//Camera* cam = new Camera();
-	//cam->lookAt(Vector3(0.f, 100.f, 100.f), Vector3(100.f, 0.f, 0.f), Vector3(0.f, 1.f, 0.f)); //position the camera and point to 0,0,0
-	//cam->setPerspective(70.f, window_width / (float)window_height, 0.1f, 10000.f); //set the projection, we want to be perspective
-	//cam->enable();
+	//
+	
 
 	world = World(camera, &time);
 
 
+	Camera* cam = new Camera();
+	cam->lookAt(Vector3(0.f, 100.f, 100.f), Vector3(100.f, 0.f, 0.f), Vector3(0.f, 1.f, 0.f)); //position the camera and point to 0,0,0
+	cam->setPerspective(70.f, window_width / (float)window_height, 0.1f, 10000.f); //set the projection, we want to be perspective
+	cam->enable();
+	map = World(cam, &time);
 
-	//world2 = World(cam, &time);
-	//world.entities.push_back(EntityMesh(Mesh::Get("data/box.ASE"), mat_types::rock));
 
 
 	//hide the cursor
@@ -85,6 +85,8 @@ void Game::render(void)
 
 	Shader* current_shader = world.current_shader;
 
+	glViewport(0, 0, window_width , window_height);
+
 	if(current_shader)
 	{
 
@@ -96,12 +98,11 @@ void Game::render(void)
 		
 		glDisable(GL_CULL_FACE);
 
-		//glViewport(0, 0, window_width / 2.0f, window_height);
+		
 		world.renderSkybox();
 
 		//Double ViewPort
-		/*glViewport(window_width / 2.0f, 0, window_width / 2.0f, window_height);
-		world2.renderSkybox();*/
+
 
 		glEnable(GL_DEPTH_TEST);
 
@@ -114,14 +115,22 @@ void Game::render(void)
 		//world.water.render();
 		
 
+
 		
 	}
 
+	drawText(2, 2, getGPUStats(), Vector3(1, 1, 1), 2);
+
+	glDisable(GL_DEPTH_TEST);
+
+    current_shader = map.current_shader;
+
+	glViewport(window_width / 2.0f, 0, window_width / 2.0f, window_height);
+
 	//Draw the floor grid
-	//drawGrid();
+	drawGrid();
 
 	//render the FPS, Draw Calls, etc
-	drawText(2, 2, getGPUStats(), Vector3(1, 1, 1), 2);
 
 	//swap between front buffer and back buffer
 	SDL_GL_SwapWindow(this->window);
@@ -167,13 +176,7 @@ void Game::update(double seconds_elapsed)
 			camera->move(Vector3(-1.0f, 0.0f, 0.0f) * speed);
 	}
 	if (!ThirdCameraMode) {
-		world.Player->update(seconds_elapsed, world.props);
-		if (Input::isKeyPressed(SDL_SCANCODE_F)) {
-			world.Player->grab(world.bullets_and_cannon);
-		}
-		if (Input::isKeyPressed(SDL_SCANCODE_G)) {
-			world.Player->throwItem();
-		}
+		world.Player->update(seconds_elapsed, world.props, world.bullets_and_cannon);
 	}
 
 	world.Player->updateAnim(time);
@@ -261,7 +264,17 @@ void Game::onKeyUp(SDL_KeyboardEvent event)
 			world.GUIs[instructions].enable = false;
 			instructions--;
 		}
+		break;
+	case SDLK_f:
+		if (!ThirdCameraMode) {
+			world.Player->grab(world.bullets_and_cannon);
+		}
 
+		break;
+	case SDLK_g:
+		if (!ThirdCameraMode) {
+			world.Player->throwItem();
+		}
 	}
 }
 
