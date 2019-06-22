@@ -119,8 +119,6 @@ void World::renderentities()
 			props[i].render();
 
 			current_shader->disable();
-			if (props[i].type == (int)mat_types::buildable)
-				glDisable(GL_BLEND);
 
 		}
 
@@ -308,12 +306,13 @@ void World::initProps() {
 				
 				this->Player->setPosition(px, characterpy, pz);
 				
+
 				Titan->setPosition(px - 30, characterpy, pz+70);
 
-				//b = EntityMesh(mat_types::buildable);
-				//b.model.setTranslation(px, py+20, pz);
-				//b.model.scale(0.25, 0.5, 0.25);
-				//props.push_back(b);
+
+				b = EntityMesh(mat_types::buildable);
+				b.model.setTranslation(px, py, pz+50);
+				props.push_back(b);
 				for (int i = 0; i < Players.size(); i++) {
 
 
@@ -354,8 +353,8 @@ void World::initGUIs() {
 	GUIs.push_back(g);
 	g = GUI(Vector2(800 / 2, 600 / 2), Vector2(800 / 2, 600 / 2), false, GUI_Types::Building);
 	GUIs.push_back(g);
-	g = GUI(Vector2(800 / 2, 600 / 2), Vector2(800, 600), true, GUI_Types::OverallKeys);
-	GUIs.push_back(g);
+	//g = GUI(Vector2(800 / 2, 600 / 2), Vector2(800, 600), true, GUI_Types::OverallKeys);
+	//GUIs.push_back(g);
 }
 
 void World::printCamPos()
@@ -448,17 +447,18 @@ void World::update(float dt)
 	}
 
 	//update GUIs
-	//for (int i = 0; i < GUIs.size(); i++) {
-	//	if (!GUIs[i].enable) continue;
-	//	Explosion GUI
-	//	if (GUIs[i].starttime > 0 && *time > (GUIs[i].starttime+GUIs[i].duration)) {
-	//		GUIs[i].enable = false;
-	//		GUIs[i].starttime = -1;
-	//	}
-	//	if (GUIs[i].type > (int)GUI_Types::instruct_titan && GUIs[i].type < (int)GUI_Types::OverallKeys) {
-	//		GUIs[i].enable = isNearFromPlayer();
-	//	}
-	//}
+
+	for (int i = 0; i < GUIs.size(); i++) {
+		if (!GUIs[i].enable)continue;
+
+		if (GUIs[i].type > (int)GUI_Types::instruct_titan && GUIs[i].type < (int)GUI_Types::OverallKeys) {	
+			GUIs[i].setPositionfrom3D(Player->current_position + Vector3(0, 13, 0), Vector2(0.3f,0.2f),
+				this->camera->viewprojection_matrix);
+		}
+	}
+
+
+	setAllGUItofalse();
 
 }
 
@@ -484,35 +484,37 @@ void World::removeBullet(int index)
 	shootedBullet = -1;
 }
 
-void World::shotBullet(int index, float dt, Vector3 direction)
+void World::setAllGUItofalse()
 {
-	Vector3 currentposition = bullets_and_cannon[index].model.getTranslation();
-	if (abs(currentposition.x) > 3000 || abs(currentposition.y) > 2000 || abs(currentposition.z) > 3000) {
-		// Explosion GUI
-		removeBullet(index);
-		std::cout << "Too far away" << std::endl;
-		return;
-	}
+	Vector3 position = Player->current_position;
 	Vector3 collisionpoint, collisionnormal;
-	//Search on propsvector
-
-	//Hacer con test ray collision
-	for (int i = 0; i < props.size(); i++) {
-		if (bullets_and_cannon[index].index_propsvector == i) continue;
-		if (props[i].mesh->testSphereCollision(props[i].model, bullets_and_cannon[index].model.getTranslation(), 2,
-			collisionpoint, collisionnormal)) {
-			if (props[i].type == (int)mat_types::cannon || props[i].type == (int)mat_types::bullet) continue;
-			//Explosion GUI
-
-			//Remove the bullet from the the vectors
-			removeBullet(index);
-			std::cout << "Collision contra props" << std::endl;
-			return;
+	for (int i = 4; i < 9; i++) {
+		EntityMesh m;
+		if (GUIs[i].index < 0)continue;
+		switch (GUIs[i].type)
+		{
+		case (int)GUI_Types::BulletKeysC:
+			m = props[GUIs[i].index];
+			break;
+		case (int)GUI_Types::BulletKeysNC:
+			m = props[GUIs[i].index];
+			break;
+		case (int)GUI_Types::CannonKeysC:
+			m = props[GUIs[i].index];
+			break;
+		case(int)GUI_Types::CannonKeysNC:
+			m = props[GUIs[i].index];
+			break;
+		case(int)GUI_Types::Building:
+			break;
+		default:
+			break;
+		}
+		if (!m.mesh->testSphereCollision(m.model, position, 4, collisionpoint, collisionnormal)) {
+			GUIs[i].enable = false;
+			GUIs[i].index = -1; 
 		}
 	}
-	//Search on Titans vector
-
-
 
 	Vector3 newpoint = currentposition + 4.0f*dt*direction;
 	bullets_and_cannon[index].model.setTranslation(newpoint.x, newpoint.y, newpoint.z);

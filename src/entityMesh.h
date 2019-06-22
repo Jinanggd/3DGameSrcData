@@ -8,6 +8,7 @@
 #include "texture.h"
 
 
+
 enum class mat_types {
 
 	rock,
@@ -22,6 +23,7 @@ enum class mat_types {
 	cannon,
 	buildable,
 	tower1,
+
 	tower2,
 	explosion
 
@@ -29,9 +31,9 @@ enum class mat_types {
 
 struct Material {
 
-	Texture* texture;
-	Texture* texture2;
-	Shader* shader;
+		Texture* texture;
+		Texture* texture2;
+		Shader* shader;
 };
 
 
@@ -50,6 +52,7 @@ public:
 	void setPosition(Vector3 pos);
 	int type;
 	int index_propsvector;
+	int chargeditem = -1;
 	Vector3 getPosition();
 
 	// model matrix 

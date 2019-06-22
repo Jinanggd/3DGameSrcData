@@ -126,7 +126,8 @@ void GUI::render()
 	else {
 		this->shader->setUniform("u_texture", this->texture);
 	}
-	this->shader->setUniform("is3D", isHUD);
+	bool f = false;
+	this->shader->setUniform("is3D", f);
 	this->mesh->render(GL_TRIANGLES);
 	//this->mesh->renderAnimated(GL_TRIANGLES, this->anim);
 }

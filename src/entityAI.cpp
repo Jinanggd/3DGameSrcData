@@ -79,6 +79,7 @@ void EntityAI::render() {
 
 void EntityAI::update(float dt, std::vector<EntityMesh> props)
 {
+
 	float t;
 
 	
@@ -123,6 +124,7 @@ void EntityAI::update(float dt, std::vector<EntityMesh> props)
 	}
 
 	
+
 
 	checkCollision(props, current_position + (velocity * dt), dt);
 
@@ -225,7 +227,6 @@ void EntityAI::checkCollision(std::vector<EntityMesh> props, Vector3 newpos, flo
 
 				else {
 
-		
 					right.x = -right.x;
 					right.z = -right.z;
 					this->model.translate((0.2f)*(push_away + right));
@@ -334,19 +335,23 @@ void EntityAI::updateAnim(float dt) {
 	}
 
 
+
 	switch (state)
 	{
 	case EntityAI::IDLE:
 
 		anim = Animation::Get("data/characters/characters/reaction_hit.skanim");
+
 		anim->assignTime(t);
 		anim->skeleton.getBoneMatrix("mixamorig_Head").scale(2, 2, 2);
 		anim->skeleton.getBoneMatrix("mixamorig_Spine2").scale(2, 2, 2);
 		skeleton = anim->skeleton;
 
+
 		break;
 
 	case EntityAI::SEARCH:
+
 
 		if (speed < 0.8) //walk
 
@@ -387,9 +392,9 @@ void EntityAI::updateAnim(float dt) {
 
 		}
 
-
 		break;
 	case EntityAI::ATTACK:
+
 
 		anim = Animation::Get("data/characters/characters/attack.skanim");
 		
@@ -417,6 +422,7 @@ void EntityAI::updateAnim(float dt) {
 	}
 
 
+
 	skeleton.computeFinalBoneMatrices(bone_matrices, mesh);
 
 
@@ -436,6 +442,7 @@ bool EntityAI::isnear() {
 
 
 	float distance = (mytarget - mypost).length();
+
 
 
 	if (distance < 15) return true;

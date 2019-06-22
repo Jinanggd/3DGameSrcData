@@ -51,7 +51,9 @@ public:
 	Vector3 current_position;
 	Vector3 velocity, direction;
 	Matrix44 *target;
+
 	enum { IDLE, SEARCH, ATTACK , HURT} state;
+
 
 	float speed;
 	float pitch, yaw;
