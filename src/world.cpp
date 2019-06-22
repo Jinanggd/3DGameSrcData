@@ -516,23 +516,13 @@ void World::setAllGUItofalse()
 		}
 	}
 
-	Vector3 newpoint = currentposition + 4.0f*dt*direction;
-	bullets_and_cannon[index].model.setTranslation(newpoint.x, newpoint.y, newpoint.z);
-	props[bullets_and_cannon[index].index_propsvector].model.setTranslation(newpoint.x, newpoint.y, newpoint.z);
-	//props[bullets_and_cannon[index].index_propsvector].model.scale(50, 50, 50);
+	//Vector3 newpoint = currentposition + 4.0f*dt*direction;
+	//bullets_and_cannon[index].model.setTranslation(newpoint.x, newpoint.y, newpoint.z);
+	//props[bullets_and_cannon[index].index_propsvector].model.setTranslation(newpoint.x, newpoint.y, newpoint.z);
+	////props[bullets_and_cannon[index].index_propsvector].model.scale(50, 50, 50);
 	
 }
 
-bool World::isNearFromPlayer()
-{
-	Vector3 playercenter = Player->current_position + Vector3(0, 2, 0),collisionpoint,collisionnormal;
-
-	for (int i = 0; i < bullets_and_cannon.size(); i++) {
-		if (bullets_and_cannon[i].mesh->testSphereCollision(bullets_and_cannon[i].model, playercenter, 2, collisionpoint, collisionnormal))
-			return true;
-	}
-	return false;
-}
 
 
 void World::initAirplane() {
