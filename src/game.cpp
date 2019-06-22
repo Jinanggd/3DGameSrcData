@@ -167,7 +167,7 @@ void Game::update(double seconds_elapsed)
 			camera->move(Vector3(-1.0f, 0.0f, 0.0f) * speed);
 	}
 	if (!ThirdCameraMode) {
-		world.Player->update(seconds_elapsed*speed, world.props);
+		world.Player->update(seconds_elapsed, world.props);
 		if (Input::isKeyPressed(SDL_SCANCODE_F)) {
 			world.Player->grab(world.bullets_and_cannon);
 		}

@@ -12,8 +12,9 @@
 
 class Shader;
 class FBO;
+class Texture;
 
-//Simple class to handle images
+//Simple class to handle images (stores RGBA always)
 class Image
 {
 public:
@@ -24,23 +25,33 @@ public:
 	Uint8* data; //bytes with the pixel information
 
 	Image() { width = height = 0; data = NULL; bytes_per_pixel = 3; }
-	Image(int w, int h, int bytes_per_pixel = 3) { width = w; height = h; this->bytes_per_pixel = bytes_per_pixel; data = new uint8[w*h*bytes_per_pixel]; memset(data, 0, w*h*bytes_per_pixel);  }
+	Image(int w, int h, int bytes_per_pixel = 3) { data = NULL; resize(w, h, bytes_per_pixel); }
 	~Image() { if (data) delete []data; data = NULL; }
+
+	void resize(int w, int h, int bytes_per_pixel = 3) { if (data) delete[] data; width = w; height = h; this->bytes_per_pixel = bytes_per_pixel; data = new uint8[w*h*bytes_per_pixel]; memset(data, 0, w*h*bytes_per_pixel); }
 	void clear() { if (data) delete[]data; data = NULL; width = height = 0; }
 	void flipY();
 
-	Vector4 getPixel(int x, int y) {
-		assert(x >= 0 && x < (int)width && y >= 0 && y < (int)height && "reading out of memory");
+	Color getPixel(int x, int y) {
+		assert(x >= 0 && x < (int)width && y >= 0 && y < (int)height && "reading of memory");
 		int pos = y*width*bytes_per_pixel + x*bytes_per_pixel;
-		return Vector4((float)data[pos], (float)data[pos + 1], (float)data[pos + 2], bytes_per_pixel == 4 ? 255.0f : (float)data[pos + 3]);
+		return Color(data[pos], data[pos + 1], data[pos + 2], bytes_per_pixel == 4 ? 255 : data[pos + 3]);
 	};
-	void setPixel(int x, int y, Vector4 v) { 
-		assert(x >= 0 && x < (int)width && y >= 0 && y < (int)height && "writing out of memory");
+	void setPixel(int x, int y, Color v) {
+		assert(x >= 0 && x < (int)width && y >= 0 && y < (int)height && "writing of memory");
 		int pos = y*width*bytes_per_pixel + x*bytes_per_pixel;
-		data[pos] = (uint8)v.x; data[pos + 1] = (uint8)v.y; data[pos + 2] = (uint8)v.z; if (bytes_per_pixel == 4) data[pos + 3] = (uint8)v.w; };
+		data[pos] = v.x; data[pos + 1] = v.y; data[pos + 2] = v.z; if (bytes_per_pixel == 4) data[pos + 3] = v.w;
+	};
+
+	Color getPixelInterpolated(float x, float y, bool repeat = false);
+	Vector4 getPixelInterpolatedHigh(float x, float y, bool repeat = false); //returns a Vector4 (floats)
+
+	void fromTexture(Texture* texture);
+	void fromScreen(int width, int height);
 
 	bool loadTGA(const char* filename);
 	bool loadPNG(const char* filename, bool flip_y = true);
+	bool saveTGA(const char* filename, bool flip_y = true);
 };
 
 
@@ -86,10 +97,10 @@ public:
 	void uploadAsArray(unsigned int texture_size, bool mipmaps = true);
 
 	//load without using the manager
-	bool load(const char* filename, bool mipmaps = true, bool wrap = true, bool upload_to_vram = true);
+	bool load(const char* filename, bool mipmaps = true, bool wrap = true);
 
 	//load using the manager (caching loaded ones to avoid reloading them)
-	static Texture* Get(const char* filename, bool mipmaps = true, bool wrap = true, bool upload_to_vram = true);
+	static Texture* Get(const char* filename, bool mipmaps = true, bool wrap = true);
 	void setName(const char* name) { sTexturesLoaded[name] = this; }
 
 	void generateMipmaps();
@@ -99,6 +110,7 @@ public:
 	void blit(Texture* destination, Shader* shader = NULL);
 
 	static FBO* getGlobalFBO(Texture* texture);
+	static Texture* getBlackTexture();
 };
 
 bool isPowerOfTwo(int n);

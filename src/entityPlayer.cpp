@@ -292,24 +292,23 @@ void EntityPlayer::checkCollision(std::vector<EntityMesh> props, Vector3 newpos,
 				{
 				case (int)mat_types::cannon:
 					if (iscarrying) {
-						//You need to be carrying a bullet
+						//You can Charge the Cannon
+						//Game::instance->world.GUIs[5].enable = false;
+						//Game::instance->world.GUIs[5].index = -1;
+						Game::instance->world.GUIs[6].enable = true;
+						Game::instance->world.GUIs[6].index = i;
 
 					}
 					else {
-						//You can Charge the Cannon
+						// TEXT - You need to be carrying a bullet
 
 					}
 					break;
 				case (int)mat_types::bullet:
-					if (iscarrying) {
-						//You can throw the bullet
-					}
-					else {
+					if (!iscarrying) {
 						//You can carry the bullet
-						Vector3 centerGUI = props[i].model.rotateVector(Vector3(5, 5, 0));
-						Game::instance->world.GUIs[4].setPositionfrom3D(current_position + Vector3(0, 5, 0) , Vector2(0.1,0.05),
-							this->camera->viewprojection_matrix);
 						Game::instance->world.GUIs[4].enable = true;
+						Game::instance->world.GUIs[4].index = i;
 					}
 					break;
 				default:
@@ -318,18 +317,10 @@ void EntityPlayer::checkCollision(std::vector<EntityMesh> props, Vector3 newpos,
 				
 				return;
 
-				//else if (props[i].tag == "PropBullet") {
-				//	std::cout << "Bullet Detected" << std::endl;
-				//	Matrix44 R_Yaw;
-				//	R_Yaw.setRotation(yaw*DEG2RAD, Vector3(0, 1, 0));
-				//	Vector3 right = R_Yaw * Vector3(1, 0, 0);
-				//	Vector3 up = this->camera->up;
-
-				//}
-
 			}
 		}
 	}
+	//No collision
 	current_position = newpos;
 
 
@@ -515,7 +506,7 @@ void EntityPlayer::grab(std::vector<EntityMesh> vector)
 			switch (vector[i].type)
 			{
 			case (int)mat_types::cannon:
-				if (iscarrying&&!isoncannon) {
+				if ((iscarrying&&!isoncannon) || vector[i].chargeditem >0) {
 					isoncannon = true;
 					iscarrying = false;
 					Cannon = vector[i];
@@ -555,6 +546,13 @@ void EntityPlayer::grab(std::vector<EntityMesh> vector)
 
 					rotateCannon();
 
+					Game::instance->world.GUIs[5].enable = false;
+					Game::instance->world.GUIs[5].index = -1;
+					Game::instance->world.GUIs[6].enable = false;
+					Game::instance->world.GUIs[7].enable = true;
+					Game::instance->world.GUIs[7].index = Game::instance->world.GUIs[6].index;
+					Game::instance->world.GUIs[6].index = -1;
+
 				}
 				else {
 					//You cannot fire without bullet
@@ -563,11 +561,15 @@ void EntityPlayer::grab(std::vector<EntityMesh> vector)
 				break;
 			case (int)mat_types::bullet:
 				if (iscarrying) {
-					//You cannot grab more than one bullet
+					//TEXT - You cannot grab more than one bullet
 				}
 				else {
 					iscarrying = true;
 					CarryItem = i;
+					Game::instance->world.GUIs[4].enable = false;
+					Game::instance->world.GUIs[5].index = Game::instance->world.GUIs[4].index;
+					Game::instance->world.GUIs[5].enable = true;
+					Game::instance->world.GUIs[4].index = -1;
 				}
 				break;
 			default:
@@ -587,10 +589,17 @@ void EntityPlayer::throwItem()
 		updateItem(R, Vector3(5, 1, -3));
 		iscarrying = false;
 		CarryItem = -1;
+
+		Game::instance->world.GUIs[5].enable = false;
+		Game::instance->world.GUIs[5].index = -1;
 	}
 
 	if (isoncannon) {
 		isoncannon = false;
+		if (CarryItem > 0) {
+			Game::instance->world.bullets_and_cannon[CannonID].chargeditem = CarryItem;
+
+		}
 		Game::instance->world.bullets_and_cannon[CannonID].model = initialmatrixCannon;
 		Game::instance->world.props[Game::instance->world.bullets_and_cannon[CannonID].index_propsvector].model = initialmatrixCannon;
 	}

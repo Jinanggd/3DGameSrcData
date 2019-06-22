@@ -48,7 +48,7 @@ public:
 	Mesh* mesh;
 	Shader* shader;
 	bool enable, isHUD = false;
-	int type;
+	int type,index=-1;
 	float starttime=-1.0f;
 	float duration = 2.0f;
 

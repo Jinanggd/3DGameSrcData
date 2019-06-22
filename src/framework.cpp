@@ -170,7 +170,6 @@ float dot(const Vector3& a, const Vector3& b)
 	return a.x*b.x + a.y*b.y + a.z*b.z;
 }
 
-
 Vector3 cross(const Vector3& a, const Vector3& b)
 {
 	return Vector3(a.y*b.z - a.z*b.y, a.z*b.x - a.x*b.z, a.x*b.y - a.y*b.x);
@@ -390,7 +389,6 @@ void Matrix44::lookAt(Vector3& eye, Vector3& center, Vector3& up)
 
 	translate(-eye.x, -eye.y, -eye.z);
 }
-
 
 //double check this functions
 void Matrix44::perspective(float fov, float aspect, float near_plane, float far_plane)

@@ -4,6 +4,8 @@
 #include "mesh.h";
 #include "camera.h"
 #include "entity.h"
+#include "texture.h"
+#include "shader.h"
 
 
 enum class mat_types {
@@ -26,9 +28,9 @@ enum class mat_types {
 
 struct Material {
 
-	Texture* texture;
-	Texture* texture2;
-	Shader* shader;
+		Texture* texture;
+		Texture* texture2;
+		Shader* shader;
 };
 
 
@@ -47,6 +49,7 @@ public:
 	void setPosition(Vector3 pos);
 	int type;
 	int index_propsvector;
+	int chargeditem = -1;
 	Vector3 getPosition();
 
 	// model matrix 

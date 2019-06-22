@@ -3,6 +3,7 @@
 #include "utils.h"
 #include "shader.h"
 #include "includes.h"
+#include "framework.h"
 
 #include <cassert>
 #include <iostream>
@@ -503,7 +504,7 @@ bool Mesh::createCollisionModel(bool is_static)
 
 	CollisionModel3D* collision_model = newCollisionModel3D(is_static);
 
-	if (indices.size()) 
+	if (indices.size()) //indexed
 	{
 		collision_model->setTriangleNumber(indices.size());
 
@@ -651,7 +652,7 @@ typedef struct
 	float radius;
 	int num_bones;
 	int material_range[4];
-	Matrix44 bind_pose;
+	Matrix44 bind_matrix;
 	char streams[8]; //Normal|Uvs|Color|Indices|Bones|Weights|Extra
 	char extra[32]; //unused
 } sMeshInfo;
@@ -759,7 +760,7 @@ bool Mesh::readBin(const char* filename)
 	box.center = info.center;
 	box.halfsize = info.halfsize;
 	radius = info.radius;
-	bind_pose = info.bind_pose;
+	bind_matrix = info.bind_matrix;
 
 	for (int i = 0; i < 4; i++)
 		if (info.material_range[i] != -1)
@@ -801,7 +802,7 @@ bool Mesh::writeBin(const char* filename)
 	info.halfsize = box.halfsize;
 	info.radius = radius;
 	info.num_bones = bones_info.size();
-	info.bind_pose = bind_pose;
+	info.bind_matrix = bind_matrix;
 
 	info.streams[0] = interleaved.size() ? 'I' : 'V';
 	info.streams[1] = normals.size() ? 'N' : ' ';
@@ -1152,8 +1153,8 @@ bool Mesh::loadMESH(const char* filename)
 					pos = fetchMatrix44(pos, bones_info[j].bind_pose);
 				}
 			}
-			else if (str == "bind_pose")
-				pos = fetchMatrix44( pos, bind_pose );
+			else if (str == "bind_matrix")
+				pos = fetchMatrix44( pos, bind_matrix);
 			else
 				pos = fetchEndLine(pos);
 		}
@@ -1168,9 +1169,10 @@ bool Mesh::loadMESH(const char* filename)
 
 void Mesh::createCube()
 {
-	const float _verts[] = { -1, 1, -1, -1, -1, +1, -1, 1, 1, -1, 1, -1, -1, -1, -1, -1, -1, +1, 1, 1, -1, 1, 1, 1, 1, -1, +1, 1, 1, -1, 1, -1, +1, 1, -1, -1, -1, 1, 1, 1, -1, 1, 1, 1, 1, -1, 1, 1, -1, -1, 1, 1, -1, 1, -1, 1, -1, 1, 1, -1, 1, -1, -1, -1, 1, -1, 1, -1, -1, -1, -1, -1, -1, 1, -1, 1, 1, 1, 1, 1, -1, -1, 1, -1, -1, 1, 1, 1, 1, 1, -1, -1, -1, 1, -1, -1, 1, -1, 1, -1, -1, -1, 1, -1, 1, -1, -1, 1 };
-	const float _uvs[] = { -1, 0, 0, -1, 0, 0, -1, 0, 0, -1, 0, 0, -1, 0, 0, -1, 0, 0, 1, 0, 0, 1, 0, 0, 1, 0, 0, 1, 0, 0, 1, 0, 0, 1, 0, 0, 0, 0, 1, 0, 0, 1, 0, 0, 1, 0, 0, 1, 0, 0, 1, 0, 0, 1, 0, 0, -1, 0, 0, -1, 0, 0, -1, 0, 0, -1, 0, 0, -1, 0, 0, -1, 0, 1, 0, 0, 1, 0, 0, 1, 0, 0, 1, 0, 0, 1, 0, 0, 1, 0, 0, -1, 0, 0, -1, 0, 0, -1, 0, 0, -1, 0, 0, -1, 0, 0, -1, 0 };
-	vertices.resize(6* 2 * 3);
+	const float _verts[] = { -1, 1, -1, -1, -1, +1, -1, 1, 1,    -1, 1, -1, -1, -1, -1, -1, -1, +1,     1, 1, -1,  1, 1, 1,  1, -1, +1,     1, 1, -1,   1, -1, +1,   1, -1, -1,    -1, 1, 1,  1, -1, 1,  1, 1, 1,    -1, 1, 1, -1,-1,1,  1, -1, 1,    -1,1,-1, 1,1,-1,  1,-1,-1,   -1,1,-1, 1,-1,-1, -1,-1,-1,   -1,1,-1, 1,1,1, 1,1,-1,    -1,1,-1, -1,1,1, 1,1,1,    -1,-1,-1, 1,-1,-1, 1,-1,1,   -1,-1,-1, 1,-1,1, -1,-1,1 };
+	const float _uvs[] = {       0,  1, 1, 0, 1, 1,			 	     0, 1,       0,  0,      1,  0,        0, 1,      1, 1,      1, 0,         0, 1,        1, 0,        0, 0,          0, 1, 1, 0, 1, 1,               0, 1,  0, 0,  1,  0,              0,1,  1,1, 1,0,              0,1,    1,0,    0,0,           0,0, 1,1, 1,0,           0,0,    0,1,   1,1,        0,0, 1,0, 1,1,              0,0, 1,1, 0,1 };
+
+	vertices.resize( 6 * 2 * 3);
 	uvs.resize(6 * 2 * 3);
 	memcpy(&vertices[0], _verts, sizeof(Vector3) * vertices.size());
 	memcpy(&uvs[0], _uvs, sizeof(Vector2) * uvs.size());
@@ -1304,21 +1306,23 @@ void Mesh::createSubdividedPlane(float size, int subdivisions, bool centered )
 	radius = box.halfsize.length();
 }
 
-void Mesh::displace(Texture* texture, float altitude)
+void Mesh::displace(Image* heightmap, float altitude)
 {
-	assert(texture && texture->image.data && "texture without data, remember to set false to upload_to_vram");
+	assert(heightmap && heightmap->data && "image without data");
 	assert(uvs.size() && "cannot displace without uvs");
 
-	Image info = texture->image;
+	bool is_interleaved = interleaved.size() != 0;
+	int num = is_interleaved ? interleaved.size() : vertices.size();
+	assert(num && "no vertices found");
 
-	for (int i = 0; i < vertices.size(); ++i)
+	for (int i = 0; i < num; ++i)
 	{
-		Vector3& vertex = vertices[i];
 		Vector2& uv = uvs[i];
-		float x = fmod( uv.x * info.width, info.width);
-		float y = fmod( uv.y * info.height, info.height);
-		float h = info.data[ int(y) * info.width * 4 + int(x) * 4] / 255.0f;
-		vertex.y = h * altitude;
+		Color c = heightmap->getPixelInterpolated(uv.x * heightmap->width, uv.y * heightmap->height);
+		if (is_interleaved)
+			interleaved[i].vertex.y = (c.x / 255.0f) * altitude;
+		else
+			vertices[i].y = (c.x / 255.0f) * altitude;
 	}
 	box.center.y += altitude*0.5f;
 	box.halfsize.y += altitude*0.5f;

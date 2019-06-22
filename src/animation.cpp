@@ -42,7 +42,7 @@ void Skeleton::computeFinalBoneMatrices( std::vector<Matrix44>& bone_matrices, M
 	for (int i = 0; i < mesh->bones_info.size(); ++i)
 	{
 		BoneInfo& bone_info = mesh->bones_info[i];
-		bone_matrices[i] = bone_info.bind_pose * getBoneMatrix( bone_info.name, false ); //use globals
+		bone_matrices[i] = mesh->bind_matrix * bone_info.bind_pose * getBoneMatrix( bone_info.name, false ); //use globals
 	}
 }
 

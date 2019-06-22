@@ -51,9 +51,8 @@ public:
 
 	void updateBullets(int index, Vector3 position);
 	void removeBullet(int index);
-	void shotBullet(int index, float dt, Vector3 direction);
 
-	bool isNearFromPlayer();
+	void setAllGUItofalse();
 
 	bool load();
 	bool save();

@@ -8,7 +8,7 @@
 #include <string>
 
 class Shader; //for binding
-class Texture; //for displace
+class Image; //for displace
 class Skeleton; //for skinned meshes
 
 #define MESH_BIN_VERSION 7 //this is used to regenerate bins if the format changes
@@ -52,7 +52,7 @@ public:
 	std::vector< Vector4ub > bones; //tells which bones afect the vertex (4 max)
 	std::vector< Vector4 > weights; //tells how much affect every bone
 	std::vector< BoneInfo > bones_info; //tells 
-	Matrix44 bind_pose;
+	Matrix44 bind_matrix;
 
 	Vector3 aabb_min;
 	Vector3	aabb_max;
@@ -97,8 +97,7 @@ public:
 	bool createCollisionModel(bool is_static = false); //is_static sets if the inv matrix should be computed after setTransform (true) or before rayCollision (false)
 	//help: model is the transform of the mesh, ray origin and direction, a Vector3 where to store the collision if found, a Vector3 where to store the normal if there was a collision, max ray distance in case the ray should go to infintiy, and in_object_space to get the collision point in object space or world space
 	bool testRayCollision( Matrix44 model, Vector3 ray_origin, Vector3 ray_direction, Vector3& collision, Vector3& normal, float max_ray_dist = 3.4e+38F, bool in_object_space = false );
-	bool testSphereCollision(Matrix44 model, Vector3 center, float radius, Vector3 & collision, Vector3 & normal);
-	//bool testSphereCollision(Matrix44 model, Vector3 center, float radius, Vector3& collision, Vector3& normal);
+	bool testSphereCollision(Matrix44 model, Vector3 center, float radius, Vector3& collision, Vector3& normal);
 
 	//loader
 	static Mesh* Get(const char* filename);
@@ -111,7 +110,7 @@ public:
 	void createCube();
 	void createWireBox();
 	void createGrid(float dist);
-	void displace(Texture* texture, float altitude);
+	void displace(Image* heightmap, float altitude);
 	static Mesh* getQuad(); //get global quad
 
 
