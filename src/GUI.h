@@ -24,6 +24,8 @@ enum class GUI_Types {
 	OverallKeys,
 	//Titan
 	TitanLife,
+	TitanLife2,
+	TitanLife3,
 	//Minimap
 	minimap
 };

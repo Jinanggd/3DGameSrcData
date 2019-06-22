@@ -168,12 +168,6 @@ void Game::update(double seconds_elapsed)
 	}
 	if (!ThirdCameraMode) {
 		world.Player->update(seconds_elapsed, world.props, world.bullets_and_cannon);
-		if (Input::isKeyPressed(SDL_SCANCODE_F)) {
-			world.Player->grab(world.bullets_and_cannon);
-		}
-		if (Input::isKeyPressed(SDL_SCANCODE_G)) {
-			world.Player->throwItem();
-		}
 	}
 
 	world.Player->updateAnim(time);
@@ -261,7 +255,17 @@ void Game::onKeyUp(SDL_KeyboardEvent event)
 			world.GUIs[instructions].enable = false;
 			instructions--;
 		}
+		break;
+	case SDLK_f:
+		if (!ThirdCameraMode) {
+			world.Player->grab(world.bullets_and_cannon);
+		}
 
+		break;
+	case SDLK_g:
+		if (!ThirdCameraMode) {
+			world.Player->throwItem();
+		}
 	}
 }
 

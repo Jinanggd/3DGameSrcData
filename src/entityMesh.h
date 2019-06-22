@@ -52,7 +52,7 @@ public:
 	void setPosition(Vector3 pos);
 	int type;
 	int index_propsvector;
-	int chargeditem = -1;
+	std::vector<int> munition;
 	Vector3 getPosition();
 
 	// model matrix 

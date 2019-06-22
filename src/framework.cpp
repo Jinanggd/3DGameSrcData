@@ -285,6 +285,13 @@ void Matrix44::setTranslation(float x, float y, float z)
 	m[14] = z;
 }
 
+void Matrix44::setTranslation(Vector3 v) {
+	setIdentity();
+	m[12] = v.x;
+	m[13] = v.y;
+	m[14] = v.z;
+}
+
 Vector3 Matrix44::getTranslation()
 {
 	return Vector3(m[12],m[13],m[14]);

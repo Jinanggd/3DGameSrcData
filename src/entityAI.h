@@ -6,6 +6,7 @@
 #include "entity.h"
 #include "entityMesh.h"
 #include "animation.h"
+#include "GUI.h"
 
 
 
@@ -61,7 +62,7 @@ public:
 	float * time;
 	float animtime;
 	float hp;
-
+	GUI hpbar;
 	Skeleton skeleton;
 	Mesh* mesh;
 

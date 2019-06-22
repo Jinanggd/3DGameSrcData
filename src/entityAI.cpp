@@ -33,6 +33,7 @@ EntityAI::EntityAI() : Entity()
 	this->camera->setPerspective(70.f, 800.0f / (float)600.0f, 0.1f, 10000.f);
 	camera->enable();
 	state = IDLE;
+	hpbar = GUI(Vector2(0, 0), Vector2(0, 0), true, GUI_Types::TitanLife);
 
 
 }
@@ -86,9 +87,7 @@ void EntityAI::update(float dt, std::vector<EntityMesh> props)
 
 	if (state == HURT) {
 
-
 		t = *time - animtime;
-
 		updateAnim(t);
 
 	}
@@ -107,7 +106,7 @@ void EntityAI::update(float dt, std::vector<EntityMesh> props)
 			updatedirection(dt, props);
 	
 
-			updateAnim(t);
+			updateAnim(dt);
 			
 
 		}
@@ -116,18 +115,17 @@ void EntityAI::update(float dt, std::vector<EntityMesh> props)
 
 			state = SEARCH;
 
-			//updatedirection(dt, props);
+			updatedirection(dt, props);
 
 			updateAnim(dt);
 		}
 
 	}
 
-	
 
 
 	checkCollision(props, current_position + (velocity * dt), dt);
-
+	hpbar.setPositionfrom3D(current_position+Vector3(0,40,0), Vector2(0.2, 0.05), Game::instance->world.camera->viewprojection_matrix);
 
 
 }
@@ -175,6 +173,7 @@ void EntityAI::updatedirection(float dt, std::vector<EntityMesh> props)
 	if (!isnear()) {
 		this->model.setTranslation(current_position.x, current_position.y, current_position.z);
 		this->model.rotate(yaw*DEG2RAD, Vector3(0, 1, 0));
+		
 	}
 
 	else this->model.rotate(angle*DEG2RAD, Vector3(0, 1, 0));

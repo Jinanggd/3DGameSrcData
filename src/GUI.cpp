@@ -100,9 +100,20 @@ void GUI::GetTexture(GUI_Types t)
 	case GUI_Types::OverallKeys:
 		break;
 	case GUI_Types::TitanLife:
+		x0 = 826.0f / 1600.0f; x1 = 1079.0f / 1600.0f; y0 = (1200.0f - 969.0f) / 1200.0f; y1 = (1200.0f - 945.0f) / 1200.0f;
+		buildQuadUVS(x0, x1, y0, y1);
+
 		//LIFEBAR 1 -> MAX POINT(1079,1200-945) MIN POINT(826,1200-969)
 		//LIFEBAR 2 ->MAX POINT(997,1200-981) MIN POINT(826,1200-1005)
 		//LIFEBAR 3 ->MAX POINT(824,1200-1041) MIN POINT(912,1200-1017)
+		break;
+	case GUI_Types::TitanLife2:
+		x0 = 826.0f / 1600.0f; x1 = 997.0f / 1600.0f; y0 = (1200.0f - 1005.0f) / 1200.0f; y1 = (1200.0f - 981.0f) / 1200.0f;
+		buildQuadUVS(x0, x1, y0, y1);
+		break;
+	case GUI_Types::TitanLife3:
+		x0 = 912.0f / 1600.0f; x1 = 824.0f / 1600.0f; y0 = (1200.0f - 1017.0f) / 1200.0f; y1 = (1200.0f - 1041.0f) / 1200.0f;
+		buildQuadUVS(x0, x1, y0, y1);
 		break;
 	case GUI_Types::minimap:
 		break;
