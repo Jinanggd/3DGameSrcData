@@ -28,7 +28,6 @@ public:
 	int fps;
 	bool must_exit;
 	World world;
-	World map;
 	//some vars
 	Camera* camera; //our global camera
 	bool mouse_locked; //tells if the mouse is locked (not seen)

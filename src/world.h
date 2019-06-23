@@ -11,6 +11,7 @@
 #include "entityAI.h"
 #include "shader.h"
 #include "GUI.h"
+#include "map.h"
 
 
 class World
@@ -32,6 +33,10 @@ public:
 
 
 	World(Camera * camera, float* time);
+
+	void mapinit();
+
+	void rendermap();
 
 
 	void renderentities();
@@ -77,7 +82,7 @@ public:
 	EntityMesh* explosion;
 	EntityCloud* cloud;
 
-
+	Map map;
 	Mesh plane;
 	EntityMesh Skybox;
 	EntityPlayer* Player;

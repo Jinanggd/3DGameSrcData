@@ -5,7 +5,7 @@
 #include "texture.h"
 #include "shader.h"
 #include "camera.h"
-
+#include "entityPlayer.h"
 
 
 class Map
@@ -21,9 +21,15 @@ public:
 	~Map();
 
 
-	Map(Camera * camera, float* time);
+	Map(Camera * camera, EntityPlayer* player, float* time);
+	void update();
+	void render();
 	Camera *camera, *camera2D;
 	float* time;
+	float height;
+	Shader *shader;
+	Texture *texture;
+	EntityPlayer *player;
 
 };
 

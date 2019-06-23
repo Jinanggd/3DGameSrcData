@@ -57,14 +57,6 @@ Game::Game(int window_width, int window_height, SDL_Window* window)
 	world = World(camera, &time);
 
 
-	Camera* cam = new Camera();
-	cam->lookAt(Vector3(0.f, 100.f, 100.f), Vector3(100.f, 0.f, 0.f), Vector3(0.f, 1.f, 0.f)); //position the camera and point to 0,0,0
-	cam->setPerspective(70.f, window_width / (float)window_height, 0.1f, 10000.f); //set the projection, we want to be perspective
-	cam->enable();
-	map = World(cam, &time);
-
-
-
 	//hide the cursor
 	SDL_ShowCursor(!mouse_locked); //hide or show the mouse
 
@@ -121,14 +113,17 @@ void Game::render(void)
 
 	drawText(2, 2, getGPUStats(), Vector3(1, 1, 1), 2);
 
-	glDisable(GL_DEPTH_TEST);
 
-    current_shader = map.current_shader;
 
-	glViewport(window_width / 2.0f, 0, window_width / 2.0f, window_height);
+    current_shader = world.map.shader;
 
+	glViewport(window_width-200, window_height-200, 200, 200);
+
+	
 	//Draw the floor grid
-	drawGrid();
+	world.rendermap();
+
+	
 
 	//render the FPS, Draw Calls, etc
 

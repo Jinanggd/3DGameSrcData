@@ -40,12 +40,64 @@ World::World(Camera * camera, float* time)
 	explosion = new EntityMesh(mat_types::explosion);
 	explosion->model.setTranslation(0, -1000, 0);
 
+	
+	mapinit();
 	//initTree();
 	//initAirplane();
 
 	//Player = new EntityMesh(mat_types::airplane);
 	
 
+}
+
+void World::mapinit() {
+
+
+	Camera* cam = new Camera();
+	cam->lookAt(Vector3(0.f, 100.f, 100.f), Vector3(100.f, 0.f, 0.f), Vector3(0.f, 1.f, 0.f)); //position the camera and point to 0,0,0
+	cam->setPerspective(70.f, 1 , 0.1f, 10000.f); //set the projection, we want to be perspective
+	cam->enable();
+
+	map = Map(cam,Player,time);
+
+}
+
+void World::rendermap() {
+
+		
+		
+		glLineWidth(1);
+		glEnable(GL_BLEND);
+		glDepthMask(false);
+		glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+
+
+		Matrix44 m;
+		Matrix44 camera_matrix = map.camera->projection_matrix;
+
+		for (int i = 0; i < props.size(); ++i) {
+			m.setTranslation(props[i].model.getTranslation().x, props[i].model.getTranslation().y, props[i].model.getTranslation().z);
+
+			Vector3 world_center = m * props[i].mesh->box.center;
+
+			current_shader = props[i].mat.shader;
+
+			current_shader->enable();
+
+			current_shader->setUniform("u_viewprojection",camera_matrix);
+
+			current_shader->setUniform("u_time", *time);
+
+			props[i].render();
+
+			current_shader->disable();
+
+			
+		}
+
+
+		glDisable(GL_BLEND);
+		glDepthMask(true);
 }
 
 
@@ -101,6 +153,7 @@ void World::renderentities()
 {
 
 	Matrix44 m;
+
 	for (int i = 0; i < props.size(); ++i) {
 		m.setTranslation(props[i].model.getTranslation().x, props[i].model.getTranslation().y, props[i].model.getTranslation().z);
 		Vector3 world_center = m*props[i].mesh->box.center;
@@ -504,6 +557,8 @@ void World::update(float dt)
 		}
 	}
 
+
+	this->map.update();
 
 	setAllGUItofalse();
 
