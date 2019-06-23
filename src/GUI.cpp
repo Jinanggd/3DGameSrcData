@@ -74,30 +74,35 @@ void GUI::GetTexture(GUI_Types t)
 		x0 = 1201.0f / 1600.0f; x1 = 1; y0 = (1200.0f - 897) / 1200.0f; y1 = 599.0f / 1200.0f;
 		buildQuadUVS(x0, x1, y0, y1);
 		break;
-
+	case GUI_Types::instruct_help:
+		x0 = 0; x1 = 400.0f / 1600.0f; y0 = 0; y1 = (1200.0f - 900.0f) / 1200.0f;
+		buildQuadUVS(x0, x1, y0, y1);
+		break;
 	case GUI_Types::BulletKeysNC:
 		//ATT: WIDTH = 228 HEIGHT = 52
-		x0 = 18.0f / 1600.0f; x1 = 246.0f / 1600.0f; y0 = (1200.0f - 979.0f) / 1200.0f; y1 = (1200.0f - 927.0f) / 1200.0f;
+		x0 = 821.0f / 1600.0f; x1 = 894.0f / 1600.0f; y0 = (1200.0f - 1120.0f) / 1200.0f; y1 = (1200.0f - 1047.0f) / 1200.0f;
 		buildQuadUVS(x0, x1, y0, y1);
 		break;
 	case GUI_Types::BulletKeysC:
-		x0 = 18.0f / 1600.0f; x1 = 246.0f / 1600.0f; y0 = (1200.0f - 1044.0f) / 1200.0f; y1 = (1200.0f - 992.0f) / 1200.0f;
+		x0 = 897.0f / 1600.0f; x1 =970.0f / 1600.0f; y0 = (1200.0f - 1121.0f) / 1200.0f; y1 = (1200.0f - 1048.0f) / 1200.0f;
 		buildQuadUVS(x0, x1, y0, y1);
 		break;
 	case GUI_Types::CannonKeysNC:
-		x0 = 22.0f / 1600.0f; x1 = 250.0f / 1600.0f; y0 = (1200.0f - 1112.0f) / 1200.0f; y1 = (1200.0f - 1060.0f) / 1200.0f;
+		x0 = 821.0f / 1600.0f; x1 = 894.0f / 1600.0f; y0 = (1200.0f - 1120.0f) / 1200.0f; y1 = (1200.0f - 1047.0f) / 1200.0f;
 		buildQuadUVS(x0, x1, y0, y1);
 		break;
 	case GUI_Types::CannonKeysC:
-		x0 = 564.0f / 1600.0f; x1 = 789.0f / 1600.0f; y0 = (1200.0f - 1150.0f) / 1200.0f; y1 = (1200.0f - 934.0f) / 1200.0f;
+		x0 = 1085.0f / 1600.0f; x1 = 1235.0f / 1600.0f; y0 = (1200.0f - 1190.0f) / 1200.0f; y1 = (1200.0f - 1047.0f) / 1200.0f;
 		buildQuadUVS(x0, x1, y0, y1);
 
 		break;
 	case GUI_Types::Building:
-		x0 = 281.0f / 1600.0f; x1 = 510.0f / 1600.0f; y0 = (1200.0f - 1028.0f) / 1200.0f; y1 = (1200.0f - 926.0f) / 1200.0f;
+		x0 = 823.0f / 1600.0f; x1 = 971.0f / 1600.0f; y0 = (1200.0f - 1197.0f) / 1200.0f; y1 = (1200.0f - 1124.0f) / 1200.0f;
 		buildQuadUVS(x0, x1, y0, y1);
 		break;
 	case GUI_Types::OverallKeys:
+		x0 = 980.f / 1600.0f; x1 = 1053.0f / 1600.0f; y0 = (1200.0f - 1122.0f) / 1200.0f; y1 = (1200.0f - 1049.0f) / 1200.0f;
+		buildQuadUVS(x0, x1, y0, y1);
 		break;
 	case GUI_Types::TitanLife:
 		x0 = 826.0f / 1600.0f; x1 = 1079.0f / 1600.0f; y0 = (1200.0f - 969.0f) / 1200.0f; y1 = (1200.0f - 945.0f) / 1200.0f;

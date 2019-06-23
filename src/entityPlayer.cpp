@@ -39,7 +39,7 @@ EntityPlayer::EntityPlayer() : Entity()
 	this->yawCannon = 0.0f;
 	this->pitchCannon = 0.0f;
 	this->speed = 0.0f;
-	this->pitch = -1.1f;
+	this->pitch = -2.1f;
 
 
 	updateMatrix();

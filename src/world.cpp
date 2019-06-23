@@ -153,6 +153,7 @@ void World::renderentities()
 		Titan->render();
 		current_shader->disable();
 
+		glDisable(GL_DEPTH_TEST);
 		current_shader = Titan->hpbar.shader;
 		current_shader->enable();
 		m.setIdentity();
@@ -160,6 +161,7 @@ void World::renderentities()
 		current_shader->setUniform("u_time", *time);
 		Titan->hpbar.render();
 		current_shader->disable();
+		glEnable(GL_DEPTH_TEST);
 	}
 
 	current_shader = Player->mat.shader;
@@ -391,6 +393,7 @@ void World::initGUIs() {
 	g = GUI(Vector2(800 / 2, 600 / 2), Vector2(800 / 1.5f, 600 / 1.5f), true, GUI_Types::instruct_mov);
 	GUIs.push_back(g);
 
+
 	g = GUI(Vector2(800 / 2, 600 / 2), Vector2(800 / 2, 600 / 2), false, GUI_Types::BulletKeysNC);
 	GUIs.push_back(g);
 	g = GUI(Vector2(800 / 2, 600 / 2), Vector2(800 / 2, 600 / 2), false, GUI_Types::BulletKeysC);
@@ -401,8 +404,10 @@ void World::initGUIs() {
 	GUIs.push_back(g);
 	g = GUI(Vector2(800 / 2, 600 / 2), Vector2(800 / 2, 600 / 2), false, GUI_Types::Building);
 	GUIs.push_back(g);
-	//g = GUI(Vector2(800 / 2, 600 / 2), Vector2(800, 600), true, GUI_Types::OverallKeys);
-	//GUIs.push_back(g);
+	g = GUI(Vector2(800 / 2, 600 / 2), Vector2(800 / 2, 600 / 2), false, GUI_Types::instruct_help);
+	GUIs.push_back(g);
+	g = GUI(Vector2(800 - 40, 20), Vector2(20, 20), true, GUI_Types::OverallKeys);
+	GUIs.push_back(g);
 }
 
 void World::printCamPos()
@@ -498,9 +503,18 @@ void World::update(float dt)
 	for (int i = 0; i < GUIs.size(); i++) {
 		if (!GUIs[i].enable)continue;
 
-		if (GUIs[i].type > (int)GUI_Types::instruct_titan && GUIs[i].type < (int)GUI_Types::OverallKeys) {	
-			GUIs[i].setPositionfrom3D(Player->current_position + Vector3(0, 13, 0), Vector2(0.3f,0.2f),
+		if (GUIs[i].type > (int)GUI_Types::instruct_titan && GUIs[i].type < (int)GUI_Types::Building) {	
+			Vector3 position = Player->current_position;
+			Matrix44 R;
+			R.setRotation(Player->yaw*DEG2RAD, Vector3(0, 1, 0));
+			GUIs[i].setPositionfrom3D(Player->current_position + R*Vector3(-3, 13, 0), Vector2(0.1f,0.15f),
 				this->camera->viewprojection_matrix);
+		}
+		else if (GUIs[i].type == (int)GUI_Types::CannonKeysC) {
+			
+		}
+		else if (GUIs[i].type == (int)GUI_Types::Building) {
+
 		}
 	}
 
@@ -548,23 +562,23 @@ void World::setAllGUItofalse()
 		switch (GUIs[i].type)
 		{
 		case (int)GUI_Types::BulletKeysC:
-			m = props[GUIs[i].index];
+			m = bullets_and_cannon[GUIs[i].index];
 			break;
 		case (int)GUI_Types::BulletKeysNC:
-			m = props[GUIs[i].index];
+			m = bullets_and_cannon[GUIs[i].index];
 			break;
 		case (int)GUI_Types::CannonKeysC:
-			m = props[GUIs[i].index];
+			m = bullets_and_cannon[GUIs[i].index];
 			break;
 		case(int)GUI_Types::CannonKeysNC:
-			m = props[GUIs[i].index];
+			m = bullets_and_cannon[GUIs[i].index];
 			break;
 		case(int)GUI_Types::Building:
 			break;
 		default:
 			break;
 		}
-		if (!m.mesh->testSphereCollision(m.model, position, 6, collisionpoint, collisionnormal)) {
+		if (!m.mesh->testSphereCollision(m.model, position+Vector3(0,2,0), 6, collisionpoint, collisionnormal)) {
 			GUIs[i].enable = false;
 			GUIs[i].index = -1; 
 		}
