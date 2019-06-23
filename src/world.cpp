@@ -28,25 +28,25 @@ World::World(Camera * camera, float* time)
 	Player = new EntityPlayer(time);
 
 	for (int i = 0; i < 10; i++) {
-	
-		EntityPlayer p =  EntityPlayer(time);
+
+		EntityPlayer p = EntityPlayer(time);
 		Players.push_back(p);
-	
+
 	}
 
-	Titan = new EntityAI(time,&Player->model);
+	Titan = new EntityAI(time, &Player->model);
 	initWorld();
 
 	explosion = new EntityMesh(mat_types::explosion);
 	explosion->model.setTranslation(0, -1000, 0);
 
-	
+
 	mapinit();
 	//initTree();
 	//initAirplane();
 
 	//Player = new EntityMesh(mat_types::airplane);
-	
+
 
 }
 
@@ -55,55 +55,128 @@ void World::mapinit() {
 
 	Camera* cam = new Camera();
 	cam->lookAt(Vector3(0.f, 100.f, 100.f), Vector3(100.f, 0.f, 0.f), Vector3(0.f, 1.f, 0.f)); //position the camera and point to 0,0,0
-	cam->setPerspective(70.f, 1 , 0.1f, 10000.f); //set the projection, we want to be perspective
+	cam->setPerspective(70.f, 1, 0.1f, 10000.f); //set the projection, we want to be perspective
 	cam->enable();
 
-	map = Map(cam,Player,time);
+	map = Map(cam, Player, time);
 
 }
 
 void World::rendermap() {
 
+
+	glLineWidth(1);
+	glDisable(GL_DEPTH_TEST);
+	glEnable(GL_BLEND); glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+
+	Matrix44 m;
+	Matrix44 camera_matrix = map.camera->viewprojection_matrix;
+
+	current_shader = map.shader;
+
+	current_shader->enable();
+
+	m.setIdentity();
+	m.translate(-1024, 0, -1024);
+
+	//render ground
+	current_shader->setUniform("u_color", Vector4(1, 1, 1, 1));
+	current_shader->setUniform("u_viewprojection", camera_matrix);
+	current_shader->setUniform("u_texture_grass", Texture::Get("data/dry_grass.tga"));
+	current_shader->setUniform("u_texture_rock", Texture::Get("data/terrain.tga"));
+	current_shader->setUniform("u_texture_mask", Texture::Get("data/heightmap.tga"));
+	current_shader->setUniform("u_texture_water", Texture::Get("data/agua.tga"));
+	current_shader->setUniform("u_model", m);
+	current_shader->setUniform("u_time", *time);
+	plane.render(GL_TRIANGLES);
+
+	current_shader->disable();
+
+	
+	current_shader = Shader::getDefaultShader("flat");
+
+	//camera_matrix = map.camera2D->viewprojection_matrix;
+
+	current_shader->enable();
+	
+
+	for (int i = 0; i < props.size(); ++i) {
+		m.setTranslation(props[i].model.getTranslation().x, props[i].model.getTranslation().y, props[i].model.getTranslation().z);
+		Vector3 world_center = m * props[i].mesh->box.center;
+		if (!(map.camera->testSphereInFrustum(world_center, 50) == CLIP_OUTSIDE))
+		{
 		
-		
-		glLineWidth(1);
-		glEnable(GL_BLEND);
-		glDepthMask(false);
-		glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+			m.rotate(90 * DEG2RAD, Vector3(1, 0, 0));
+			current_shader->setUniform("u_viewprojection", camera_matrix);
 
+			current_shader->setUniform("u_model", m);
 
-		Matrix44 m;
-		Matrix44 camera_matrix = map.camera->projection_matrix;
+			current_shader->setUniform("u_color", Vector4(1, 1, 1, 0.7));
 
-		for (int i = 0; i < props.size(); ++i) {
-			m.setTranslation(props[i].model.getTranslation().x, props[i].model.getTranslation().y, props[i].model.getTranslation().z);
+			//props[i].mesh->createQuad();
 
-			Vector3 world_center = m * props[i].mesh->box.center;
+			Vector3 center = props[i].model.getTranslation();
+			Vector3 max = props[i].mesh->aabb_max;
+			Vector3 min = props[i].mesh->aabb_min;
+			float sx = Vector3(props[i].model.m[1], props[i].model.m[5], props[i].model.m[9]).length();
+			float sy = Vector3(props[i].model.m[0], props[i].model.m[4] , props[i].model.m[8]).length();
+			float w, h; 
 
-			current_shader = props[i].mat.shader;
+			w = max.x - min.x;
+			h = max.z - min.z;
 
-			current_shader->enable();
+			Mesh m;
 
-			current_shader->setUniform("u_viewprojection",camera_matrix);
+			m.createQuad(center.x, center.y, w*sx, h*sy, true);
 
-			current_shader->setUniform("u_time", *time);
+			m.render(GL_TRIANGLES);
 
-			props[i].render();
-
-			current_shader->disable();
-
-			
 		}
 
+	}	
 
-		glDisable(GL_BLEND);
-		glDepthMask(true);
+	current_shader->disable();
+
+	current_shader->enable();
+
+
+	m.setTranslation(Player->model.getTranslation().x, Player->model.getTranslation().y, Player->model.getTranslation().z);
+
+	m.rotate(90 * DEG2RAD, Vector3(1, 0, 0));
+
+	current_shader->setUniform("u_viewprojection", camera_matrix);
+
+	current_shader->setUniform("u_model", m);
+
+	current_shader->setUniform("u_color", Vector4(1, 1, 1, 1));
+
+	Vector3 center = Player->model.getTranslation();
+	Vector3 max = Player->mesh->aabb_max;
+	Vector3 min = Player->mesh->aabb_min;
+	Mesh myquad;
+
+	float w, h;
+
+	w = max.x - min.x;
+	h = max.z - min.z;
+	
+	myquad.createQuad(center.x, center.y, 20, 20, true);
+
+	myquad.render(GL_TRIANGLES);
+
+	current_shader->disable();
+
+
+	
+	
+	glDisable(GL_BLEND);
+	glEnable(GL_DEPTH_TEST);
 }
 
 
 void World::renderSkybox() {
 
-	Skybox = EntityMesh( mat_types::sky);
+	Skybox = EntityMesh(mat_types::sky);
 
 	current_shader = Skybox.mat.shader;
 
@@ -115,7 +188,7 @@ void World::renderSkybox() {
 
 
 	current_shader->setUniform("u_color", Vector4(1, 1, 1, 1));
-	current_shader->setUniform("u_viewprojection", camera->viewprojection_matrix); 
+	current_shader->setUniform("u_viewprojection", camera->viewprojection_matrix);
 	current_shader->setUniform("u_model", Skybox.model);
 	current_shader->setUniform("u_time", *time);
 
@@ -135,14 +208,14 @@ void World::renderGUI()
 			//We render the GUI if it is enabled
 			current_shader = GUIs[i].shader;
 			current_shader->enable();
-			if(!GUIs[i].isHUD)
+			if (!GUIs[i].isHUD)
 				current_shader->setUniform("u_viewprojection", camera2D->viewprojection_matrix);
 			else
 				current_shader->setUniform("u_viewprojection", mGUI);
 			current_shader->setUniform("u_time", *time);
 			GUIs[i].render();
 			current_shader->disable();
-			
+
 		}
 	}
 
@@ -156,7 +229,7 @@ void World::renderentities()
 
 	for (int i = 0; i < props.size(); ++i) {
 		m.setTranslation(props[i].model.getTranslation().x, props[i].model.getTranslation().y, props[i].model.getTranslation().z);
-		Vector3 world_center = m*props[i].mesh->box.center;
+		Vector3 world_center = m * props[i].mesh->box.center;
 		if (!(this->camera->testSphereInFrustum(world_center, 50) == CLIP_OUTSIDE))
 		{
 
@@ -266,7 +339,7 @@ void World::renderplane() {
 
 	m.setIdentity();
 	m.translate(-1024, 0, -1024);
-	
+
 	current_shader->setUniform("u_color", Vector4(1, 1, 1, 1));
 	current_shader->setUniform("u_viewprojection", camera->viewprojection_matrix);
 	current_shader->setUniform("u_texture_grass", Texture::Get("data/dry_grass.tga"));
@@ -295,7 +368,7 @@ void World::renderplane() {
 
 
 	glDisable(GL_BLEND);
-	
+
 	/*
 
 	glEnable(GL_BLEND);
@@ -314,7 +387,7 @@ void World::renderplane() {
 }
 
 void World::initProps() {
-	
+
 	//Here we will spawn trees, buildings, set player position and the Titans positions
 	bool setPlayerPos = true;
 	for (int i = 0; i < mask->image.width; i += 200) {
@@ -334,9 +407,9 @@ void World::initProps() {
 				m.model.scale(7, 7, 7);
 				props.push_back(m);
 			}
-			
+
 			//Building and other materials
-			if (mask->image.getPixel(j, i).x >= 162 && mask->image.getPixel(j,i).x !=255 && mask->image.getPixel(j,i).z !=255) {
+			if (mask->image.getPixel(j, i).x >= 162 && mask->image.getPixel(j, i).x != 255 && mask->image.getPixel(j, i).z != 255) {
 				if (j % 3 == 0) {
 					EntityMesh m = EntityMesh(mat_types::tower);
 					m.model.setTranslation(px, py, pz);
@@ -366,20 +439,20 @@ void World::initProps() {
 				float characterpy = py * 0.63f;
 				float bulletpy = py * 0.65f;
 				EntityMesh b = EntityMesh(mat_types::bullet);
-				
-				b.model.setTranslation(px, bulletpy, pz+20);
-				b.index_propsvector = props.size();
-				//props.push_back(b);
-				bullets_and_cannon.push_back(b);
-				
-				b = EntityMesh(mat_types::bullet);
-				b.model.setTranslation(px+20, bulletpy, pz + 20);
+
+				b.model.setTranslation(px, bulletpy, pz + 20);
 				b.index_propsvector = props.size();
 				//props.push_back(b);
 				bullets_and_cannon.push_back(b);
 
 				b = EntityMesh(mat_types::bullet);
-				b.model.setTranslation(px -20, bulletpy, pz + 20);
+				b.model.setTranslation(px + 20, bulletpy, pz + 20);
+				b.index_propsvector = props.size();
+				//props.push_back(b);
+				bullets_and_cannon.push_back(b);
+
+				b = EntityMesh(mat_types::bullet);
+				b.model.setTranslation(px - 20, bulletpy, pz + 20);
 				b.index_propsvector = props.size();
 				//props.push_back(b);
 				bullets_and_cannon.push_back(b);
@@ -387,16 +460,16 @@ void World::initProps() {
 				b = EntityMesh(mat_types::cannon);
 
 				//b.model.setTranslation(px, bulletpy, pz + 50);
-				Matrix44 R,S,T;
+				Matrix44 R, S, T;
 				T.setTranslation(px, bulletpy, pz + 50);
 				S.setScale(2, 2, 2);
 				R.setRotation(90 * DEG2RAD, Vector3(0, 1, 0));
-				b.model = S*R*T;
+				b.model = S * R*T;
 
 				//b.model.setUpAndOrthonormalize(Vector3(0, 1, 0));
 				//b.model.rotate(90 * DEG2RAD, Vector3(0, 1, 0));
 				//b.model =R* b.model;
-				
+
 				//b.model.translate(px, bulletpy, pz + 50);
 
 
@@ -404,26 +477,26 @@ void World::initProps() {
 				b.index_propsvector = props.size();
 				//props.push_back(b);
 				bullets_and_cannon.push_back(b);
-				
-				this->Player->setPosition(px, characterpy, pz);
-				
 
-				Titan->setPosition(px - 30, characterpy, pz+70);
+				this->Player->setPosition(px, characterpy, pz);
+
+
+				Titan->setPosition(px - 30, characterpy, pz + 70);
 
 
 				b = EntityMesh(mat_types::buildable);
-				b.model.setTranslation(px, py, pz+50);
+				b.model.setTranslation(px, py, pz + 50);
 				props.push_back(b);
 				for (int i = 0; i < Players.size(); i++) {
 
 
 					Players.at(i).setPosition(random(20), characterpy, random(10));
-				
+
 				}
 
 				setPlayerPos = false;
 
-				
+
 			}
 
 			if (mask->image.getPixel(j, i).z == 255) {
@@ -469,8 +542,8 @@ void World::printCamPos()
 	//std::cout << "Pitch: " << Player->pitch << std::endl;
 }
 
-float World::mapping(float start1,float stop1, float start2,float stop2,float value) {
-	
+float World::mapping(float start1, float stop1, float start2, float stop2, float value) {
+
 	float outgoing =
 		start2 + (stop2 - start2) * ((value - start1) / (stop1 - start1));
 	//std::cout << value << " " << outgoing <<std::endl;
@@ -515,10 +588,10 @@ void World::update(float dt)
 		Matrix44 SS;
 		SS.scale(5, 2, 2);
 		if (Titan->mesh->testRayCollision(SS*Titan->model, currentposition, bullets_and_cannon[shootedBullet].Direction,
-			collisionpoint, collisionnormal, distance)){
-			
+			collisionpoint, collisionnormal, distance)) {
+
 			explosion->model.setTranslation(collisionpoint.x, collisionpoint.y, collisionpoint.z);
-	
+
 			//Vector3 dir = (-1.0)*bullets_and_cannon[shootedBullet].Direction;
 			//dir.y = 0;
 
@@ -533,12 +606,12 @@ void World::update(float dt)
 			//Titan->model = R * Titan->model;
 
 			Titan->state = EntityAI::HURT;
-			Titan->animtime =*time;
+			Titan->animtime = *time;
 			removeBullet(shootedBullet);
 
 			return;
-		
-		
+
+
 		}
 
 		bullets_and_cannon[shootedBullet].model.setTranslation(newposition.x, newposition.y, newposition.z);
@@ -551,8 +624,8 @@ void World::update(float dt)
 	for (int i = 0; i < GUIs.size(); i++) {
 		if (!GUIs[i].enable)continue;
 
-		if (GUIs[i].type > (int)GUI_Types::instruct_titan && GUIs[i].type < (int)GUI_Types::OverallKeys) {	
-			GUIs[i].setPositionfrom3D(Player->current_position + Vector3(0, 13, 0), Vector2(0.3f,0.2f),
+		if (GUIs[i].type > (int)GUI_Types::instruct_titan && GUIs[i].type < (int)GUI_Types::OverallKeys) {
+			GUIs[i].setPositionfrom3D(Player->current_position + Vector3(0, 13, 0), Vector2(0.3f, 0.2f),
 				this->camera->viewprojection_matrix);
 		}
 	}
@@ -566,7 +639,7 @@ void World::update(float dt)
 
 void World::updateBullets(int index, Vector3 position)
 {
-	bullets_and_cannon[index].model.setTranslation(position.x,position.y,position.z);
+	bullets_and_cannon[index].model.setTranslation(position.x, position.y, position.z);
 	//props[bullets_and_cannon[index].index_propsvector].model.setTranslation(position.x, position.y, position.z);
 }
 
@@ -579,7 +652,7 @@ void World::removeBullet(int index)
 
 	for (int i = 0; i < bullets_and_cannon.size(); i++) {
 		if (bullets_and_cannon[i].type == (int)mat_types::cannon) {
-			if(bullets_and_cannon[i].munition.size() >0)
+			if (bullets_and_cannon[i].munition.size() > 0)
 				for (int j = 0; j < bullets_and_cannon[i].munition.size(); j++) {
 					if (bullets_and_cannon[i].munition[j] > index)
 
@@ -587,7 +660,7 @@ void World::removeBullet(int index)
 				}
 		}
 	}
-	if(Player->CannonID > index)
+	if (Player->CannonID > index)
 		Player->CannonID--;
 
 	shootedBullet = -1;
@@ -621,7 +694,7 @@ void World::setAllGUItofalse()
 		}
 		if (!m.mesh->testSphereCollision(m.model, position, 6, collisionpoint, collisionnormal)) {
 			GUIs[i].enable = false;
-			GUIs[i].index = -1; 
+			GUIs[i].index = -1;
 		}
 	}
 
@@ -629,7 +702,7 @@ void World::setAllGUItofalse()
 	//bullets_and_cannon[index].model.setTranslation(newpoint.x, newpoint.y, newpoint.z);
 	//props[bullets_and_cannon[index].index_propsvector].model.setTranslation(newpoint.x, newpoint.y, newpoint.z);
 	////props[bullets_and_cannon[index].index_propsvector].model.scale(50, 50, 50);
-	
+
 }
 
 
@@ -660,7 +733,7 @@ void World::initWorld()
 
 	initProps();
 
-	
+
 
 }
 
@@ -676,7 +749,7 @@ bool World::load() {
 		std::cerr << "::readFile: file not found " << filename << std::endl;
 		return false;
 	}
-	
+
 
 	fread(&mygameState, sizeof(mygameState), 1, file);
 

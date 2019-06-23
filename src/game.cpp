@@ -7,6 +7,7 @@
 #include "input.h"
 #include "entityMesh.h"
 #include "world.h"
+#include "rendertotexture.h"
 #include <random>
 #include <iostream>
 #include <cmath>
@@ -14,9 +15,12 @@
 
 //some globals
 
+RenderToTexture *rt, *rt_map = NULL;
+
 float angle = 0;
 
 Game* Game::instance = NULL;
+Shader* fbo_shader = NULL;
 
 bool ThirdCameraMode = TRUE;
 int instructions = 3;
@@ -65,16 +69,32 @@ Game::Game(int window_width, int window_height, SDL_Window* window)
 //what to do when the image has to be draw
 void Game::render(void)
 {
+
+
+
 	//set the clear color (the background color)
 	glClearColor(0.372, 0.827, 0.945, 1.0);
 	//glClearColor(0, 0, 0, 1.0);
 
 	// Clear the window and the depth buffer
+
+	if (!rt) //creamos el RT
+	{
+		rt = new RenderToTexture();
+		rt->create(window_width, window_height, true);
+
+		rt_map = new RenderToTexture();
+		rt_map->create(200, 200, true);
+
+	}
+
+	rt->enable();
+
+	glEnable(GL_DEPTH_TEST);
+
 	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
-	//set the camera as default
-	//if(ThirdCameraMode)camera->enable();
-
+	
 	Shader* current_shader = world.current_shader;
 
 	glViewport(0, 0, window_width , window_height);
@@ -113,17 +133,27 @@ void Game::render(void)
 
 	drawText(2, 2, getGPUStats(), Vector3(1, 1, 1), 2);
 
+	current_shader = world.map.shader;
 
+	glViewport(window_width - 200, window_height - 200, 200, 200);
 
-    current_shader = world.map.shader;
-
-	glViewport(window_width-200, window_height-200, 200, 200);
-
-	
-	//Draw the floor grid
 	world.rendermap();
 
+	rt->disable();
+
+	//rt_map->enable(400, 600, 200, 200);
+	//rt_map->disable();
+
 	
+    glDisable(GL_DEPTH_TEST);
+
+	fbo_shader = Shader::getDefaultShader("screen");
+	//this->mat.shader->setUniform("u_color", Vector4(1, 1, 1, 1));
+	//fbo_shader = Shader::Get("data/shaders/fbo.vs", "data/shaders/fbo.fs");
+
+	
+	rt->toViewport();
+
 
 	//render the FPS, Draw Calls, etc
 

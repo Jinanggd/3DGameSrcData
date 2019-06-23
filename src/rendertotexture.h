@@ -26,6 +26,7 @@ public:
 
 	bool create(int width, int height, bool generate_mipmaps = false);
 	void enable();
+	void enable(float x, float y, float w, float h);
 	void disable();
 };
 
