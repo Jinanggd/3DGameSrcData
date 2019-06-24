@@ -35,12 +35,15 @@ World::World(Camera * camera, float* time)
 
 	}
 
-	Titan = new EntityAI(time, &Player->model);
-	initWorld();
+	
 
+
+
+	Titan = new EntityAI(time, Player->model);
 	explosion = new EntityMesh(mat_types::explosion);
 	explosion->model.setTranslation(0, -1000, 0);
 
+	initWorld();
 
 	mapinit();
 	//initTree();
@@ -720,6 +723,7 @@ void World::update(float dt)
 
 		}
 	}
+
 	
 
 }

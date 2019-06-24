@@ -190,6 +190,20 @@ void EntityMesh::update(float elapsed_time)
 {
 }
 
+void EntityMesh::downgrade()
+{
+	type = (int)mat_types::buildable;
+	mat.texture = Texture::Get("data/bricks_albedo.tga");
+
+}
+
+bool EntityMesh::ExtractLife()
+{
+	life--;
+	if (life == 0) return true;
+	return false;
+}
+
 
 
 void EntityMesh::setPosition(Vector3 pos) {

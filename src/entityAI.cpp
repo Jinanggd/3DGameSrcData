@@ -32,7 +32,7 @@ EntityAI::EntityAI() : Entity()
 	camera->lookAt(Vector3(0.f, 100.f, 100.f), Vector3(0.f, 0.f, 0.f), Vector3(0.f, 1.f, 0.f)); //position the camera and point to 0,0,0
 	this->camera->setPerspective(70.f, 800.0f / (float)600.0f, 0.1f, 10000.f);
 	camera->enable();
-	state = IDLE;
+	state = SEARCH;
 	hpbar = GUI(Vector2(0, 0), Vector2(0, 0), true, GUI_Types::TitanLife);
 
 
@@ -45,12 +45,12 @@ EntityAI::EntityAI(float *time) : EntityAI()
 }
 
 
-EntityAI::EntityAI(float *time, Matrix44 * target) : EntityAI()
+EntityAI::EntityAI(float *time, Matrix44 target) : EntityAI()
 {
 	this->target = target;
 	this->time = time;
+	istargetplayer = true;
 }
-
 
 
 
@@ -78,13 +78,10 @@ void EntityAI::render() {
 }
 
 
-void EntityAI::update(float dt, std::vector<EntityMesh> props)
+void EntityAI::update(float dt, std::vector<EntityMesh> props, std::vector<EntityMesh>b)
 {
 
 	float t;
-
-	
-
 	if (state == HURT) {
 
 		t = *time - animtime;
@@ -92,26 +89,25 @@ void EntityAI::update(float dt, std::vector<EntityMesh> props)
 
 	}
 	else {
-		
 
 		if (state == IDLE) updateAnim(dt);
-	
 
 		if (isnear()) {
 
-
 			state = ATTACK;
-			
-			
-			updatedirection(dt, props);
-	
+		
 
-			updateAnim(dt);
+			updatedirection(dt, props);
+			t = *time - animtime;
+
+			updateAnim(t);
 			
 
 		}
 
 		else {
+
+			//animtime = *time;
 
 			state = SEARCH;
 
@@ -122,10 +118,8 @@ void EntityAI::update(float dt, std::vector<EntityMesh> props)
 
 	}
 
-
-
-	checkCollision(props, current_position + (velocity * dt), dt);
-	hpbar.setPositionfrom3D(current_position+Vector3(0,40,0), Vector2(0.2, 0.05), Game::instance->world.camera->viewprojection_matrix);
+	checkCollision(props,b, current_position + (velocity * dt), dt);
+	hpbar.setPositionfrom3D(current_position+Vector3(0,40,0), Vector2(w, 0.05), Game::instance->world.camera->viewprojection_matrix);
 
 
 }
@@ -134,8 +128,7 @@ void EntityAI::updatedirection(float dt, std::vector<EntityMesh> props)
 
 {
 
-	Vector3 mytarget = target->getTranslation();
-
+	Vector3 mytarget = target.getTranslation();
 	current_position = this->model.getTranslation();
 
 	direction = mytarget - current_position;
@@ -187,21 +180,39 @@ void EntityAI::updatedirection(float dt, std::vector<EntityMesh> props)
 
 }
 
-
-
-
+void EntityAI::updateTarget(EntityPlayer p, std::vector<EntityMesh> build)
+{
+	float distance = 10000.0f;
+	if (state != SEARCH)return;
+	float disttoTitan = (p.current_position - current_position).length();
+	if (disttoTitan < distance) {
+		distance = disttoTitan;
+		target = p.model;
+		istargetplayer = true;
+		indexBuildable = -1;
+	}
+	for (int i = 0; i < build.size(); i++) {
+		if (build[i].type == (int)mat_types::buildable || build[i].type == (int)mat_types::tower1) continue;
+		disttoTitan = (build[i].model.getTranslation() - current_position).length();
+		if (disttoTitan < distance) {
+			distance = disttoTitan;
+			target = build[i].model;
+			istargetplayer = false;
+			indexBuildable = i;
+		}
+	}
+}
 
 //Check if there is a collision to the new position of the player, if there it is, the player will keep the same position as before moving
 //Depending of the Mesh tag it will happen different kind of interactions
-void EntityAI::checkCollision(std::vector<EntityMesh> props, Vector3 newpos, float dt)
+void EntityAI::checkCollision(std::vector<EntityMesh> props, std::vector<EntityMesh> b, Vector3 newpos, float dt)
 {
 	Vector3 character_center = newpos + Vector3(0, 4, 0);
 
 
 	for (int i = 0; i < props.size(); i++) {
 
-		if (props[i].type == (int)mat_types::tree || props[i].type == (int)mat_types::house || props[i].type == (int)mat_types::tower ||
-			props[i].type == (int)mat_types::bullet || props[i].type == (int)mat_types::cannon) {
+		if (props[i].type == (int)mat_types::tree || props[i].type == (int)mat_types::house || props[i].type == (int)mat_types::tower) {
 
 
 			Vector3 collisionpoint, collision_normal;
@@ -242,6 +253,44 @@ void EntityAI::checkCollision(std::vector<EntityMesh> props, Vector3 newpos, flo
 
 
 		}
+	}
+
+	for (int i = 0; i < b.size(); i++) {
+
+		Vector3 collisionpoint, collision_normal;
+
+		if (b[i].mesh->testSphereCollision(b[i].model, character_center, 2, collisionpoint, collision_normal) == true) {
+
+			Vector3 push_away = normalize(character_center - collisionpoint)*dt;
+			push_away.y = 0;
+			current_position = current_position - push_away;
+
+
+
+			Vector3 right = this->model.rightVector();
+
+			right.normalize();
+
+			float dot_result = dot(push_away.normalize(), right);
+
+			float angle = acos(clamp(dot_result, -1, 1))*RAD2DEG;
+
+			if (angle < 90) this->model.translate((0.2f)*(push_away + right));
+
+			else {
+
+				right.x = -right.x;
+				right.z = -right.z;
+				this->model.translate((0.2f)*(push_away + right));
+
+
+			}
+
+
+			return;
+
+		}
+
 	}
 
 	current_position = newpos;
@@ -313,8 +362,6 @@ void EntityAI::updateAnim(float dt) {
 
 	float t = *time;
 
-
-
 	float speed = velocity.length() * 0.1;
 	float w = 0.0;
 
@@ -368,9 +415,6 @@ void EntityAI::updateAnim(float dt) {
 			skeleton.getBoneMatrix("mixamorig_Head").scale(2, 2, 2);
 			skeleton.getBoneMatrix("mixamorig_Spine2").scale(2, 2, 2);
 		}
-
-
-
 		else //run
 
 		{
@@ -398,7 +442,20 @@ void EntityAI::updateAnim(float dt) {
 		anim = Animation::Get("data/characters/characters/attack.skanim");
 		
 		anim->assignTime(t);
-
+		if (dt > anim->duration) {
+			if (!istargetplayer && indexBuildable >= 0){
+				//Subsctract life to building
+				std::cout << state << std::endl;
+				if (Game::instance->world.buildables[indexBuildable].ExtractLife()) {
+					Game::instance->world.buildables[indexBuildable].downgrade();
+					state = SEARCH;
+					startedattack = false;
+				}
+			}
+			//std::cout << "HIT " <<std::endl;
+			//a++;
+			animtime = *time;
+		}
 		anim->skeleton.getBoneMatrix("mixamorig_Head").scale(2, 2, 2);
 		anim->skeleton.getBoneMatrix("mixamorig_Spine2").scale(2, 2, 2);
 		skeleton = anim->skeleton;
@@ -408,7 +465,7 @@ void EntityAI::updateAnim(float dt) {
 
 		anim = Animation::Get("data/characters/characters/reaction_hit.skanim");
 		
-		if (dt > anim->duration) state = IDLE;
+		if (dt > anim->duration) state = SEARCH;
 		anim->assignTime(dt,false);
 		anim->skeleton.getBoneMatrix("mixamorig_Head").scale(2, 2, 2);
 		anim->skeleton.getBoneMatrix("mixamorig_Spine2").scale(2, 2, 2);
@@ -427,24 +484,47 @@ void EntityAI::updateAnim(float dt) {
 
 }
 
+void EntityAI::substractLife()
+{
+	w = w >= 0.018f ? w = -1 : w *= 0.3f;
+	if (w == -1) {
+		state = DEAD;
+	}
+}
+
 bool EntityAI::isnear() {
 
+	
 	Vector3 mypost, mytarget;
 
 	mypost = current_position;
 
 	mypost.y = 0;
 
-	mytarget = target->getTranslation();
+	mytarget = target.getTranslation();
 
 	mytarget.y = 0;
 
 
 	float distance = (mytarget - mypost).length();
 
-
-
-	if (distance < 15) return true;
+	if (istargetplayer) {
+		if (distance <= 15) {
+			if (!startedattack) {
+				startedattack = true;
+				animtime = *time;
+			}
+			return true;
+		}
+	}
+	else if (distance <= 22) {
+		if (!startedattack) {
+			startedattack = true;
+			animtime = *time;
+		}
+		return true;
+	}
+	
 
 	return false;
 

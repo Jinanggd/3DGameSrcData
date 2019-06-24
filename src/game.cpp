@@ -146,9 +146,10 @@ void Game::render(void)
 	//rt_map->enable(400, 600, 200, 200);
 	//rt_map->disable();
 
-	
-    glDisable(GL_DEPTH_TEST);
 
+	glDisable(GL_DEPTH_TEST);
+
+	//if(world.Titan-) 
 	fbo_shader = Shader::getDefaultShader("screen");
 	//this->mat.shader->setUniform("u_color", Vector4(1, 1, 1, 1));
 	//fbo_shader = Shader::Get("data/shaders/fbo.vs", "data/shaders/fbo.fs");
@@ -208,7 +209,8 @@ void Game::update(double seconds_elapsed)
 	}
 
 	world.Player->updateAnim(time);
-	world.Titan->update(seconds_elapsed*speed, world.props);
+	world.Titan->updateTarget(*world.Player, world.buildables);
+	world.Titan->update(seconds_elapsed*speed, world.props,world.buildables);
 	world.update(elapsed_time);
 	//to navigate with the mouse fixed in the middle
 	if (mouse_locked)

@@ -47,6 +47,8 @@ public:
 	EntityMesh( mat_types type);
 	void render();
 	void update(float elapsed_time);
+	void downgrade();
+	bool ExtractLife();
 
 	bool upgrade(mat_types t,float time);
 	std::vector<Vector2> buildQuadUVS(float minX, float maxX, float minY, float maxY);
@@ -69,6 +71,7 @@ public:
 	Camera * camera;
 	Vector3 front;
 	Vector3 Direction;
+	int life = 3; 
 
 	mat_types tobeupgrate;
 	float initial_time = -1.0f;
