@@ -7,6 +7,7 @@
 #include "input.h"
 #include "entityMesh.h"
 #include "world.h"
+#include "rendertotexture.h"
 #include <random>
 #include <iostream>
 #include <cmath>
@@ -14,9 +15,12 @@
 
 //some globals
 
+RenderToTexture *rt, *rt_map = NULL;
+
 float angle = 0;
 
 Game* Game::instance = NULL;
+Shader* fbo_shader = NULL;
 
 bool ThirdCameraMode = TRUE;
 int instructions = 3;
@@ -51,18 +55,10 @@ Game::Game(int window_width, int window_height, SDL_Window* window)
 
 	//Gl viewport test  
 
-	//glViewport(window_width / 2.0f, 0, window_width/2.0f, window_height);
-	//Camera* cam = new Camera();
-	//cam->lookAt(Vector3(0.f, 100.f, 100.f), Vector3(100.f, 0.f, 0.f), Vector3(0.f, 1.f, 0.f)); //position the camera and point to 0,0,0
-	//cam->setPerspective(70.f, window_width / (float)window_height, 0.1f, 10000.f); //set the projection, we want to be perspective
-	//cam->enable();
+	//
+	
 
 	world = World(camera, &time);
-
-
-
-	//world2 = World(cam, &time);
-	//world.entities.push_back(EntityMesh(Mesh::Get("data/box.ASE"), mat_types::rock));
 
 
 	//hide the cursor
@@ -73,17 +69,35 @@ Game::Game(int window_width, int window_height, SDL_Window* window)
 //what to do when the image has to be draw
 void Game::render(void)
 {
+
+
+
 	//set the clear color (the background color)
 	glClearColor(0.372, 0.827, 0.945, 1.0);
 	//glClearColor(0, 0, 0, 1.0);
 
 	// Clear the window and the depth buffer
+
+	if (!rt) //creamos el RT
+	{
+		rt = new RenderToTexture();
+		rt->create(window_width, window_height, true);
+
+		rt_map = new RenderToTexture();
+		rt_map->create(200, 200, true);
+
+	}
+
+	rt->enable();
+
+	glEnable(GL_DEPTH_TEST);
+
 	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
-	//set the camera as default
-	//if(ThirdCameraMode)camera->enable();
-
+	
 	Shader* current_shader = world.current_shader;
+
+	glViewport(0, 0, window_width , window_height);
 
 	if(current_shader)
 	{
@@ -96,12 +110,11 @@ void Game::render(void)
 		
 		glDisable(GL_CULL_FACE);
 
-		//glViewport(0, 0, window_width / 2.0f, window_height);
+		
 		world.renderSkybox();
 
 		//Double ViewPort
-		/*glViewport(window_width / 2.0f, 0, window_width / 2.0f, window_height);
-		world2.renderSkybox();*/
+
 
 		glEnable(GL_DEPTH_TEST);
 		world.renderplane();
@@ -116,14 +129,35 @@ void Game::render(void)
 		//world.water.render();
 		
 
+
 		
 	}
 
-	//Draw the floor grid
-	//drawGrid();
+	drawText(2, 2, getGPUStats(), Vector3(1, 1, 1), 2);
+
+	current_shader = world.map.shader;
+
+	glViewport(window_width - 200, window_height - 200, 200, 200);
+
+	world.rendermap();
+
+	rt->disable();
+
+	//rt_map->enable(400, 600, 200, 200);
+	//rt_map->disable();
+
+	
+    glDisable(GL_DEPTH_TEST);
+
+	fbo_shader = Shader::getDefaultShader("screen");
+	//this->mat.shader->setUniform("u_color", Vector4(1, 1, 1, 1));
+	//fbo_shader = Shader::Get("data/shaders/fbo.vs", "data/shaders/fbo.fs");
+
+	
+	rt->toViewport();
+
 
 	//render the FPS, Draw Calls, etc
-	drawText(2, 2, getGPUStats(), Vector3(1, 1, 1), 2);
 
 	//swap between front buffer and back buffer
 	SDL_GL_SwapWindow(this->window);
@@ -170,6 +204,7 @@ void Game::update(double seconds_elapsed)
 	}
 	if (!ThirdCameraMode) {
 		world.Player->update(seconds_elapsed, world.props, world.bullets_and_cannon,world.buildables);
+
 	}
 
 	world.Player->updateAnim(time);

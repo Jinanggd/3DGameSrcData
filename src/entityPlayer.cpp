@@ -92,6 +92,7 @@ void EntityPlayer::update(float dt, std::vector<EntityMesh> props, std::vector<E
 }
 
 void EntityPlayer::playerMovement(float dt, std::vector<EntityMesh> props, std::vector<EntityMesh> bc,std::vector<EntityMesh>b)
+
 {
 	// Crear la matriz de rotatcion con la rotacion actual,
 	// Crear el movimiento, sumarla a la posicion y multiplcarla por la matriz
@@ -181,7 +182,9 @@ void EntityPlayer::playerMovement(float dt, std::vector<EntityMesh> props, std::
 
 		velocity = iscarrying ? velocity + move * 1.5 : velocity + move * 4;
 
+
 		checkCollision(props,bc, b,current_position + velocity * dt, dt);
+
 		
 		//current_position = current_position + velocity * dt;
 
@@ -556,6 +559,13 @@ void EntityPlayer::grab(std::vector<EntityMesh> vector)
 					if (CarryItem >= 0) {
 						Game::instance->world.bullets_and_cannon[CarryItem].model.translate(Vector3(0, -20, 0));
 
+						Cannon.munition.push_back(CarryItem);
+						Game::instance->world.bullets_and_cannon[CannonID].munition.push_back(CarryItem);
+						CarryItem = -1;
+					}
+
+					Game::instance->world.bullets_and_cannon[CarryItem].model.translate(Vector3(0, -20, 0));
+					if (CarryItem >= 0) {
 						Cannon.munition.push_back(CarryItem);
 						Game::instance->world.bullets_and_cannon[CannonID].munition.push_back(CarryItem);
 						CarryItem = -1;

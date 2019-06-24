@@ -8,6 +8,7 @@ float gradient = 2.0;
 
 
 uniform vec3 u_camera_pos;
+
 uniform mat4 u_model;
 uniform mat4 u_viewprojection;
 

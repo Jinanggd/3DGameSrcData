@@ -77,6 +77,14 @@ void RenderToTexture::enable()
 
 }
 
+void RenderToTexture::enable(float x, float y, float w, float h)
+{
+	glBindFramebufferEXT(GL_FRAMEBUFFER_EXT, fbo);
+	glPushAttrib(GL_VIEWPORT_BIT);
+	glViewport(x, y, (int)w, (int)h);
+
+}
+
 void RenderToTexture::disable()
 {
 	// output goes to the FBO and it’s attached buffers

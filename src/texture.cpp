@@ -307,6 +307,7 @@ void Texture::toViewport(Shader* shader)
 	Mesh* quad = Mesh::getQuad();
 	if (!shader)
 		shader = Shader::getDefaultShader("screen");
+
 	shader->enable();
 	shader->setUniform("u_texture", this);
 	quad->render(GL_TRIANGLES);
