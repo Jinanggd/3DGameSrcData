@@ -144,6 +144,17 @@ EntityMesh::EntityMesh( mat_types type)
 		this->mesh = Mesh::Get("data/unityexport.OBJ");
 		this->mat.shader = Shader::Get("data/shaders/basic.vs", "data/shaders/texture.fs");
 		this->mat.texture = Texture::Get("data/bricks_albedo.tga");
+		//this->mesh->ComputeAABB();
+		//center = 0.5f* (this->mesh->aabb_max - this->mesh->aabb_min);
+		//center.y = this->mesh->aabb_min.y;
+
+		//this->mesh2 = new Mesh();
+		//this->mesh2->createQuad(center.x, center.y,
+		//	this->mesh->aabb_max.x - this->mesh->aabb_min.x, this->mesh->aabb_max.z - this->mesh->aabb_min.z, false);
+		g = GUI(Vector2(0, 0), Vector2(0, 0), true, GUI_Types::basic);
+		this->mesh2 = new Mesh();
+		this->mesh2->createQuad(0, 0, 10, 10, false);
+		this->mat.texture2 = Texture::Get("data/Selection.tga");
 		
 		break;
 	}
@@ -229,6 +240,7 @@ bool EntityMesh::upgrade(mat_types t,float time)
 			initial_time = -1;
 			type = (int)t;
 			(int)t == 11 ? mat.texture = Texture::Get("data/Tower1.tga") : mat.texture = Texture::Get("data/Tower2.tga");
+			life = 3;
 			return true;
 		}
 	}

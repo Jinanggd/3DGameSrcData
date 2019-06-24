@@ -18,5 +18,5 @@ void main()
 	if(is3D)
 		color = mix(vec4(0.2,0.2,0.2,1.0),color,visibility);
 		
-	gl_FragColor = u_color * color;
+	gl_FragColor = u_color;
 }

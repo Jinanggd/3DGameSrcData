@@ -579,15 +579,6 @@ void EntityPlayer::grab(std::vector<EntityMesh> vector)
 					scope.enable = true;
 					Cannon = vector[i];
 					CannonID = i;
-					
-
-					if (CarryItem >= 0) {
-						Game::instance->world.bullets_and_cannon[CarryItem].model.translate(Vector3(0, -20, 0));
-
-						Cannon.munition.push_back(CarryItem);
-						Game::instance->world.bullets_and_cannon[CannonID].munition.push_back(CarryItem);
-						CarryItem = -1;
-					}
 
 					Game::instance->world.bullets_and_cannon[CarryItem].model.translate(Vector3(0, -20, 0));
 					if (CarryItem >= 0) {
@@ -600,8 +591,11 @@ void EntityPlayer::grab(std::vector<EntityMesh> vector)
 					Vector3 frontCannon = Cannon.model.frontVector().normalize();
 					Vector3 frontPlayer = model.frontVector().normalize();
 					frontCannon.y = 0;
-					current_position = Cannon.model.getTranslation() - frontCannon*6;
 					frontPlayer.y = 0;
+
+					float previousy = current_position.y;
+					current_position = Cannon.model.getTranslation() - frontCannon*8;
+					current_position.y = previousy;
 					
 					
 					float angle = acos(clamp(dot(frontPlayer, frontCannon),-1.0f,1.0f))*RAD2DEG;

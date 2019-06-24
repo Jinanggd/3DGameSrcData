@@ -6,6 +6,7 @@
 #include "entity.h"
 #include "shader.h"
 #include "texture.h"
+#include "GUI.h"
 
 
 
@@ -71,12 +72,14 @@ public:
 	Camera * camera;
 	Vector3 front;
 	Vector3 Direction;
+	GUI g;
 	int life = 3; 
 
 	mat_types tobeupgrate;
 	float initial_time = -1.0f;
 	float duration = 2.0f;
 
+	float explosion_initial_time = -1.0f;
 
 };
 

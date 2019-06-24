@@ -278,12 +278,30 @@ void World::renderentities()
 
 	//BUILDABLES
 	for (int i = 0; i < buildables.size(); ++i) {
-		if (buildables[i].type == (int)mat_types::buildable)continue;
 		m.setTranslation(buildables[i].model.getTranslation().x, buildables[i].model.getTranslation().y, buildables[i].model.getTranslation().z);
 		Vector3 world_center = m * buildables[i].mesh->box.center;
 		if (!(this->camera->testSphereInFrustum(world_center, 50) == CLIP_OUTSIDE))
 		{
+			current_shader = Shader::Get("data/shaders/basic.vs", "data/shaders/texture.fs");
+			current_shader->enable();
+			current_shader->setUniform("u_viewprojection", camera->viewprojection_matrix);
 
+			current_shader->setUniform("u_time", *time);
+
+			current_shader->setUniform("u_color", Vector4(1, 1, 1, 1));
+			current_shader->setUniform("u_texture", buildables[i].mat.texture2);
+
+			Vector3 t = buildables[i].model.getTranslation();
+			m.setTranslation(t + Vector3(-6, 2, 4));
+			m.rotate(90 * DEG2RAD, Vector3(1, 0, 0));
+			m.scale(5, 5, 5);
+			m.rotate(30**time*DEG2RAD, Vector3(0, 0, 1));
+			current_shader->setUniform("u_model", m);
+			buildables[i].mesh2->render(GL_TRIANGLES);
+
+			current_shader->disable();
+
+			if (buildables[i].type == (int)mat_types::buildable)continue;
 			current_shader = buildables[i].mat.shader;
 
 			current_shader->enable();
@@ -295,6 +313,18 @@ void World::renderentities()
 			buildables[i].render();
 
 			current_shader->disable();
+			if(buildables[i].type ==(int)mat_types::tower2)
+				if (buildables[i].g.enable) {
+					glDisable(GL_DEPTH_TEST);
+					current_shader = buildables[i].g.shader;
+					current_shader->enable();
+					m.setIdentity();
+					current_shader->setUniform("u_viewprojection", m);
+					current_shader->setUniform("u_time", *time);
+					buildables[i].g.render();
+					current_shader->disable();
+					glEnable(GL_DEPTH_TEST);
+				}
 
 		}
 	}
@@ -520,7 +550,7 @@ void World::initProps() {
 				Matrix44 R,S,T;
 				T.setTranslation(px, py*0.6f, pz + 50);
 				S.setScale(2, 2, 2);
-				//R.setRotation(90 * DEG2RAD, Vector3(0, 1, 0));
+				R.setRotation(90 * DEG2RAD, Vector3(0, 1, 0));
 				b.model = S*R*T;
 
 				//b.model.setUpAndOrthonormalize(Vector3(0, 1, 0));
@@ -531,21 +561,21 @@ void World::initProps() {
 
 
 
-				////b.model.scale(2,2, 2);
-				//b.index_propsvector = props.size();
-				////props.push_back(b);
-				//bullets_and_cannon.push_back(b);
+				//b.model.scale(2,2, 2);
+				b.index_propsvector = props.size();
+				//props.push_back(b);
+				bullets_and_cannon.push_back(b);
 				
 				this->Player->setPosition(px, characterpy, pz);
 
 
 				Titan->setPosition(px - 30, characterpy, pz + 70);
 
-				b = EntityMesh(mat_types::buildable);
+				//b = EntityMesh(mat_types::buildable);
 
-				b.model.setTranslation(px+20, bulletpy, pz + 90);
-				b.model.scale(5, 7, 5);
-				buildables.push_back(b);
+				//b.model.setTranslation(px+20, bulletpy, pz + 90);
+				//b.model.scale(5, 7, 5);
+				//buildables.push_back(b);
 
 				//b = EntityMesh(mat_types::buildable);
 				//b.model.setTranslation(px, bulletpy, pz+50);
@@ -645,7 +675,8 @@ void World::update(float dt)
 			if (props[i].mesh->testRayCollision(props[i].model, currentposition, bullets_and_cannon[shootedBullet].Direction,
 				collisionpoint, collisionnormal, distance)) {
 				//Explosion GUI
-
+				explosion->model.setTranslation(collisionpoint.x, collisionpoint.y, collisionpoint.z);
+				explosion->explosion_initial_time = *time;
 				//Remove the bullet from the the vectors
 				removeBullet(shootedBullet);
 				std::cout << "Collision contra props" << std::endl;
@@ -660,21 +691,8 @@ void World::update(float dt)
 		if (Titan->mesh->testRayCollision(SS*Titan->model, currentposition, bullets_and_cannon[shootedBullet].Direction,
 			collisionpoint, collisionnormal, distance)){
 			explosion->model.setTranslation(collisionpoint.x, collisionpoint.y, collisionpoint.z);
-
-			//Vector3 dir = (-1.0)*bullets_and_cannon[shootedBullet].Direction;
-			//dir.y = 0;
-
-			//dir.normalize();
-			//Vector3 front = Titan->model.frontVector();
-			//front.y = 0;
-			//front.normalize();
-			//
-			//Matrix44 R;
-			//R.setRotation(acos(dot( dir, front )), Vector3(0, 1, 0));
-
-			//Titan->model = R * Titan->model;
-
-			Titan->state = EntityAI::HURT;
+			explosion->explosion_initial_time = *time;
+			Titan->substractLife();
 			Titan->animtime = *time;
 			removeBullet(shootedBullet);
 
@@ -700,27 +718,40 @@ void World::update(float dt)
 			GUIs[i].setPositionfrom3D(Player->current_position + R*Vector3(-3, 13, 0), Vector2(0.1f,0.15f),
 				this->camera->viewprojection_matrix);
 		}
-		//else if (GUIs[i].type == (int)GUI_Types::CannonKeysC) {
-		//	GUIs[i].setPositionfrom3D(Player->current_position + R * Vector3(5, 13, 10), Vector2(0.2f, 0.7f),
-		//		this->camera->viewprojection_matrix);
-		//}
 		else if (GUIs[i].type == (int)GUI_Types::Building) {
 			GUIs[i].setPositionfrom3D(Player->current_position + R * Vector3(-5, 13, 0), Vector2(0.2f, 0.15f),
 				this->camera->viewprojection_matrix);
 		}
 	}
 
-
-	this->map.update();
-
 	setAllGUItofalse();
-	blendings.clear();
+	
+	//Update GUI from buildables
+	for (int i = 0; i < buildables.size(); i++) {
+		if (buildables[i].type == (int)mat_types::tower2) {
+			buildables[i].g.setPositionfrom3D(buildables[i].model.getTranslation() + Vector3(0, 10, 0),
+				Vector2(0.3f*(1 / 3.0f*buildables[i].life), 0.05f), this->camera->viewprojection_matrix);
+		}
+	}
+
 	//Update blendings vector
+	blendings.clear();
 	for (int i = 0; i < buildables.size(); i++) {
 		if (buildables[i].type == (int)mat_types::buildable) {
 			if(!buildables[i].upgrade(buildables[i].tobeupgrate, *time))
 				sortBlendingObjects(buildables[i]);
 
+		}
+	}
+
+	this->map.update();
+
+	//Update explosion 
+	if (explosion->explosion_initial_time > 0) {
+		float difference = *time - explosion->explosion_initial_time;
+		if (difference > explosion->duration) {
+			explosion->explosion_initial_time = -1;
+			explosion->model.setTranslation(0, -1000, 0);
 		}
 	}
 
@@ -740,7 +771,6 @@ void World::removeBullet(int index)
 {
 	//props.erase(props.begin() + bullets_and_cannon[index].index_propsvector);
 	bullets_and_cannon.erase(bullets_and_cannon.begin() + index);
-	int indexatbulletvector = 0;
 	//update the bullets_and_cannon vector
 
 	for (int i = 0; i < bullets_and_cannon.size(); i++) {
@@ -752,6 +782,12 @@ void World::removeBullet(int index)
 
 						bullets_and_cannon[i].munition[j]--;
 				}
+		}
+	}
+	if (Player->Cannon.munition.size() > 0) {
+		for (int i = 0; i < Player->Cannon.munition.size(); i++) {
+			if (Player->Cannon.munition[i] > index)
+				Player->Cannon.munition[i]--;
 		}
 	}
 

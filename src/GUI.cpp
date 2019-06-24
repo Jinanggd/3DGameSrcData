@@ -40,6 +40,8 @@ void GUI::GetTexture(GUI_Types t)
 	switch (t)
 	{
 	case GUI_Types::basic:
+		x0 = 0; x1 = 1; y0 = 0; y1 = 1;
+		buildQuadUVS(x0,x1,y0,y1);
 		break;
 	case GUI_Types::title:
 		x0 = 0; x1 = 799.0f / 1600.0f; y0 = 601.0f / 1200.0f; y1 = 1;
@@ -146,13 +148,13 @@ void GUI::GetTexture(GUI_Types t)
 
 void GUI::render()
 {
-	if((type <(int)GUI_Types::BulletKeysNC && type >(int)GUI_Types::title ))
+	if((type <(int)GUI_Types::BulletKeysNC && type >(int)GUI_Types::title ) && (type != (int)GUI_Types::basic))
 		this->shader->setUniform("u_color", Vector4(color.x,color.y,color.z,1.0));
 	else
 		this->shader->setUniform("u_color", Vector4(color.x, color.y, color.z, 0.5));
 
 	if (type == (int)GUI_Types::basic) {
-
+		this->shader->setUniform("u_color", Vector4(0,0.7f,0, 1.0));
 	}
 	else {
 		this->shader->setUniform("u_texture", this->texture);
