@@ -93,82 +93,35 @@ void World::rendermap() {
 	current_shader->disable();
 
 	
-	current_shader = Shader::getDefaultShader("flat");
 
-	//camera_matrix = map.camera2D->viewprojection_matrix;
-
-	current_shader->enable();
 	
 
 	for (int i = 0; i < props.size(); ++i) {
-		m.setTranslation(props[i].model.getTranslation().x, props[i].model.getTranslation().y, props[i].model.getTranslation().z);
-		Vector3 world_center = m * props[i].mesh->box.center;
-		if (!(map.camera->testSphereInFrustum(world_center, 50) == CLIP_OUTSIDE))
-		{
+
+
+		current_shader = props[i].mat.shader;
+
+		current_shader->enable();
+
+		current_shader->setUniform("u_viewprojection", camera_matrix);
+
+		current_shader->setUniform("u_time", *time);
+
+		props[i].render();
+
+		current_shader->disable();
 		
-			m.rotate(90 * DEG2RAD, Vector3(1, 0, 0));
-			current_shader->setUniform("u_viewprojection", camera_matrix);
-
-			current_shader->setUniform("u_model", m);
-
-			current_shader->setUniform("u_color", Vector4(1, 1, 1, 0.7));
-
-			//props[i].mesh->createQuad();
-
-			Vector3 center = props[i].model.getTranslation();
-			Vector3 max = props[i].mesh->aabb_max;
-			Vector3 min = props[i].mesh->aabb_min;
-			float sx = Vector3(props[i].model.m[1], props[i].model.m[5], props[i].model.m[9]).length();
-			float sy = Vector3(props[i].model.m[0], props[i].model.m[4] , props[i].model.m[8]).length();
-			float w, h; 
-
-			w = max.x - min.x;
-			h = max.z - min.z;
-
-			Mesh m;
-
-			m.createQuad(center.x, center.y, w*sx, h*sy, true);
-
-			m.render(GL_TRIANGLES);
-
-		}
 
 	}	
 
-	current_shader->disable();
-
-	current_shader->enable();
 
 
-	m.setTranslation(Player->model.getTranslation().x, Player->model.getTranslation().y, Player->model.getTranslation().z);
+	current_shader = Shader::getDefaultShader("flat");
 
-	m.rotate(90 * DEG2RAD, Vector3(1, 0, 0));
+	map.renderEntity(current_shader, Vector4(1, 1, 1, 1), Player);
 
-	current_shader->setUniform("u_viewprojection", camera_matrix);
+	map.renderEntity(current_shader, Vector4(1,0,0,1), Titan);
 
-	current_shader->setUniform("u_model", m);
-
-	current_shader->setUniform("u_color", Vector4(1, 1, 1, 1));
-
-	Vector3 center = Player->model.getTranslation();
-	Vector3 max = Player->mesh->aabb_max;
-	Vector3 min = Player->mesh->aabb_min;
-	Mesh myquad;
-
-	float w, h;
-
-	w = max.x - min.x;
-	h = max.z - min.z;
-	
-	myquad.createQuad(center.x, center.y, 20, 20, true);
-
-	myquad.render(GL_TRIANGLES);
-
-	current_shader->disable();
-
-
-	
-	
 	glDisable(GL_BLEND);
 	glEnable(GL_DEPTH_TEST);
 }

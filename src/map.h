@@ -6,6 +6,7 @@
 #include "shader.h"
 #include "camera.h"
 #include "entityPlayer.h"
+#include "entityAI.h"
 
 
 class Map
@@ -24,6 +25,8 @@ public:
 	Map(Camera * camera, EntityPlayer* player, float* time);
 	void update();
 	void render();
+	void renderEntity(Shader *current_shader, Vector4 color, EntityPlayer *Player);
+	void renderEntity(Shader *current_shader, Vector4 color, EntityAI *Player);
 	Camera *camera, *camera2D;
 	float* time;
 	float height;
