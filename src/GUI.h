@@ -15,19 +15,24 @@ enum class GUI_Types {
 	instruct_attack,
 	instruct_building,
 	instruct_titan,
+	instruct_help,
 	//Hints to the players
 	BulletKeysNC,
 	BulletKeysC,
 	CannonKeysNC,
-	CannonKeysC,
+	BuildingT1,
 	Building,
+	CannonKeysC1,
+	CannonKeysC2,
 	OverallKeys,
 	//Titan
 	TitanLife,
 	TitanLife2,
 	TitanLife3,
 	//Minimap
-	minimap
+	minimap,
+	//Scope
+	scope
 };
 
 class GUI

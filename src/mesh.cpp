@@ -1503,3 +1503,21 @@ void Mesh::registerMesh( std::string name )
 	this->name = name;
 	sMeshesLoaded[name] = this;
 }
+
+void Mesh::ComputeAABB() {
+	Vector3 max = Vector3(-100000, -100000, -10000);
+	Vector3 min = Vector3(100000, 100000, 100000);
+
+	for (int i = 0; i < vertices.size(); i++) {
+		Vector3 pointin3D =  vertices[i];
+		if (pointin3D > max) {
+			max = pointin3D;
+		}
+		if (pointin3D < min) {
+			min = pointin3D;
+		}
+	}
+
+	aabb_max = max;
+	aabb_min = min;
+}

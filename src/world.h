@@ -43,6 +43,7 @@ public:
 	void renderplane();
 	void renderSkybox();
 	void renderGUI();
+	void renderBlendings();
 
 	void initProps();
 	void initAirplane();
@@ -56,6 +57,9 @@ public:
 
 	void updateBullets(int index, Vector3 position);
 	void removeBullet(int index);
+	void sortBlendingObjects(EntityMesh m);
+
+	bool dist( EntityMesh& lhs,  EntityMesh& rhs);
 
 	void setAllGUItofalse();
 
@@ -66,10 +70,14 @@ public:
 	Camera * camera;
 	Camera * camera2D;
 	float* time;
+	bool instruction_help = false;
 	Shader* current_shader;
+
 	std::vector<EntityMesh> props;
 	std::vector<EntityMesh> bullets_and_cannon;
 	std::vector<EntityMesh> buildables;
+	std::vector<EntityMesh> blendings;
+
 	std::vector<GUI> GUIs;
 	int shootedBullet;
 	std::vector<EntityLight> lights;
@@ -90,6 +98,7 @@ public:
 	EntityAI* Titan;
 
 	Shader* plane_shader = NULL;
+	
 	
 
 //private:

@@ -71,7 +71,14 @@ EntityMesh::EntityMesh( mat_types type)
 		this->mesh = Mesh::Get("data/Cannon.obj");
 		this->mat.shader = Shader::Get("data/shaders/basic.vs", "data/shaders/texture.fs");
 		this->mat.texture = Texture::Get("data/Cannon.tga");
+		this->mesh->ComputeAABB();
+		center = 0.5f* (this->mesh->aabb_max - this->mesh->aabb_min);
+		center.y = this->mesh->aabb_min.y;
 		this->tag = "PropCannon";
+		this->mesh2 = new Mesh();
+		this->mesh2->createQuad(center.x, center.y, 
+			this->mesh->aabb_max.x - this->mesh->aabb_min.x, this->mesh->aabb_max.z - this->mesh->aabb_min.z,false);
+		this->mat.texture2 = Texture::Get("data/Selection.tga");
 		break;
 
 	case mat_types::plane:
@@ -134,123 +141,10 @@ EntityMesh::EntityMesh( mat_types type)
 		
 		//We are gonna build ourself the vertices with 
 		float w = 20.0f, h = 30.0f;
-		this->mesh = new Mesh();
-		this->mesh->vertices.clear();
-		this->mesh->uvs.clear();
-		this->mesh->normals.clear();
-
-		//****5,2-------------3********
-		//****4---------------1,6*******
-
-		{
-			//1o cara
-			this->mesh->vertices.push_back(Vector3(0, 0, 0));
-			this->mesh->vertices.push_back(Vector3(0, h, 0));
-
-			this->mesh->vertices.push_back(Vector3(0, h, 0));
-			this->mesh->vertices.push_back(Vector3(w, h, 0));
-
-			this->mesh->vertices.push_back(Vector3(w, h, 0));
-			this->mesh->vertices.push_back(Vector3(w, 0, 0));
-
-			this->mesh->vertices.push_back(Vector3(w, 0, 0));
-			this->mesh->vertices.push_back(Vector3(0, 0, 0));
-
-			//2a cara
-			this->mesh->vertices.push_back(Vector3(0, 0, 0));
-			this->mesh->vertices.push_back(Vector3(0, 0, w));
-
-			this->mesh->vertices.push_back(Vector3(0, 0, w));
-			this->mesh->vertices.push_back(Vector3(0, h, w));
-
-			this->mesh->vertices.push_back(Vector3(0, h, w));
-			this->mesh->vertices.push_back(Vector3(0, h, 0));
-
-			//3a cara
-			this->mesh->vertices.push_back(Vector3(w, 0, 0));
-			this->mesh->vertices.push_back(Vector3(w, 0, w));
-
-			this->mesh->vertices.push_back(Vector3(w, 0, w));
-			this->mesh->vertices.push_back(Vector3(w, h, w));
-
-			this->mesh->vertices.push_back(Vector3(w, h, w));
-			this->mesh->vertices.push_back(Vector3(w, h, 0));
-
-			//4a cara
-
-			this->mesh->vertices.push_back(Vector3(w, h, w));
-			this->mesh->vertices.push_back(Vector3(0, h, w));
-
-			this->mesh->vertices.push_back(Vector3(0, 0, w));
-			this->mesh->vertices.push_back(Vector3(w, 0, w));
-
-			//We do not really care about normals
-
-			this->mesh->normals.push_back(Vector3(0.0f, 0.0f, 1.0f));
-			this->mesh->normals.push_back(Vector3(0.0f, 0.0f, 1.0f));
-			this->mesh->normals.push_back(Vector3(0.0f, 0.0f, 1.0f));
-			this->mesh->normals.push_back(Vector3(0.0f, 0.0f, 1.0f));
-			this->mesh->normals.push_back(Vector3(0.0f, 0.0f, 1.0f));
-			this->mesh->normals.push_back(Vector3(0.0f, 0.0f, 1.0f));
-
-			this->mesh->normals.push_back(Vector3(0.0f, 0.0f, 1.0f));
-			this->mesh->normals.push_back(Vector3(0.0f, 0.0f, 1.0f));
-			this->mesh->normals.push_back(Vector3(0.0f, 0.0f, 1.0f));
-			this->mesh->normals.push_back(Vector3(0.0f, 0.0f, 1.0f));
-			this->mesh->normals.push_back(Vector3(0.0f, 0.0f, 1.0f));
-			this->mesh->normals.push_back(Vector3(0.0f, 0.0f, 1.0f));
-
-			this->mesh->normals.push_back(Vector3(0.0f, 0.0f, 1.0f));
-			this->mesh->normals.push_back(Vector3(0.0f, 0.0f, 1.0f));
-			this->mesh->normals.push_back(Vector3(0.0f, 0.0f, 1.0f));
-			this->mesh->normals.push_back(Vector3(0.0f, 0.0f, 1.0f));
-			this->mesh->normals.push_back(Vector3(0.0f, 0.0f, 1.0f));
-			this->mesh->normals.push_back(Vector3(0.0f, 0.0f, 1.0f));
-
-			this->mesh->normals.push_back(Vector3(0.0f, 0.0f, 1.0f));
-			this->mesh->normals.push_back(Vector3(0.0f, 0.0f, 1.0f));
-			this->mesh->normals.push_back(Vector3(0.0f, 0.0f, 1.0f));
-			this->mesh->normals.push_back(Vector3(0.0f, 0.0f, 1.0f));
-			this->mesh->normals.push_back(Vector3(0.0f, 0.0f, 1.0f));
-			this->mesh->normals.push_back(Vector3(0.0f, 0.0f, 1.0f));
-
-			//Also with Textures
-
-			this->mesh->uvs.push_back(Vector2(0, 0));
-			this->mesh->uvs.push_back(Vector2(0, 0));
-			this->mesh->uvs.push_back(Vector2(0, 0));
-			this->mesh->uvs.push_back(Vector2(0, 0));
-			this->mesh->uvs.push_back(Vector2(0, 0));
-			this->mesh->uvs.push_back(Vector2(0, 0));
-
-			this->mesh->uvs.push_back(Vector2(0, 0));
-			this->mesh->uvs.push_back(Vector2(0, 0));
-			this->mesh->uvs.push_back(Vector2(0, 0));
-			this->mesh->uvs.push_back(Vector2(0, 0));
-			this->mesh->uvs.push_back(Vector2(0, 0));
-			this->mesh->uvs.push_back(Vector2(0, 0));
-
-			this->mesh->uvs.push_back(Vector2(0, 0));
-			this->mesh->uvs.push_back(Vector2(0, 0));
-			this->mesh->uvs.push_back(Vector2(0, 0));
-			this->mesh->uvs.push_back(Vector2(0, 0));
-			this->mesh->uvs.push_back(Vector2(0, 0));
-			this->mesh->uvs.push_back(Vector2(0, 0));
-
-			this->mesh->uvs.push_back(Vector2(0, 0));
-			this->mesh->uvs.push_back(Vector2(0, 0));
-			this->mesh->uvs.push_back(Vector2(0, 0));
-			this->mesh->uvs.push_back(Vector2(0, 0));
-			this->mesh->uvs.push_back(Vector2(0, 0));
-			this->mesh->uvs.push_back(Vector2(0, 0));
-
-		}
-
-		this->mat.shader = Shader::Get("data/shaders/basic.vs", "data/shaders/flat.fs");
-
-
-		//this->mesh = Mesh::Get("data/box.ASE");
-		//this->mat.shader = Shader::Get("data/shaders/basic.vs", "data/shaders/flat.fs");
+		this->mesh = Mesh::Get("data/unityexport.OBJ");
+		this->mat.shader = Shader::Get("data/shaders/basic.vs", "data/shaders/texture.fs");
+		this->mat.texture = Texture::Get("data/bricks_albedo.tga");
+		
 		break;
 	}
 	
@@ -271,13 +165,13 @@ void EntityMesh::render() {
 	}
 	else if (type == (int)mat_types::buildable) {
 
-		//glEnable(GL_BLEND);
-		//glBlendFunc(GL_SRC_ALPHA, GL_ONE);
-		this->mat.shader->setUniform("u_color", Vector4(1, 1, 1, 1));
+		glEnable(GL_BLEND);
+		glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+		this->mat.shader->setUniform("u_color", Vector4(1, 1, 1, 0.5));
 		this->mat.shader->setUniform("u_model", model);
-		glLineWidth(5);
-		this->mesh->render(GL_LINES);
-		//glDisable(GL_BLEND);
+		this->mat.shader->setUniform("u_texture", this->mat.texture);
+		this->mesh->render(GL_TRIANGLES);
+		glDisable(GL_BLEND);
 	}
 	else {
 		this->mat.shader->setUniform("u_color", Vector4(1, 1, 1, 1));
@@ -311,4 +205,42 @@ Vector3 EntityMesh::getPosition() {
 	return model.getTranslation();
 
 
+}
+
+bool EntityMesh::upgrade(mat_types t,float time)
+{
+	if (initial_time > 0) {
+		float diff = time - initial_time;
+		if (diff > duration) {
+			initial_time = -1;
+			type = (int)t;
+			(int)t == 11 ? mat.texture = Texture::Get("data/Tower1.tga") : mat.texture = Texture::Get("data/Tower2.tga");
+			return true;
+		}
+	}
+	return false;
+}
+
+std::vector<Vector2> EntityMesh::buildQuadUVS(float minX, float maxX, float minY, float maxY)
+{
+	std::vector<Vector2> uvs;
+	//this->mesh->uvs.push_back(Vector2(0.25f, 0.25f));
+//this->mesh->uvs.push_back(Vector2(0.0f, 0.5f));
+//this->mesh->uvs.push_back(Vector2(0.25f, 0.5f));
+
+//this->mesh->uvs.push_back(Vector2(0.0f, 0.25f));
+//this->mesh->uvs.push_back(Vector2(0.0f, 0.5f));
+//this->mesh->uvs.push_back(Vector2(0.25f, 0.25f));
+	uvs.push_back(Vector2(maxX, minY));
+	uvs.push_back(Vector2(minX, maxY));
+	uvs.push_back(Vector2(maxX, maxY));
+
+	uvs.push_back(Vector2(minX, minY));
+	uvs.push_back(Vector2(minX, maxY));
+	uvs.push_back(Vector2(maxX, minY));
+	return uvs;
+}
+
+void EntityMesh::updateQUAD()
+{
 }

@@ -111,6 +111,8 @@ public:
 
 	float& operator [] (int n) { return v[n]; }
 	void operator *= (float v) { x *= v; y *= v; z *= v; }
+	bool operator <(Vector3 v) { return x < v.x && y < v.y && z < v.z; }
+	bool operator >(Vector3 v) { return x > v.x && y > v.y && z > v.z; }
 };
 
 Vector3 normalize(Vector3 n);
