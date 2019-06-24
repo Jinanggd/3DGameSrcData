@@ -103,6 +103,8 @@ public:
 	static Mesh* Get(const char* filename);
 	void registerMesh(std::string name);
 
+	void ComputeAABB();
+
 	//create help meshes
 	void createQuad(float center_x, float center_y, float w, float h, bool flip_uvs);
 	void createPlane(float size);

@@ -34,7 +34,7 @@ GUI::GUI(Vector2 o, Vector2 s, bool en, GUI_Types t)
 void GUI::GetTexture(GUI_Types t)
 {
 	//Runnning throught the atlas
-	texture = Texture::Get("data/ATLAS_GUI.tga");
+	texture = t==GUI_Types::scope? Texture::Get("data/crosshair.tga") : Texture::Get("data/ATLAS_GUI.tga");
 	this->mesh->uvs.clear();
 	float x0, x1, y0, y1;
 	switch (t)
@@ -91,11 +91,15 @@ void GUI::GetTexture(GUI_Types t)
 		x0 = 821.0f / 1600.0f; x1 = 894.0f / 1600.0f; y0 = (1200.0f - 1120.0f) / 1200.0f; y1 = (1200.0f - 1047.0f) / 1200.0f;
 		buildQuadUVS(x0, x1, y0, y1);
 		break;
-	case GUI_Types::CannonKeysC:
-		x0 = 1085.0f / 1600.0f; x1 = 1235.0f / 1600.0f; y0 = (1200.0f - 1190.0f) / 1200.0f; y1 = (1200.0f - 1047.0f) / 1200.0f;
+	case GUI_Types::CannonKeysC1:
+		x0 = 1059.0f / 1600.0f; x1 = 1283.0f / 1600.0f; y0 = (1200.0f - 1194.0f) / 1200.0f; y1 = (1200.0f - 1045.0f) / 1200.0f;
 		buildQuadUVS(x0, x1, y0, y1);
-
 		break;
+	case GUI_Types::CannonKeysC2:
+		x0 = 1468.0f / 1600.0f; x1 = 1590.0f / 1600.0f; y0 = (1200.0f - 1194.0f) / 1200.0f; y1 = (1200.0f - 1045.0f) / 1200.0f;
+		buildQuadUVS(x0, x1, y0, y1);
+		break;
+
 	case GUI_Types::Building:
 		x0 = 823.0f / 1600.0f; x1 = 971.0f / 1600.0f; y0 = (1200.0f - 1197.0f) / 1200.0f; y1 = (1200.0f - 1124.0f) / 1200.0f;
 		buildQuadUVS(x0, x1, y0, y1);
@@ -122,6 +126,13 @@ void GUI::GetTexture(GUI_Types t)
 		break;
 	case GUI_Types::minimap:
 		break;
+	case GUI_Types::scope:
+		buildQuadUVS(0, 1, 0, 1);
+		break;
+	case GUI_Types::BuildingT1:
+		x0 = 821.0f / 1600.0f; x1 = 894.0f / 1600.0f; y0 = (1200.0f - 1120.0f) / 1200.0f; y1 = (1200.0f - 1047.0f) / 1200.0f;
+		buildQuadUVS(x0, x1, y0, y1);
+		break;
 	default:
 		this->mesh->uvs.push_back(Vector2(1.0f, 0.0f ));
 		this->mesh->uvs.push_back(Vector2(0.0f,1.0f));
@@ -135,7 +146,11 @@ void GUI::GetTexture(GUI_Types t)
 
 void GUI::render()
 {
-	this->shader->setUniform("u_color", Vector4(color.x,color.y,color.z,1.0));
+	if((type <(int)GUI_Types::BulletKeysNC && type >(int)GUI_Types::title ))
+		this->shader->setUniform("u_color", Vector4(color.x,color.y,color.z,1.0));
+	else
+		this->shader->setUniform("u_color", Vector4(color.x, color.y, color.z, 0.5));
+
 	if (type == (int)GUI_Types::basic) {
 
 	}

@@ -20,15 +20,19 @@ enum class GUI_Types {
 	BulletKeysNC,
 	BulletKeysC,
 	CannonKeysNC,
+	BuildingT1,
 	Building,
-	CannonKeysC,
+	CannonKeysC1,
+	CannonKeysC2,
 	OverallKeys,
 	//Titan
 	TitanLife,
 	TitanLife2,
 	TitanLife3,
 	//Minimap
-	minimap
+	minimap,
+	//Scope
+	scope
 };
 
 class GUI

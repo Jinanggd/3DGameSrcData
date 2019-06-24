@@ -6,6 +6,7 @@
 #include "entity.h"
 #include "entityMesh.h"
 #include "animation.h"
+#include "GUI.h"
 
 enum type {
 
@@ -31,31 +32,23 @@ public:
 		KEY_LEFT,
 	}direction;
 
-	struct ActionPlane
-	{
-		Mesh m;
-		Matrix44 model;
-		Material mat;
-		Vector3* pos;
-	};
-
 
 	void render(float time);
 	void render(Camera* cam);
 
-	void update(float dt, std::vector<EntityMesh> props, std::vector<EntityMesh> bc);
-	void playerMovement(float dt, std::vector<EntityMesh>props, std::vector<EntityMesh> bc);
+	void update(float dt, std::vector<EntityMesh> props, std::vector<EntityMesh> bc,std::vector<EntityMesh> b);
+	void playerMovement(float dt, std::vector<EntityMesh>props, std::vector<EntityMesh> bc, std::vector<EntityMesh> b);
 	void rotateCannon();
 
 
-	void checkCollision(std::vector<EntityMesh> props, std::vector<EntityMesh> bc, Vector3 newpos,float dt);
+	void checkCollision(std::vector<EntityMesh> props, std::vector<EntityMesh> bc, std::vector<EntityMesh> b,Vector3 newpos,float dt);
 	void updateItem(Matrix44 r,Vector3 dir);
 	void updateCamera(std::vector<EntityMesh>props);
 	void updateMatrix();
-	void updateHPBar();
 	void animateCharacter();
 	void updateAnim(float time);
 
+	void build(std::vector<EntityMesh>vector,mat_types t);
 	void grab(std::vector<EntityMesh> vector);
 	void throwItem();
 	void shoot(float dt);
@@ -76,9 +69,6 @@ public:
 	Skeleton skeleton;
 	Mesh* mesh;
 	
-	ActionPlane actionplane;
-	ActionPlane hpbar;
-	
 	Animation* anim;
 	Material mat;
 	
@@ -88,6 +78,7 @@ public:
 	bool isanimated = true, iscarrying = false, isoncannon = false;
 	int CarryItem,CannonID;
 	EntityMesh Cannon;
+	GUI scope;
 	
 
 };

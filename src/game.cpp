@@ -104,12 +104,14 @@ void Game::render(void)
 		world2.renderSkybox();*/
 
 		glEnable(GL_DEPTH_TEST);
-
+		world.renderplane();
 		world.renderentities();
 
-		world.renderplane();
 		
+		world.renderBlendings();
+
 		world.renderGUI();
+		
 
 		//world.water.render();
 		
@@ -167,7 +169,7 @@ void Game::update(double seconds_elapsed)
 			camera->move(Vector3(-1.0f, 0.0f, 0.0f) * speed);
 	}
 	if (!ThirdCameraMode) {
-		world.Player->update(seconds_elapsed, world.props, world.bullets_and_cannon);
+		world.Player->update(seconds_elapsed, world.props, world.bullets_and_cannon,world.buildables);
 	}
 
 	world.Player->updateAnim(time);
@@ -243,12 +245,22 @@ void Game::onKeyDown( SDL_KeyboardEvent event )
 void Game::onKeyUp(SDL_KeyboardEvent event)
 {
 	float speed = elapsed_time * 100; //the speed is defined by the seconds_elapsed so it goes constant
+	if (world.GUIs[11].enable) {
+		world.GUIs[11].enable = false;
+		return;
+	}
 	switch (event.keysym.sym)
 	{
 	case SDLK_r:
 		if (!ThirdCameraMode && world.Player->isoncannon) {
 			world.Player->shoot(elapsed_time*speed);
 		}
+		if (!ThirdCameraMode)
+			world.Player->build(world.buildables, mat_types::tower1);
+		break;
+	case SDLK_t:
+		if (!ThirdCameraMode)
+			world.Player->build(world.buildables, mat_types::tower2);
 		break;
 	case SDLK_SPACE:
 		if (instructions > -1) {
@@ -259,6 +271,7 @@ void Game::onKeyUp(SDL_KeyboardEvent event)
 	case SDLK_f:
 		if (!ThirdCameraMode) {
 			world.Player->grab(world.bullets_and_cannon);
+			world.Player->grab(world.buildables);
 		}
 
 		break;
@@ -266,7 +279,15 @@ void Game::onKeyUp(SDL_KeyboardEvent event)
 		if (!ThirdCameraMode) {
 			world.Player->throwItem();
 		}
+		break;
+	case SDLK_h:
+		if (world.GUIs[11].enable == false) {
+			world.GUIs[11].enable = true;
+		}
+		break;		
 	}
+	
+	
 }
 
 void Game::onGamepadButtonDown(SDL_JoyButtonEvent event)
