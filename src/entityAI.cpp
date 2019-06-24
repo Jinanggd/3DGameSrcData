@@ -82,12 +82,20 @@ void EntityAI::update(float dt, std::vector<EntityMesh> props, std::vector<Entit
 {
 
 	float t;
+
 	if (state == HURT) {
 
 		t = *time - animtime;
 		updateAnim(t);
 
 	}
+	else if (state == DEAD) {
+
+		t = *time - animtime;
+		updateAnim(t);
+
+	}
+
 	else {
 
 		if (state == IDLE) updateAnim(dt);
@@ -481,6 +489,15 @@ void EntityAI::updateAnim(float dt) {
 		skeleton = anim->skeleton;
 
 		break;
+	case EntityAI::DEAD:
+		anim = Animation::Get("data/characters/characters/dying.skanim");
+
+		anim->assignTime(dt, false);
+		anim->skeleton.getBoneMatrix("mixamorig_Head").scale(2, 2, 2);
+		anim->skeleton.getBoneMatrix("mixamorig_Spine2").scale(2, 2, 2);
+		skeleton = anim->skeleton;
+
+		break;
 	default:
 
 		break;
@@ -497,9 +514,11 @@ void EntityAI::substractLife()
 {
 	life--;
 	if (life == 0) {
+		animtime = *time;
 		state = DEAD;
 	}
-	state = HURT;
+	else
+		state = HURT;
 }
 
 bool EntityAI::isnear() {
