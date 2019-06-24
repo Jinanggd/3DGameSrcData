@@ -107,6 +107,7 @@ public:
 
 	//show the texture on the current viewport
 	void toViewport( Shader* shader = NULL );
+	void toViewport(Shader * shader, Vector4 color);
 	void blit(Texture* destination, Shader* shader = NULL);
 
 	static FBO* getGlobalFBO(Texture* texture);

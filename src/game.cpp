@@ -150,13 +150,14 @@ void Game::render(void)
 	glDisable(GL_DEPTH_TEST);
 
 	//if(world.Titan-) 
-	fbo_shader = Shader::getDefaultShader("screen");
-	//this->mat.shader->setUniform("u_color", Vector4(1, 1, 1, 1));
-	//fbo_shader = Shader::Get("data/shaders/fbo.vs", "data/shaders/fbo.fs");
+	//fbo_shader = isOver ? Shader::getDefaultShader("color") : Shader::getDefaultShader("screen");
 
 	
-	rt->toViewport();
 
+	if (isOver)
+		rt->toViewport(fbo_shader, Vector4(1, 0, 0, 1));
+	else
+		rt->toViewport();
 
 	//render the FPS, Draw Calls, etc
 

@@ -101,6 +101,18 @@ void EntityAI::update(float dt, std::vector<EntityMesh> props, std::vector<Entit
 			t = *time - animtime;
 
 			updateAnim(t);
+
+			if (istargetplayer) {
+				//Gameover
+				Game::instance->isOver = true;
+				Matrix44 R;
+				R.setRotation(Game::instance->world.Player->yaw*DEG2RAD, Vector3(0, 1, 0));
+				Vector3 pos_eye = Game::instance->world.Player->current_position + Vector3(0, 3, -5);
+				Game::instance->world.Player->isdead = true;
+				Vector3 pos_center = current_position + Vector3(0, 8, 0);
+				Game::instance->world.camera->lookAt(pos_eye, pos_center, Vector3(0, 1, 0));
+
+			}
 			
 
 		}
@@ -155,15 +167,13 @@ void EntityAI::updatedirection(float dt, std::vector<EntityMesh> props)
 
 	speed = velocity.length() * 0.1;
 
-	current_position = current_position + (dt*speed)*direction;
-
 	Matrix44 R;
 
 	yaw += angle;
 
 
-
 	if (!isnear()) {
+		current_position = current_position + (dt*speed)*direction;
 		this->model.setTranslation(current_position.x, current_position.y, current_position.z);
 		this->model.rotate(yaw*DEG2RAD, Vector3(0, 1, 0));
 		
@@ -243,12 +253,7 @@ void EntityAI::checkCollision(std::vector<EntityMesh> props, std::vector<EntityM
 
 
 				}
-
-
 				return;
-
-
-
 			}
 
 
@@ -293,7 +298,7 @@ void EntityAI::checkCollision(std::vector<EntityMesh> props, std::vector<EntityM
 
 	}
 
-	current_position = newpos;
+	//current_position = newpos;
 
 
 }
@@ -442,6 +447,8 @@ void EntityAI::updateAnim(float dt) {
 		anim = Animation::Get("data/characters/characters/attack.skanim");
 		
 		anim->assignTime(t);
+
+
 		if (dt > anim->duration) {
 			if (!istargetplayer && indexBuildable >= 0){
 				//Subsctract life to building
@@ -452,6 +459,7 @@ void EntityAI::updateAnim(float dt) {
 					startedattack = false;
 				}
 			}
+			
 			//std::cout << "HIT " <<std::endl;
 			//a++;
 			animtime = *time;
@@ -517,7 +525,7 @@ bool EntityAI::isnear() {
 			return true;
 		}
 	}
-	else if (distance <= 22) {
+	else if (distance <= 30) {
 		if (!startedattack) {
 			startedattack = true;
 			animtime = *time;

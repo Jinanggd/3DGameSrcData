@@ -44,7 +44,7 @@ public:
 
 	void checkCollision(std::vector<EntityMesh> props, std::vector<EntityMesh> bc, std::vector<EntityMesh> b,Vector3 newpos,float dt);
 	void updateItem(Matrix44 r,Vector3 dir);
-	void updateCamera(std::vector<EntityMesh>props);
+	void updateCamera(std::vector<EntityMesh>props, std::vector<EntityMesh> b);
 	void updateMatrix();
 	void animateCharacter();
 	void updateAnim(float time);
@@ -72,6 +72,7 @@ public:
 	
 	Animation* anim;
 	Material mat;
+	bool isdead = false;
 	
 
 	std::vector<Matrix44> bone_matrices;

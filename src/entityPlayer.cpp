@@ -87,7 +87,8 @@ void EntityPlayer::render(Camera * cam)
 
 void EntityPlayer::update(float dt, std::vector<EntityMesh> props, std::vector<EntityMesh> bc,std::vector<EntityMesh> b)
 {
-	playerMovement(dt, props,bc,b);
+	if(!isdead)
+		playerMovement(dt, props,bc,b);
 	
 }
 
@@ -148,7 +149,7 @@ void EntityPlayer::playerMovement(float dt, std::vector<EntityMesh> props, std::
 			}
 		}
 
-		updateCamera(props);
+		updateCamera(props,b);
 		if (Input::wasKeyPressed(SDL_SCANCODE_Z)) {
 			std::cout << "YAW: " <<yawCannon << " PITCH: " << pitchCannon <<std::endl;
 		}
@@ -198,7 +199,7 @@ void EntityPlayer::playerMovement(float dt, std::vector<EntityMesh> props, std::
 		if (isanimated)updateAnim(dt);
 
 		updateMatrix();
-		updateCamera(props);
+		updateCamera(props,b);
 	}
 	
 
@@ -321,7 +322,7 @@ void EntityPlayer::checkCollision(std::vector<EntityMesh> props, std::vector<Ent
 		Vector3 collisionpoint, collision_normal;
 		//Matrix44 S;
 		//b[i].type == (int)mat_types::buildable ? S.setScale(10, 5, 10) : S.setIdentity();
-		if (b[i].mesh->testSphereCollision( b[i].model, character_center, 2, collisionpoint, collision_normal) == true) {
+		if (b[i].mesh->testSphereCollision( b[i].model, character_center, 1, collisionpoint, collision_normal) == true) {
 
 			Vector3 push_away = normalize(collisionpoint - character_center)*dt;
 			push_away.y = 0;
@@ -357,7 +358,7 @@ void EntityPlayer::updateItem(Matrix44 r,Vector3 dir)
 	Game::instance->world.updateBullets(CarryItem, newposition);
 }
 
-void EntityPlayer::updateCamera( std::vector<EntityMesh>props)
+void EntityPlayer::updateCamera( std::vector<EntityMesh>props, std::vector<EntityMesh> b)
 {
 	Matrix44 R_Yaw;
 	R_Yaw.setRotation(yaw*DEG2RAD, Vector3(0, 1, 0));
@@ -394,6 +395,30 @@ void EntityPlayer::updateCamera( std::vector<EntityMesh>props)
 
 
 			if (props[i].mesh->testRayCollision(props[i].model, cam_eye, vector_eyetocenter, collisionpoint, collision_normal, length) == true) {
+
+				Vector3 collisiontocenter = (cam_center - collisionpoint).normalize();
+				float dist = (cam_center - collisionpoint).length();
+				if (dist < maxdist) {
+					maxdist = dist;
+					cam_eye = collisionpoint + collisiontocenter * 3.5;
+
+				}
+
+			}
+
+		}
+	}
+	//Check for collision of the camera
+	for (int i = 0; i < b.size(); i++) {
+
+		//if (b[i].tag == "EntityMesh") continue;
+		if (b[i].type == (int)mat_types::buildable || b[i].type == (int)mat_types::tower1 || b[i].type == (int)mat_types::tower2) {
+
+
+			Vector3 collisionpoint, collision_normal;
+
+
+			if (b[i].mesh->testRayCollision(b[i].model, cam_eye, vector_eyetocenter, collisionpoint, collision_normal, length) == true) {
 
 				Vector3 collisiontocenter = (cam_center - collisionpoint).normalize();
 				float dist = (cam_center - collisionpoint).length();

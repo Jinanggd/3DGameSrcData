@@ -314,6 +314,19 @@ void Texture::toViewport(Shader* shader)
 	shader->disable();
 }
 
+void Texture::toViewport(Shader* shader, Vector4 color)
+{
+	if (!shader)
+		shader = Shader::Get("data/shaders/fbo.vs", "data/shaders/fbo.fs");
+
+	Mesh* quad = Mesh::getQuad();
+	shader->enable();
+	shader->setUniform("u_texture", this);
+	shader->setUniform("u_color", color);
+	quad->render(GL_TRIANGLES);
+	shader->disable();
+}
+
 FBO* Texture::getGlobalFBO(Texture* texture)
 {
 	if (!global_fbo)
