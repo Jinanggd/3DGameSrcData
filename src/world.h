@@ -69,11 +69,6 @@ public:
 	bool load();
 	bool save();
 
-
-
-
-
-
 	//static World* Instance();
 	Camera * camera;
 	Camera * camera2D;
@@ -107,6 +102,7 @@ public:
 	EntityAI* Titan;
 
 	Shader* plane_shader = NULL;
+	Texture* plan_texture = NULL;
 
 	std::vector<Vector3> spawnzones;
 	int round = 0;

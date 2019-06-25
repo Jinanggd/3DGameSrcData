@@ -68,9 +68,9 @@ EntityMesh::EntityMesh( mat_types type)
 		break;
 		
 	case mat_types::cannon:
-		this->mesh = Mesh::Get("data/Cannon.obj");
+		this->mesh = Mesh::Get("data/Cannon3.OBJ");
 		this->mat.shader = Shader::Get("data/shaders/basic.vs", "data/shaders/texture.fs");
-		this->mat.texture = Texture::Get("data/Cannon.tga");
+		this->mat.texture = Texture::Get("data/cannon3.tga");
 		this->mesh->ComputeAABB();
 		center = 0.5f* (this->mesh->aabb_max - this->mesh->aabb_min);
 		center.y = this->mesh->aabb_min.y;

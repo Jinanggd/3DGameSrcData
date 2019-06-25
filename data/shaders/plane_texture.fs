@@ -27,7 +27,7 @@ void main()
 	vec4 water = texture2D(u_texture_water,uv*30); 
 	vec4 color = vec4(1);
 
-	if(mask.x>0.3)
+	if(mask.x>0.51)
 		color = rock * mask.x + grass*(1.0-mask.x);
 
 	else color = mix(rock,water,0.8);

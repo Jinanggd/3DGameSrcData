@@ -12,7 +12,7 @@ uniform float u_time;
 void main()
 {
 	vec2 uv = v_uv;
-	uv.x +=sin(u_time+uv.x*10)*0.01;
+	uv.x +=sin(u_time+uv.x*100)*0.01;
 	vec4 color = texture2D(u_texture,uv*10);
 	uv = v_uv;
 	uv.y+=sin(u_time+uv.y*20)*0.1;

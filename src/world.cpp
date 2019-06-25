@@ -2,11 +2,17 @@
 #include <fstream>
 #include <iostream>
 #include <algorithm>
+#include <random>
 
 
 //World* World::Instance() {
 //	return instance;
 //}
+
+std::random_device rseed;
+std::mt19937 rng(rseed());
+
+
 World::World()
 {
 }
@@ -388,7 +394,7 @@ void World::renderplane() {
 	current_shader->setUniform("u_viewprojection", camera->viewprojection_matrix);
 	current_shader->setUniform("u_texture_grass", Texture::Get("data/dry_grass.tga"));
 	current_shader->setUniform("u_texture_rock", Texture::Get("data/terrain.tga"));
-	current_shader->setUniform("u_texture_mask", Texture::Get("data/heightmap.tga"));
+	current_shader->setUniform("u_texture_mask", plan_texture);
 	current_shader->setUniform("u_texture_water", Texture::Get("data/agua.tga"));
 	current_shader->setUniform("u_model", m);
 	current_shader->setUniform("u_time", *time);
@@ -441,95 +447,146 @@ void World::initProps() {
 
 	//Here we will spawn trees, buildings, set player position and the Titans positions
 	bool setPlayerPos = true;
-	for (int i = 0; i < mask->image.width; i += 200) {
+	for (int i = 0; i < mask->image.width; i += 100) {
 		float px = mapping(0, mask->image.width, -1024, 1024, i);
 
-		for (int j = 0; j < mask->image.height; j += 200) {
+		for (int j = 0; j < mask->image.height; j += 100) {
 
 			float pz = mapping(0, mask->image.width, -1024, 1024, j);
-			float py = mask->image.getPixel(j, i).x / 255.0f * 40.0f;
+			float py = mask->image.getPixel(j, i).x / 255.0f * 20.0f;
+			float characterpy = py * 0.63f;
+			float bulletpy = py * 0.68f;
+			float cannonpy = py * 0.6f;
+
 			int randtext = rand() % 4 + 1;
 			float randscale = random() + 1.0f;
 			if (randscale == 0) randscale = 1.5f;
 			//Trees
-			if (mask->image.getPixel(j, i).x > 100 && mask->image.getPixel(j, i).x < 162) {
+			std::uniform_int<int>dist(1, 4);
+			if (mask->image.getPixel(j, i).x > 100 && mask->image.getPixel(j, i).x < 162 && dist(rng)==2) {
 				EntityMesh m = EntityMesh(mat_types::tree);
 				m.model.setTranslation(px, py, pz);
-				m.model.scale(7, 7, 7);
+				m.model.scale(10, rand()%16+13, 10);
 				props.push_back(m);
 			}
 
-			//Building and other materials
-			if (mask->image.getPixel(j, i).x >= 162 && mask->image.getPixel(j, i).x != 255 && mask->image.getPixel(j, i).z != 255) {
-				if (j % 3 == 0) {
-					EntityMesh m = EntityMesh(mat_types::tower);
-					m.model.setTranslation(px, py, pz);
-					m.model.scale(randscale, randscale, randscale);
-					std::string filename = "data/house_" + std::to_string(randtext) + ".tga";
-					const char *c = filename.c_str();
-					m.mat.texture = Texture::Get(c);
-					props.push_back(m);
-				}
-
-				if (j % 7 == 0) {
-
-				}
-				else {
-					EntityMesh h = EntityMesh(mat_types::house);
-					//Can add random rotation
-					h.model.setTranslation(px, py, pz);
-					h.model.scale(randscale, randscale, randscale);
-					std::string filename = "data/house_" + std::to_string(randtext) + ".tga";
-					const char *c = filename.c_str();
-					h.mat.texture = Texture::Get(c);
-					props.push_back(h);
-				}
+			//Titan spawn position
+			if (mask->image.getPixel(j, i).z == 255 && mask->image.getPixel(j, i).x != 255) {
+				spawnzones.push_back(Vector3(px, characterpy, pz));
+				i += 200;
+				continue;
 			}
 
-			if (mask->image.getPixel(j, i).x == 255 && setPlayerPos) {
-				float characterpy = py * 0.63f;
-				float bulletpy = py * 0.65f;
-				EntityMesh b = EntityMesh(mat_types::bullet);
+			//Cannons
+			
+			if (mask->image.getPixel(j, i).y == 255 && mask->image.getPixel(j, i).x != 255) {
+				//2 cannons per point
+				EntityMesh c = EntityMesh(mat_types::cannon);
+				std::uniform_int<int>dist(0, 350);
+				c.model.setTranslation(px, cannonpy, pz);
+				c.model.rotate(dist(rng)*DEG2RAD, Vector3(0, 1, 0));
+				c.model.scale(6, 6, 6);
+				bullets_and_cannon.push_back(c);
+				c = EntityMesh(mat_types::cannon);
+				c.model.setTranslation(px-50, cannonpy, pz+60);
+				c.model.rotate(dist(rng)*DEG2RAD, Vector3(0, 1, 0));
+				c.model.scale(6, 6, 6);
+				bullets_and_cannon.push_back(c);
 
-				b.model.setTranslation(px, bulletpy, pz + 20);
-				b.index_propsvector = props.size();
-				//props.push_back(b);
-				bullets_and_cannon.push_back(b);
+				//5 bullets per point
+				std::uniform_int<int>dist1(-20, 20);
+				for (int k = 0; k < 5; k++) {
+					EntityMesh b = EntityMesh(mat_types::bullet);
+					b.model.setTranslation(px + dist1(rng) + k, bulletpy, pz + dist1(rng) + k);
+					bullets_and_cannon.push_back(b);
+				}
+
+				std::uniform_int<int>dist2(50, 80);
+				//1-3 buidalbles
+				int index = rand() % 3 + 1;
+				for (int k = 0; k < 3; k++) {
+					EntityMesh b = EntityMesh(mat_types::buildable);
+
+					b.model.setTranslation(px-30+dist2(rng), bulletpy, pz + dist2(rng)+90);
+					b.model.scale(1, 3, 1);
+					buildables.push_back(b);
+				}
+
+			}
+			//Building and other materials
+			//if (mask->image.getPixel(j, i).x >= 162 && mask->image.getPixel(j, i).x != 255 && mask->image.getPixel(j, i).z != 255) {
+			//	if (j % 3 == 0) {
+			//		EntityMesh m = EntityMesh(mat_types::tower);
+			//		m.model.setTranslation(px, py, pz);
+			//		m.model.scale(randscale, randscale, randscale);
+			//		std::string filename = "data/house_" + std::to_string(randtext) + ".tga";
+			//		const char *c = filename.c_str();
+			//		m.mat.texture = Texture::Get(c);
+			//		props.push_back(m);
+			//	}
+
+			//	if (j % 7 == 0) {
+
+			//	}
+			//	else {
+			//		EntityMesh h = EntityMesh(mat_types::house);
+			//		//Can add random rotation
+			//		h.model.setTranslation(px, py, pz);
+			//		h.model.scale(randscale, randscale, randscale);
+			//		std::string filename = "data/house_" + std::to_string(randtext) + ".tga";
+			//		const char *c = filename.c_str();
+			//		h.mat.texture = Texture::Get(c);
+			//		props.push_back(h);
+			//	}
+			//}
+
+			if (mask->image.getPixel(j, i).x == 255 &&  mask->image.getPixel(j,i).y != 255 && setPlayerPos) {
 				
-				b = EntityMesh(mat_types::bullet);
-				b.model.setTranslation(px+20, bulletpy, pz + 20);
-				b.index_propsvector = props.size();
-				//props.push_back(b);
-				bullets_and_cannon.push_back(b);
+				std::uniform_int<int>dist(-20, 20);
+				for (int k = 0; k < 10; k++) {
+					EntityMesh b = EntityMesh(mat_types::bullet);
 
-				b = EntityMesh(mat_types::bullet);
-				b.model.setTranslation(px -20, bulletpy, pz + 20);
-				b.index_propsvector = props.size();
-				//props.push_back(b);
-				bullets_and_cannon.push_back(b);
+					b.model.setTranslation(px+dist(rng) + k, bulletpy, pz+ dist(rng) +k);
+					b.index_propsvector = props.size();
+					//props.push_back(b);
+					bullets_and_cannon.push_back(b);
+				}
+				
+				
+				//b = EntityMesh(mat_types::bullet);
+				//b.model.setTranslation(px+20, bulletpy, pz + 20);
+				//b.index_propsvector = props.size();
+				////props.push_back(b);
+				//bullets_and_cannon.push_back(b);
 
-				b = EntityMesh(mat_types::cannon);
+				//b = EntityMesh(mat_types::bullet);
+				//b.model.setTranslation(px -20, bulletpy, pz + 20);
+				//b.index_propsvector = props.size();
+				////props.push_back(b);
+				//bullets_and_cannon.push_back(b);
+
+				/*b = EntityMesh(mat_types::cannon);*/
 
 				//b.model.setTranslation(px, bulletpy, pz + 50);
 
-				Matrix44 R,S,T;
-				T.setTranslation(px, py*0.6f, pz + 50);
-				S.setScale(2, 2, 2);
-				R.setRotation(90 * DEG2RAD, Vector3(0, 1, 0));
-				b.model = S*R*T;
+				//Matrix44 R,S,T;
+				//T.setTranslation(px, py*0.6f, pz + 50);
+				//S.setScale(6, 6, 6);
+				//R.setRotation(90 * DEG2RAD, Vector3(0, 1, 0));
+				//b.model = S*R*T;
 
-				//b.model.setUpAndOrthonormalize(Vector3(0, 1, 0));
-				//b.model.rotate(90 * DEG2RAD, Vector3(0, 1, 0));
-				//b.model =R* b.model;
+				////b.model.setUpAndOrthonormalize(Vector3(0, 1, 0));
+				////b.model.rotate(90 * DEG2RAD, Vector3(0, 1, 0));
+				////b.model =R* b.model;
 
-				//b.model.translate(px, bulletpy, pz + 50);
+				////b.model.translate(px, bulletpy, pz + 50);
 
 
 
-				//b.model.scale(2,2, 2);
-				b.index_propsvector = props.size();
-				//props.push_back(b);
-				bullets_and_cannon.push_back(b);
+				////b.model.scale(2,2, 2);
+				//b.index_propsvector = props.size();
+				////props.push_back(b);
+				//bullets_and_cannon.push_back(b);
 				
 				this->Player->setPosition(px, characterpy, pz);
 
@@ -546,13 +603,6 @@ void World::initProps() {
 				//b.model.setTranslation(px, bulletpy, pz+50);
 				//b.model.scale(5, 7, 5);
 				//buildables.push_back(b);
-
-				for (int i = 0; i < Players.size(); i++) {
-
-
-					Players.at(i).setPosition(random(20), characterpy, random(10));
-
-				}
 
 				setPlayerPos = false;
 
@@ -641,7 +691,7 @@ float World::mapping(float start1, float stop1, float start2, float stop2, float
 
 void World::update(float dt)
 {
-	SpawnTitans();
+	//SpawnTitans();
 	//Bullet shooted
 
 	if (shootedBullet > -1) {
@@ -860,8 +910,8 @@ void World::initWorld()
 
 	plane.createSubdividedPlane(1024 * 2, 128, true);
 	plane_shader = Shader::Get("data/shaders/heightmap.vs", "data/shaders/plane_texture.fs");
+	plan_texture = Texture::Get("data/heightmap.tga");
 	water = new	EntityWater();
-	cloud = new EntityCloud();
 	mask = Texture::Get("data/spawn_mask.tga");
 	mask->image.loadTGA("data/spawn_mask.tga");
 
