@@ -276,8 +276,13 @@ void EntityPlayer::checkCollision(std::vector<EntityMesh> props, std::vector<Ent
 	for (int i = 0; i < bc.size(); i++) {
 
 		Vector3 collisionpoint, collision_normal;
-
-		if (bc[i].mesh->testSphereCollision(bc[i].model, character_center, 2, collisionpoint, collision_normal) == true) {
+		Matrix44 Model = bc[i].model;
+		if (bc[i].type == (int)mat_types::cannon) {
+			Matrix44 SS;
+			SS.setScale(0.5f, 0.5f, 0.5f);
+			Model = SS * Model;
+		}
+		if (bc[i].mesh->testSphereCollision(Model, character_center, 1, collisionpoint, collision_normal) == true) {
 
 			Vector3 push_away = normalize(collisionpoint - character_center)*dt;
 			push_away.y = 0;
@@ -379,7 +384,7 @@ void EntityPlayer::updateCamera( std::vector<EntityMesh>props, std::vector<Entit
 	if (isoncannon) {
 
 		R_Yaw.setRotation(yawCannon*DEG2RAD, Vector3(0, 1, 0));
-		cam_eye = Cannon.model.getTranslation() + R_Yaw * Vector3(0, 8, -2);
+		cam_eye = Cannon.model.getTranslation() + R_Yaw * Vector3(0, 9, -2);
 		this->camera->lookAt(cam_eye, camera->center, Vector3(0, 1, 0));
 		scope.setPositionfrom3D(this->camera->center, Vector2(0.15f, 0.15f), this->camera->viewprojection_matrix);
 		return;
@@ -574,14 +579,15 @@ void EntityPlayer::grab(std::vector<EntityMesh> vector)
 			{
 			case (int)mat_types::cannon:
 				if ((iscarrying&&!isoncannon) || vector[i].munition.size() >0) {
+					latestposition = current_position;
 					isoncannon = true;
 					iscarrying = false;
 					scope.enable = true;
 					Cannon = vector[i];
 					CannonID = i;
 
-					Game::instance->world.bullets_and_cannon[CarryItem].model.translate(Vector3(0, -20, 0));
 					if (CarryItem >= 0) {
+						Game::instance->world.bullets_and_cannon[CarryItem].model.translate(Vector3(0, -20, 0));
 						Cannon.munition.push_back(CarryItem);
 						Game::instance->world.bullets_and_cannon[CannonID].munition.push_back(CarryItem);
 						CarryItem = -1;
@@ -590,20 +596,26 @@ void EntityPlayer::grab(std::vector<EntityMesh> vector)
 					//position of the player
 					Vector3 frontCannon = Cannon.model.frontVector().normalize();
 					Vector3 frontPlayer = model.frontVector().normalize();
-					frontCannon.y = 0;
+					//frontCannon.y = frontPlayer.y;
 					frontPlayer.y = 0;
-
+					//model.setFrontAndOrthonormalize(Vector3(frontCannon));
+					
+					//if (angle >= 180.0f) {
+					//	yaw -= angle;
+					//}
+					//else {
+					//	yaw += angle;
+					//}
+					
+					
+					//
 					float previousy = current_position.y;
-					current_position = Cannon.model.getTranslation() - frontCannon*8;
+					current_position = Cannon.model.getTranslation()-frontCannon*15;
 					current_position.y = previousy;
-					
-					
-					float angle = acos(clamp(dot(frontPlayer, frontCannon),-1.0f,1.0f))*RAD2DEG;
-					
-					yaw += angle;
-					yawCannon = yaw;
-
-					updateMatrix();
+					////float angle = acos(clamp(dot(frontCannon, frontPlayer), -1.0f, 1.0f))*RAD2DEG;
+					////yaw += angle;
+					yawCannon = Cannon.rotation;
+					//updateMatrix();
 
 					//position of the Camera
 					Matrix44 R_Yaw, R_Pitch;
@@ -612,7 +624,7 @@ void EntityPlayer::grab(std::vector<EntityMesh> vector)
 					R_Yaw.setRotation(yawCannon*DEG2RAD, Vector3(0, 1, 0));
 					right = R_Yaw * Vector3(1, 0, 0);
 					R_Pitch.setRotation(pitchCannon*DEG2RAD, right);
-					cam_eye = Cannon.model.getTranslation()  +  R_Yaw*Vector3(0, 8, -2);
+					cam_eye = Cannon.model.getTranslation()  +  R_Yaw*Vector3(0, 9, -2);
 
 					//front = Cannon.model.frontVector();
 					front = R_Yaw * R_Pitch * Vector3(0, 5, 30);
@@ -695,6 +707,8 @@ void EntityPlayer::throwItem()
 	}
 
 	if (isoncannon) {
+		current_position = latestposition;
+		updateMatrix();
 		isoncannon = false;
 		
 		if (CarryItem > 0) {
@@ -717,12 +731,14 @@ void EntityPlayer::shoot(float dt)
 
 		int shootedBulletindex = Cannon.munition[0];
 		Game::instance->world.bullets_and_cannon[shootedBulletindex].model.setTranslation(Cannon.model.getTranslation());
+		//Game::instance->world.bullets_and_cannon[shootedBulletindex].model.setTranslation(current_position);
 		Vector3 direction = (this->camera->center - Cannon.model.getTranslation()).normalize();
 		Game::instance->world.bullets_and_cannon[shootedBulletindex].Direction = direction;
 
 		Game::instance->world.bullets_and_cannon[CannonID].munition.erase(Game::instance->world.bullets_and_cannon[CannonID].munition.begin());
 		Cannon.munition.erase(Cannon.munition.begin());
 		Game::instance->world.shootedBullet = shootedBulletindex;
+		Game::instance->world.bullets_and_cannon[shootedBulletindex].initial_time =* Game::instance->world.time;
 
 	}
 }

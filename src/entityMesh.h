@@ -78,6 +78,7 @@ public:
 	mat_types tobeupgrate;
 	float initial_time = -1.0f;
 	float duration = 2.0f;
+	float rotation;
 
 	float explosion_initial_time = -1.0f;
 
