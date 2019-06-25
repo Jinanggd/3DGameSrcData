@@ -49,6 +49,8 @@ public:
 	void initAirplane();
 	void initWorld();
 	void initGUIs();
+	void initPlayer();
+	void SpawnTitans();
 
 	void printCamPos();
 	float mapping(float start1, float stop1, float start2, float stop2, float value);
@@ -77,8 +79,9 @@ public:
 	std::vector<EntityMesh> bullets_and_cannon;
 	std::vector<EntityMesh> buildables;
 	std::vector<EntityMesh> blendings;
-
 	std::vector<GUI> GUIs;
+	std::vector<EntityAI> Titans;
+
 	int shootedBullet;
 	std::vector<EntityLight> lights;
 	Matrix44 m;

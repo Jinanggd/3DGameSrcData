@@ -12,6 +12,7 @@
 #include <iostream>
 #include <cmath>
 #include <vector>
+#include "GUI.h"
 
 //some globals
 
@@ -21,6 +22,8 @@ float angle = 0;
 
 Game* Game::instance = NULL;
 Shader* fbo_shader = NULL;
+
+
 
 bool ThirdCameraMode = TRUE;
 int instructions = 3;
@@ -33,7 +36,9 @@ Game::Game(int window_width, int window_height, SDL_Window* window)
 	this->window = window;
 	instance = this;
 	must_exit = false;
-
+	Start = GUI(Vector2(800 / 2, 600 / 2), Vector2(800, 600), true, GUI_Types::title);
+	LoadingBar = GUI(Vector2(800 / 2, 0), Vector2(0, 0), true, GUI_Types::basic);
+	 
 	fps = 0;
 	frame = 0;
 	time = 0.0f;
@@ -50,15 +55,10 @@ Game::Game(int window_width, int window_height, SDL_Window* window)
 	camera->lookAt(Vector3(0.f,100.f, 100.f),Vector3(0.f,0.f,0.f), Vector3(0.f,1.f,0.f)); //position the camera and point to 0,0,0
 	camera->setPerspective(70.f,window_width/(float)window_height,0.1f,10000.f); //set the projection, we want to be perspective
 	camera->enable();
+	this->camera2D = new Camera();
+	this->camera2D->setOrthographic(0, 800, 0, 600, -1, 1);
 
-
-
-	//Gl viewport test  
-
-	//
-	
-
-	world = World(camera, &time);
+	//world = World(camera, &time);
 
 
 	//hide the cursor
@@ -69,9 +69,6 @@ Game::Game(int window_width, int window_height, SDL_Window* window)
 //what to do when the image has to be draw
 void Game::render(void)
 {
-
-
-
 	//set the clear color (the background color)
 	glClearColor(0.372, 0.827, 0.945, 1.0);
 	//glClearColor(0, 0, 0, 1.0);
@@ -93,55 +90,17 @@ void Game::render(void)
 	glEnable(GL_DEPTH_TEST);
 
 	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-
 	
-	Shader* current_shader = world.current_shader;
-
-	glViewport(0, 0, window_width , window_height);
-
-	if(current_shader)
-	{
-
-	
-		//set flags
-		glDisable(GL_BLEND);
-
-		glDisable(GL_DEPTH_TEST);
-		
-		glDisable(GL_CULL_FACE);
-
-		
-		world.renderSkybox();
-
-		//Double ViewPort
-
-
-		glEnable(GL_DEPTH_TEST);
-		world.renderplane();
-		world.renderentities();
-
-		
-		world.renderBlendings();
-
-		world.renderGUI();
-		
-
-		//world.water.render();
-		
-
-
-		
-	}
-
-	drawText(2, 2, getGPUStats(), Vector3(1, 1, 1), 2);
-
-	current_shader = world.map.shader;
-
-	glViewport(window_width - 200, window_height - 200, 200, 200);
-
-	world.rendermap();
+	if (isReady)
+		renderWorld();
+	else if (isLoading)
+		renderLoading();
+	else
+		renderInit();
+	//renderWorld();
 
 	rt->disable();
+
 
 	//rt_map->enable(400, 600, 200, 200);
 	//rt_map->disable();
@@ -152,7 +111,7 @@ void Game::render(void)
 	//if(world.Titan-) 
 	//fbo_shader = isOver ? Shader::getDefaultShader("color") : Shader::getDefaultShader("screen");
 
-	
+
 
 	if (isOver)
 		rt->toViewport(fbo_shader, Vector4(1, 0, 0, 1));
@@ -208,11 +167,18 @@ void Game::update(double seconds_elapsed)
 		world.Player->update(seconds_elapsed, world.props, world.bullets_and_cannon,world.buildables);
 
 	}
-
-	world.Player->updateAnim(time);
-	world.Titan->updateTarget(*world.Player, world.buildables);
-	world.Titan->update(seconds_elapsed*speed, world.props,world.buildables);
-	world.update(elapsed_time);
+	if (isReady) {
+		world.Player->updateAnim(time);
+		if(world.Titans.size()>0)
+			for(int i=0; i<world.Titans.size();i++){
+				world.Titans[i].updateTarget(*world.Player, world.buildables);
+				world.Titans[i].update(seconds_elapsed*speed, world.props, world.buildables);
+			}
+		//world.Titan->updateTarget(*world.Player, world.buildables);
+		//world.Titan->update(seconds_elapsed*speed, world.props, world.buildables);
+		world.update(elapsed_time);
+	}
+	
 	//to navigate with the mouse fixed in the middle
 	if (mouse_locked)
 		Input::centerMouse(); 
@@ -283,10 +249,11 @@ void Game::onKeyDown( SDL_KeyboardEvent event )
 void Game::onKeyUp(SDL_KeyboardEvent event)
 {
 	float speed = elapsed_time * 100; //the speed is defined by the seconds_elapsed so it goes constant
-	if (world.GUIs[11].enable) {
-		world.GUIs[11].enable = false;
-		return;
-	}
+	if(isReady)
+		if (world.GUIs[11].enable) {
+			world.GUIs[11].enable = false;
+			return;
+		}
 	switch (event.keysym.sym)
 	{
 	case SDLK_r:
@@ -301,7 +268,38 @@ void Game::onKeyUp(SDL_KeyboardEvent event)
 			world.Player->build(world.buildables, mat_types::tower2);
 		break;
 	case SDLK_SPACE:
-		if (instructions > -1) {
+		if (!isfullyLoaded) {
+			isLoading = true;
+			world = World(camera, &time);
+			LoadingBar.size = Vector2(100.0f, 30.0f);
+			render();
+
+			world.initGUIs();
+			world.initPlayer();
+			LoadingBar.size = Vector2(300.0f, 30.0f);
+			LoadingBar.buildQuad();
+			loaded = 40;
+
+			render();
+			world.mapinit();
+			
+			LoadingBar.size = Vector2(500.0f, 30.0f);
+			LoadingBar.buildQuad();
+			loaded = 75;
+
+			render();
+			world.initWorld();
+			LoadingBar.size = Vector2(800.0f, 30.0f);
+			LoadingBar.buildQuad();
+			loaded = 100;
+			render();
+
+			isfullyLoaded = true;
+		}
+		else if (isfullyLoaded) {
+			isReady = true;
+		}
+		else if (instructions > -1 && isReady) {
 			world.GUIs[instructions].enable = false;
 			instructions--;
 		}
@@ -358,5 +356,103 @@ void Game::onResize(int width, int height)
 	camera->aspect =  width / (float)height;
 	window_width = width;
 	window_height = height;
+}
+
+void Game::renderWorld()
+{
+	Shader* current_shader = world.current_shader;
+
+	glViewport(0, 0, window_width, window_height);
+
+	if (current_shader)
+	{
+
+
+		//set flags
+		glDisable(GL_BLEND);
+
+		glDisable(GL_DEPTH_TEST);
+
+		glDisable(GL_CULL_FACE);
+
+
+		world.renderSkybox();
+
+		//Double ViewPort
+
+
+		glEnable(GL_DEPTH_TEST);
+		world.renderplane();
+		world.renderentities();
+
+
+		world.renderBlendings();
+
+		world.renderGUI();
+
+
+		//world.water.render();
+
+
+
+
+	}
+
+	drawText(2, 2, getGPUStats(), Vector3(1, 1, 1), 2);
+
+	current_shader = world.map.shader;
+
+	glViewport(window_width - 200, window_height - 200, 200, 200);
+
+	world.rendermap();
+}
+
+void Game::renderInit()
+{
+	
+
+	Shader* current_shader = Start.shader;
+	glViewport(0, 0, window_width, window_height);
+	//glEnable(GL_BLEND);
+	//glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+	glDisable(GL_BLEND);
+
+	glDisable(GL_DEPTH_TEST);
+
+	glDisable(GL_CULL_FACE);
+
+	current_shader->enable();
+	current_shader->setUniform("u_viewprojection", camera2D->viewprojection_matrix);
+	current_shader->setUniform("u_time", time);
+	Start.render();
+	current_shader->disable();
+	glEnable(GL_DEPTH_TEST);
+	//glDisable(GL_BLEND);
+}
+
+void Game::renderLoading()
+{
+
+	Shader* current_shader = LoadingBar.shader;
+	glViewport(0, 0, window_width, window_height);
+
+	//glEnable(GL_BLEND);
+	//glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+	glDisable(GL_BLEND);
+
+	glDisable(GL_DEPTH_TEST);
+
+	glDisable(GL_CULL_FACE);
+	current_shader->enable();
+	current_shader->setUniform("u_viewprojection", camera2D->viewprojection_matrix);
+	current_shader->setUniform("u_time", time);
+	LoadingBar.render();
+	current_shader->disable();
+	//glDisable(GL_BLEND);
+
+	isfullyLoaded ? drawText(5, 550, "Game was fully Loaded! Press SPACE to continue", Vector3(1, 1, 1), 2) : 
+		drawText(5, 550, "Loading " + std::to_string(loaded) + "%", Vector3(1, 1, 1), 2);
+	glEnable(GL_DEPTH_TEST);
+
 }
 

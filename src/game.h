@@ -27,10 +27,13 @@ public:
 	float elapsed_time;
 	int fps;
 	bool must_exit;
+	int loaded = 0;
+	GUI Start, LoadingBar;
 	World world;
-	bool isOver = false;
+	bool isOver = false, isReady = false, isLoading = false,isfullyLoaded = false;
 	//some vars
 	Camera* camera; //our global camera
+	Camera* camera2D;
 	bool mouse_locked; //tells if the mouse is locked (not seen)
 
 	Game( int window_width, int window_height, SDL_Window* window );
@@ -48,6 +51,11 @@ public:
 	void onGamepadButtonUp(SDL_JoyButtonEvent event);
 	void onResize(int width, int height);
 	void GameOver(Vector3 position);
+	void renderWorld();
+	void renderInit();
+	void renderLoading();
+
+
 
 };
 

@@ -24,28 +24,22 @@ World::World(Camera * camera, float* time)
 	this->time = time;
 
 	//Load all the GUIs
-	initGUIs();
-
-	Player = new EntityPlayer(time);
-
-	for (int i = 0; i < 10; i++) {
-
-		EntityPlayer p = EntityPlayer(time);
-		Players.push_back(p);
-
-	}
+	//initGUIs();
 
 	
+	//for (int i = 0; i < 10; i++) {
 
+	//	EntityPlayer p = EntityPlayer(time);
+	//	Players.push_back(p);
 
+	//}
 
-	Titan = new EntityAI(time, Player->model);
-	explosion = new EntityMesh(mat_types::explosion);
-	explosion->model.setTranslation(0, -1000, 0);
+	
+	
 
-	initWorld();
+	//initWorld();
 
-	mapinit();
+	//mapinit();
 	//initTree();
 	//initAirplane();
 
@@ -54,8 +48,8 @@ World::World(Camera * camera, float* time)
 
 }
 
-void World::mapinit() {
 
+void World::mapinit() {
 
 	Camera* cam = new Camera();
 	cam->lookAt(Vector3(0.f, 100.f, 100.f), Vector3(100.f, 0.f, 0.f), Vector3(0.f, 1.f, 0.f)); //position the camera and point to 0,0,0
@@ -67,7 +61,6 @@ void World::mapinit() {
 }
 
 void World::rendermap() {
-
 
 	glLineWidth(1);
 	glDisable(GL_DEPTH_TEST);
@@ -96,10 +89,6 @@ void World::rendermap() {
 
 	current_shader->disable();
 
-	
-
-	
-
 	for (int i = 0; i < props.size(); ++i) {
 
 
@@ -124,7 +113,7 @@ void World::rendermap() {
 
 	map.renderEntity(current_shader, Vector4(1, 1, 1, 1), Player);
 
-	map.renderEntity(current_shader, Vector4(1,0,0,1), Titan);
+	//map.renderEntity(current_shader, Vector4(1,0,0,1), Titan);
 
 	glDisable(GL_BLEND);
 	glEnable(GL_DEPTH_TEST);
@@ -330,28 +319,28 @@ void World::renderentities()
 	}
 
 	//TITANS
-	m.setTranslation(Titan->model.getTranslation());
-	Vector3 wc = m * Titan->mesh->box.center;
-	if (!(this->camera->testSphereInFrustum(wc, 50) == CLIP_OUTSIDE)) {
-		current_shader = Titan->mat.shader;
-		current_shader->enable();
-		current_shader->setUniform("u_viewprojection", camera->viewprojection_matrix);
-		current_shader->setUniform("u_time", *time);
-		Titan->render();
-		current_shader->disable();
-		if (Titan->hpbar.enable) {
-			glDisable(GL_DEPTH_TEST);
-			current_shader = Titan->hpbar.shader;
-			current_shader->enable();
-			m.setIdentity();
-			current_shader->setUniform("u_viewprojection", m);
-			current_shader->setUniform("u_time", *time);
-			Titan->hpbar.render();
-			current_shader->disable();
-			glEnable(GL_DEPTH_TEST);
-		}
-		
-	}
+	//m.setTranslation(Titan->model.getTranslation());
+	//Vector3 wc = m * Titan->mesh->box.center;
+	//if (!(this->camera->testSphereInFrustum(wc, 50) == CLIP_OUTSIDE)) {
+	//	current_shader = Titan->mat.shader;
+	//	current_shader->enable();
+	//	current_shader->setUniform("u_viewprojection", camera->viewprojection_matrix);
+	//	current_shader->setUniform("u_time", *time);
+	//	Titan->render();
+	//	current_shader->disable();
+	//	if (Titan->hpbar.enable) {
+	//		glDisable(GL_DEPTH_TEST);
+	//		current_shader = Titan->hpbar.shader;
+	//		current_shader->enable();
+	//		m.setIdentity();
+	//		current_shader->setUniform("u_viewprojection", m);
+	//		current_shader->setUniform("u_time", *time);
+	//		Titan->hpbar.render();
+	//		current_shader->disable();
+	//		glEnable(GL_DEPTH_TEST);
+	//	}
+	//	
+	//}
 
 
 
@@ -569,7 +558,7 @@ void World::initProps() {
 				this->Player->setPosition(px, characterpy, pz);
 
 
-				Titan->setPosition(px - 30, characterpy, pz + 70);
+				/*Titan->setPosition(px - 30, characterpy, pz + 70);*/
 
 				//b = EntityMesh(mat_types::buildable);
 
@@ -633,6 +622,19 @@ void World::initGUIs() {
 	GUIs.push_back(g);
 	
 	
+}
+
+void World::initPlayer()
+{
+	Player = new EntityPlayer(time);
+}
+
+void World::SpawnTitans()
+{
+	EntityAI t = EntityAI(time, Player->model);
+	//Titan = new EntityAI(time, Player->model);
+	t.setPosition(Player->current_position.x - 30, Player->current_position.y, Player->current_position.z + 70);
+	Titans.push_back(t);
 }
 
 void World::printCamPos()
@@ -754,7 +756,6 @@ void World::update(float dt)
 			explosion->model.setTranslation(0, -1000, 0);
 		}
 	}
-
 	
 
 }
@@ -901,6 +902,9 @@ void World::initWorld()
 {
 	//Terrain 
 	//plane.createPlane(1024);
+	explosion = new EntityMesh(mat_types::explosion);
+	explosion->model.setTranslation(0, -1000, 0);
+
 	plane.createSubdividedPlane(1024 * 2, 128, true);
 	plane_shader = Shader::Get("data/shaders/heightmap.vs", "data/shaders/plane_texture.fs");
 	water = new	EntityWater();

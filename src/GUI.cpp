@@ -148,7 +148,7 @@ void GUI::GetTexture(GUI_Types t)
 
 void GUI::render()
 {
-	if((type <(int)GUI_Types::BulletKeysNC && type >(int)GUI_Types::title ) && (type != (int)GUI_Types::basic))
+	if((type <(int)GUI_Types::BulletKeysNC && type >= (int)GUI_Types::title ) && (type != (int)GUI_Types::basic))
 		this->shader->setUniform("u_color", Vector4(color.x,color.y,color.z,1.0));
 	else
 		this->shader->setUniform("u_color", Vector4(color.x, color.y, color.z, 0.5));
