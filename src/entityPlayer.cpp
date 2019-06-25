@@ -107,8 +107,8 @@ void EntityPlayer::playerMovement(float dt, std::vector<EntityMesh> props, std::
 		rightCamera.normalize();
 		if (Input::isKeyPressed(SDL_SCANCODE_A)) {
 			yawCannon -= 9.0f*dt;
-			yawCannon = clamp(yawCannon, yaw-40.0f,yaw+ 40.0f);
-			if (yawCannon > yaw - 40.0f) {
+			yawCannon = clamp(yawCannon, -maxyawCannon,maxyawCannon);
+			if (yawCannon > -maxyawCannon) {
 				this->camera->rotate(-9.0f*dt*DEG2RAD, Vector3(0, 1, 0));
 				rotateCannon();
 			}
@@ -116,8 +116,8 @@ void EntityPlayer::playerMovement(float dt, std::vector<EntityMesh> props, std::
 
 		else if (Input::isKeyPressed(SDL_SCANCODE_D)) { 
 			yawCannon += 9.0f*dt;
-			yawCannon = clamp(yawCannon, yaw-40.0f,yaw+ 40.0f);
-			if (yawCannon < yaw + 40.0f) {
+			yawCannon = clamp(yawCannon, -maxyawCannon, maxyawCannon);
+			if (yawCannon < maxyawCannon) {
 				this->camera->rotate(9.0f*dt*DEG2RAD, Vector3(0, 1, 0));
 
 				rotateCannon();
@@ -615,6 +615,7 @@ void EntityPlayer::grab(std::vector<EntityMesh> vector)
 					////float angle = acos(clamp(dot(frontCannon, frontPlayer), -1.0f, 1.0f))*RAD2DEG;
 					////yaw += angle;
 					yawCannon = Cannon.rotation;
+					maxyawCannon = yawCannon + 40.0f;
 					//updateMatrix();
 
 					//position of the Camera

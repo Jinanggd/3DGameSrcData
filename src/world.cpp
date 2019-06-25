@@ -119,7 +119,10 @@ void World::rendermap() {
 
 	map.renderEntity(current_shader, Vector4(1, 1, 1, 1), Player);
 
-	//map.renderEntity(current_shader, Vector4(1,0,0,1), Titan);
+	for (int i = 0; i < Titans.size(); i++) {
+		map.renderEntity(current_shader, Vector4(1, 0, 0, 1), &Titans[i]);
+
+	}
 
 	glDisable(GL_BLEND);
 	glEnable(GL_DEPTH_TEST);
@@ -247,9 +250,10 @@ void World::renderentities()
 					current_shader->setUniform("u_color", Vector4(1, 1, 1, 1));
 				current_shader->setUniform("u_texture", bullets_and_cannon[i].mat.texture2);
 
-				m.setTranslation(bullets_and_cannon[i].model.getTranslation() + Vector3(3, 2, 4));
+				m.setTranslation(bullets_and_cannon[i].model.getTranslation() + Vector3(0, 2, 0));
 				m.rotate(90 * DEG2RAD, Vector3(1, 0, 0));
-				m.scale(2, 2, 2);
+				m.rotate(30 * *time*DEG2RAD, Vector3(0, 0, 1));
+				m.scale(3, 3, 3);
 				//m.rotate(sin(*time), Vector3(0, 1, 0));
 				current_shader->setUniform("u_model", m);
 				bullets_and_cannon[i].mesh2->render(GL_TRIANGLES);
@@ -284,11 +288,16 @@ void World::renderentities()
 
 			current_shader->setUniform("u_time", *time);
 
-			current_shader->setUniform("u_color", Vector4(1, 1, 1, 1));
+			if (buildables[i].type == (int)mat_types::buildable)
+				current_shader->setUniform("u_color", Vector4(1, 1, 1, 1));
+			else if (buildables[i].type == (int)mat_types::tower1)
+				current_shader->setUniform("u_color", Vector4(0, 0, 0.8f, 1.0));
+			else if (buildables[i].type == (int)mat_types::tower2)
+				current_shader->setUniform("u_color", Vector4(0.8f, 0, 0, 1.0));
 			current_shader->setUniform("u_texture", buildables[i].mat.texture2);
 
 			Vector3 t = buildables[i].model.getTranslation();
-			m.setTranslation(t + Vector3(-6, 2, 4));
+			m.setTranslation(t + Vector3(0, 2, 0));
 			m.rotate(90 * DEG2RAD, Vector3(1, 0, 0));
 			m.scale(5, 5, 5);
 			m.rotate(30 * *time*DEG2RAD, Vector3(0, 0, 1));
@@ -675,12 +684,12 @@ void World::initProps() {
 				
 				this->Player->setPosition(px, characterpy, pz);
 				
-				EntityMesh a = EntityMesh(mat_types::cannon);
-				a.model.setTranslation(px, cannonpy, pz + 10);
-				a.model.scale(3, 3, 3);
-				a.model.rotate(90 * DEG2RAD, Vector3(0, 1, 0));
-				a.rotation = 90;
-				bullets_and_cannon.push_back(a);
+				//EntityMesh a = EntityMesh(mat_types::cannon);
+				//a.model.setTranslation(px, cannonpy, pz + 10);s
+				//a.model.scale(3, 3, 3);
+				//a.model.rotate(90 * DEG2RAD, Vector3(0, 1, 0));
+				//a.rotation = 90;
+				//bullets_and_cannon.push_back(a);
 				
 
 				//a = EntityMesh(mat_types::cannon);
@@ -786,7 +795,7 @@ float World::mapping(float start1, float stop1, float start2, float stop2, float
 
 void World::update(float dt)
 {
-	//SpawnTitans();
+	SpawnTitans();
 	//Bullet shooted
 
 	if (shootedBullet > -1) {
