@@ -239,12 +239,12 @@ void World::renderentities()
 					current_shader->setUniform("u_color", Vector4(0, 0.8, 0, 1)) :
 					current_shader->setUniform("u_color", Vector4(1, 1, 1, 1));
 				current_shader->setUniform("u_texture", bullets_and_cannon[i].mat.texture2);
-				
-				m.setTranslation(bullets_and_cannon[i].model.getTranslation()+Vector3(-6,2,4));
+
+				m.setTranslation(bullets_and_cannon[i].model.getTranslation() + Vector3(-6, 2, 4));
 				m.rotate(90 * DEG2RAD, Vector3(1, 0, 0));
 				m.scale(5, 5, 5);
 				//m.rotate(sin(*time), Vector3(0, 1, 0));
-				current_shader->setUniform("u_model",m);
+				current_shader->setUniform("u_model", m);
 				bullets_and_cannon[i].mesh2->render(GL_TRIANGLES);
 
 				current_shader->disable();
@@ -284,7 +284,7 @@ void World::renderentities()
 			m.setTranslation(t + Vector3(-6, 2, 4));
 			m.rotate(90 * DEG2RAD, Vector3(1, 0, 0));
 			m.scale(5, 5, 5);
-			m.rotate(30**time*DEG2RAD, Vector3(0, 0, 1));
+			m.rotate(30 * *time*DEG2RAD, Vector3(0, 0, 1));
 			current_shader->setUniform("u_model", m);
 			buildables[i].mesh2->render(GL_TRIANGLES);
 
@@ -302,7 +302,7 @@ void World::renderentities()
 			buildables[i].render();
 
 			current_shader->disable();
-			if(buildables[i].type ==(int)mat_types::tower2)
+			if (buildables[i].type == (int)mat_types::tower2)
 				if (buildables[i].g.enable) {
 					glDisable(GL_DEPTH_TEST);
 					current_shader = buildables[i].g.shader;
@@ -319,30 +319,29 @@ void World::renderentities()
 	}
 
 	//TITANS
-	//m.setTranslation(Titan->model.getTranslation());
-	//Vector3 wc = m * Titan->mesh->box.center;
-	//if (!(this->camera->testSphereInFrustum(wc, 50) == CLIP_OUTSIDE)) {
-	//	current_shader = Titan->mat.shader;
-	//	current_shader->enable();
-	//	current_shader->setUniform("u_viewprojection", camera->viewprojection_matrix);
-	//	current_shader->setUniform("u_time", *time);
-	//	Titan->render();
-	//	current_shader->disable();
-	//	if (Titan->hpbar.enable) {
-	//		glDisable(GL_DEPTH_TEST);
-	//		current_shader = Titan->hpbar.shader;
-	//		current_shader->enable();
-	//		m.setIdentity();
-	//		current_shader->setUniform("u_viewprojection", m);
-	//		current_shader->setUniform("u_time", *time);
-	//		Titan->hpbar.render();
-	//		current_shader->disable();
-	//		glEnable(GL_DEPTH_TEST);
-	//	}
-	//	
-	//}
-
-
+	for (int i = 0; i < Titans.size(); i++) {
+		m.setTranslation(Titans[i].model.getTranslation());
+		Vector3 wc = m * Titans[i].mesh->box.center;
+		if (!(this->camera->testSphereInFrustum(wc, 50) == CLIP_OUTSIDE)) {
+			current_shader = Titans[i].mat.shader;
+			current_shader->enable();
+			current_shader->setUniform("u_viewprojection", camera->viewprojection_matrix);
+			current_shader->setUniform("u_time", *time);
+			Titans[i].render();
+			current_shader->disable();
+			if (Titans[i].hpbar.enable) {
+				glDisable(GL_DEPTH_TEST);
+				current_shader = Titans[i].hpbar.shader;
+				current_shader->enable();
+				m.setIdentity();
+				current_shader->setUniform("u_viewprojection", m);
+				current_shader->setUniform("u_time", *time);
+				Titans[i].hpbar.render();
+				current_shader->disable();
+				glEnable(GL_DEPTH_TEST);
+			}
+		}
+	}
 
 	//PLAYER
 	current_shader = Player->mat.shader;
@@ -371,29 +370,6 @@ void World::renderentities()
 	current_shader->setUniform("u_time", *time);
 	explosion->render();
 	current_shader->disable();
-
-	//current_shader = Player->actionplane.mat.shader;
-
-
-	//current_shader->enable();
-	//current_shader->setUniform("u_viewprojection", camera->viewprojection_matrix);
-	//current_shader->setUniform("u_time", *time);
-	//current_shader->setUniform("u_color", Vector4(1, 1, 1, 1));
-	//current_shader->setUniform("u_texture", Player->actionplane.mat.texture);
-	//current_shader->setUniform("u_model", Player->actionplane.model);
-	//Player->actionplane.m.render(GL_TRIANGLES);
-
-	//current_shader->disable();
-
-	//current_shader = Player->hpbar.mat.shader;
-	//current_shader->enable();
-	//current_shader->setUniform("u_viewprojection", camera->viewprojection_matrix);
-	//current_shader->setUniform("u_time", *time);
-	//current_shader->setUniform("u_color", Vector4(1, 1, 1, 1));
-	//current_shader->setUniform("u_texture", Player->hpbar.mat.texture);
-	//current_shader->setUniform("u_model", Player->hpbar.model);
-	//Player->hpbar.m.render(GL_TRIANGLES);
-	//current_shader->disable();
 }
 
 void World::renderplane() {
@@ -631,10 +607,23 @@ void World::initPlayer()
 
 void World::SpawnTitans()
 {
-	EntityAI t = EntityAI(time, Player->model);
-	//Titan = new EntityAI(time, Player->model);
-	t.setPosition(Player->current_position.x - 30, Player->current_position.y, Player->current_position.z + 70);
-	Titans.push_back(t);
+	//Pending CHECK
+	if (Titans.size() > numbersofTitans[round] || initSpawnTime <0)
+		return;
+
+	float currenttime = *time - initSpawnTime;
+
+	if (currenttime > cdSpawn) {
+		initSpawnTime = *time;
+		int index = rand() % spawnzones.size();
+		EntityAI t = EntityAI(time, Player->model);
+		t.setPosition(spawnzones[index].x, Player->current_position.y, spawnzones[index].z);
+		Titans.push_back(t);
+	}
+	//EntityAI t = EntityAI(time, Player->model);
+	////Titan = new EntityAI(time, Player->model);
+	//t.setPosition(Player->current_position.x - 30, Player->current_position.y, Player->current_position.z + 70);
+	//Titans.push_back(t);
 }
 
 void World::printCamPos()
@@ -652,7 +641,7 @@ float World::mapping(float start1, float stop1, float start2, float stop2, float
 
 void World::update(float dt)
 {
-
+	SpawnTitans();
 	//Bullet shooted
 
 	if (shootedBullet > -1) {
@@ -762,17 +751,12 @@ void World::update(float dt)
 
 void World::updateBullets(int index, Vector3 position)
 {
-
 	bullets_and_cannon[index].model.setTranslation(position.x,position.y,position.z);
-
-	//props[bullets_and_cannon[index].index_propsvector].model.setTranslation(position.x, position.y, position.z);
 }
 
 void World::removeBullet(int index)
 {
-	//props.erase(props.begin() + bullets_and_cannon[index].index_propsvector);
 	bullets_and_cannon.erase(bullets_and_cannon.begin() + index);
-	//update the bullets_and_cannon vector
 
 	for (int i = 0; i < bullets_and_cannon.size(); i++) {
 		if (bullets_and_cannon[i].type == (int)mat_types::cannon) {
@@ -785,6 +769,7 @@ void World::removeBullet(int index)
 				}
 		}
 	}
+	
 	if (Player->Cannon.munition.size() > 0) {
 		for (int i = 0; i < Player->Cannon.munition.size(); i++) {
 			if (Player->Cannon.munition[i] > index)
@@ -819,17 +804,6 @@ void World::sortBlendingObjects(EntityMesh m)
 	
 }
 
-bool World::dist( EntityMesh& lhs,  EntityMesh& rhs) {
-
-	Vector3 position = lhs.model.getTranslation();
-	float distance1 = (position - this->camera->eye).length();
-
-	Vector3 position2 = rhs.model.getTranslation();
-	float distance2 = (position2 - this->camera->eye).length();
-
-	return distance1 >distance2;
-
-}
 void World::setAllGUItofalse()
 {
 	Vector3 position = Player->current_position;
@@ -845,9 +819,6 @@ void World::setAllGUItofalse()
 		case (int)GUI_Types::BulletKeysNC:
 			m = bullets_and_cannon[GUIs[i].index];
 			break;
-		//case (int)GUI_Types::CannonKeysC:
-		//	m = bullets_and_cannon[GUIs[i].index];
-		//	break;
 		case(int)GUI_Types::CannonKeysNC:
 			m = bullets_and_cannon[GUIs[i].index];
 			break;
@@ -877,25 +848,7 @@ void World::setAllGUItofalse()
 		}
 		
 	}
-
-	//Vector3 newpoint = currentposition + 4.0f*dt*direction;
-	//bullets_and_cannon[index].model.setTranslation(newpoint.x, newpoint.y, newpoint.z);
-	//props[bullets_and_cannon[index].index_propsvector].model.setTranslation(newpoint.x, newpoint.y, newpoint.z);
-	////props[bullets_and_cannon[index].index_propsvector].model.scale(50, 50, 50);
 	
-}
-
-void World::initAirplane() {
-
-	EntityMesh plane = EntityMesh(mat_types::airplane);
-	plane.model.translate(0, 100, 0);
-	plane.model.scale(30, 30, 30);
-	//plane.camera = new Camera();
-	//Vector3 eye = plane.model *   Vector3(0, 100, 0);
-	//Vector3 center = plane.model * Vector3(0, 0, 0);
-	//camera->lookAt(eye, center, Vector3(0, 1, 0));
-	//props.push_back(plane);
-
 }
 
 void World::initWorld()

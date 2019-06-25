@@ -296,13 +296,19 @@ void Game::onKeyUp(SDL_KeyboardEvent event)
 
 			isfullyLoaded = true;
 		}
-		else if (isfullyLoaded) {
-			isReady = true;
-		}
 		else if (instructions > -1 && isReady) {
 			world.GUIs[instructions].enable = false;
 			instructions--;
+			if (instructions == -1) {
+				world.camera = world.Player->camera;
+				ThirdCameraMode = false;
+				world.initSpawnTime = time;
+			}
 		}
+		else if (isfullyLoaded) {
+			isReady = true;
+		}
+		
 		break;
 	case SDLK_f:
 		if (!ThirdCameraMode) {
@@ -388,9 +394,8 @@ void Game::renderWorld()
 
 		world.renderBlendings();
 
+
 		world.renderGUI();
-
-
 		//world.water.render();
 
 
@@ -402,9 +407,13 @@ void Game::renderWorld()
 
 	current_shader = world.map.shader;
 
+
 	glViewport(window_width - 200, window_height - 200, 200, 200);
 
 	world.rendermap();
+
+
+
 }
 
 void Game::renderInit()

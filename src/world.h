@@ -38,35 +38,41 @@ public:
 
 	void rendermap();
 
-
+	//Renders
 	void renderentities();
 	void renderplane();
 	void renderSkybox();
 	void renderGUI();
 	void renderBlendings();
 
+	//Inits
 	void initProps();
-	void initAirplane();
 	void initWorld();
 	void initGUIs();
 	void initPlayer();
 	void SpawnTitans();
 
-	void printCamPos();
-	float mapping(float start1, float stop1, float start2, float stop2, float value);
-
+	//Update
+	void setAllGUItofalse();
 	void update(float dt);
+
 
 	void updateBullets(int index, Vector3 position);
 	void removeBullet(int index);
+
+	//Utils
+	float mapping(float start1, float stop1, float start2, float stop2, float value);
+	void printCamPos();
 	void sortBlendingObjects(EntityMesh m);
 
-	bool dist( EntityMesh& lhs,  EntityMesh& rhs);
-
-	void setAllGUItofalse();
 
 	bool load();
 	bool save();
+
+
+
+
+
 
 	//static World* Instance();
 	Camera * camera;
@@ -101,6 +107,12 @@ public:
 	EntityAI* Titan;
 
 	Shader* plane_shader = NULL;
+
+	std::vector<Vector3> spawnzones;
+	int round = 0;
+	int numbersofTitans[1] = { 5 };
+	float initSpawnTime= -1;
+	float cdSpawn = 5.0f;
 	
 	
 

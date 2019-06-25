@@ -713,33 +713,18 @@ void EntityPlayer::throwItem()
 
 void EntityPlayer::shoot(float dt)
 {
-	//if (CarryItem > -1) {
-	//	Game::instance->world.bullets_and_cannon[CarryItem].model.setTranslation(Cannon.model.getTranslation().x, Cannon.model.getTranslation().y, Cannon.model.getTranslation().z);
-	//	Game::instance->world.props[Game::instance->world.bullets_and_cannon[CarryItem].index_propsvector].model.setTranslation(Cannon.model.getTranslation().x, Cannon.model.getTranslation().y, Cannon.model.getTranslation().z);
-	//	Vector3 direction = (this->camera->center - Cannon.model.getTranslation()).normalize();
-	//	//Vector3 direction = Cannon.model.frontVector().normalize();
-	//	Game::instance->world.bullets_and_cannon[CarryItem].Direction = direction;
-	//	Game::instance->world.props[Game::instance->world.bullets_and_cannon[CarryItem].index_propsvector].Direction = direction;
-	//	//Game::instance->world.bullets_and_cannon[CarryItem].isShooted = true;
-	//	//Game::instance->world.props[Game::instance->world.bullets_and_cannon[CarryItem].index_propsvector].isShooted = true;
-	//	Game::instance->world.shootedBullet = CarryItem;
-
-	//	CarryItem = -1;
-	//}
-
 	if (Cannon.munition.size() > 0) {
 
 		int shootedBulletindex = Cannon.munition[0];
 		Game::instance->world.bullets_and_cannon[shootedBulletindex].model.setTranslation(Cannon.model.getTranslation());
 		Vector3 direction = (this->camera->center - Cannon.model.getTranslation()).normalize();
 		Game::instance->world.bullets_and_cannon[shootedBulletindex].Direction = direction;
+
 		Game::instance->world.bullets_and_cannon[CannonID].munition.erase(Game::instance->world.bullets_and_cannon[CannonID].munition.begin());
 		Cannon.munition.erase(Cannon.munition.begin());
 		Game::instance->world.shootedBullet = shootedBulletindex;
 
 	}
-	
-	//Game::instance->world.shotBullet(CarryItem, dt, direction);
 }
 
 void EntityPlayer::updateMatrix()
