@@ -204,6 +204,7 @@ void GUI::buildQuadUVS(float minX, float maxX, float minY, float maxY)
 //this->mesh->uvs.push_back(Vector2(0.0f, 0.25f));
 //this->mesh->uvs.push_back(Vector2(0.0f, 0.5f));
 //this->mesh->uvs.push_back(Vector2(0.25f, 0.25f));
+	this->mesh->uvs.clear();
 	this->mesh->uvs.push_back(Vector2(maxX, minY));
 	this->mesh->uvs.push_back(Vector2(minX, maxY));
 	this->mesh->uvs.push_back(Vector2(maxX, maxY));
@@ -211,4 +212,18 @@ void GUI::buildQuadUVS(float minX, float maxX, float minY, float maxY)
 	this->mesh->uvs.push_back(Vector2(minX, minY));
 	this->mesh->uvs.push_back(Vector2(minX, maxY));
 	this->mesh->uvs.push_back(Vector2(maxX, minY));
+}
+
+void GUI::buildQuadJustified(){
+	this->mesh->vertices.clear();
+	float left_x = origin.x, left_y = origin.y, w = size.x, h = size.y;
+
+	this->mesh->vertices.push_back(Vector3(left_x+w,left_y-h, 0.0f));
+	this->mesh->vertices.push_back(Vector3(left_x, left_y, 0.0f));
+	this->mesh->vertices.push_back(Vector3(left_x+w, left_y, 0.0f));
+	this->mesh->vertices.push_back(Vector3(left_x, left_y-h, 0.0f));
+	this->mesh->vertices.push_back(Vector3(left_x, left_y, 0.0f));
+	this->mesh->vertices.push_back(Vector3(left_x+w, left_y-h, 0.0f));
+
+
 }

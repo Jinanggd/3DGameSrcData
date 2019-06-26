@@ -37,7 +37,7 @@ void Map::update() {
 
 	Vector3 eye = player->current_position;
 
-	eye.y += 600;
+	eye.y += 550;
 
 	Vector3 center = player->current_position;
 
@@ -120,5 +120,53 @@ void Map::renderEntity(Shader *current_shader, Vector4 color, EntityAI *Player) 
 }
 
 
+void Map::renderbuildablecanon(std::vector<EntityMesh> b, std::vector<EntityMesh> c){
 
+	Shader* current_shader = Shader::Get("data/shaders/basic_map.vs","data/shaders/basic_map.fs");
+	Matrix44 SS;
+	SS.setScale(1.5f, 0, 1.5f);
+	for (int i = 0; i < b.size(); i++) {
+
+		//current_shader = b[i].mat.shader;
+
+		current_shader->enable();
+
+		current_shader->setUniform("u_viewprojection", this->camera->viewprojection_matrix);
+
+		current_shader->setUniform("u_time", *time);
+
+		if (b[i].type == (int)mat_types::buildable)
+			current_shader->setUniform("u_color", Vector4(1, 1, 1, 1));
+		else
+			current_shader->setUniform("u_color", Vector4(0, 1, 0, 1.0));
+
+		current_shader->setUniform("u_texture", b[i].mat.texture);
+		current_shader->setUniform("u_model", SS*b[i].model);
+		b[i].mesh->render(GL_TRIANGLES);
+		//b[i].render();
+
+		current_shader->disable();
+
+	}
+	//for (int i = 0; i < c.size(); i++) {
+
+	//	current_shader = c[i].mat.shader;
+
+	//	current_shader->enable();
+
+	//	current_shader->setUniform("u_viewprojection", this->camera->viewprojection_matrix);
+
+	//	current_shader->setUniform("u_time", *time);
+
+	//	current_shader->setUniform("u_color", Vector4(0, 0, 1, 1.0));
+
+	//	current_shader->setUniform("u_texture", c[i].mat.texture);
+	//	current_shader->setUniform("u_model", c[i].model);
+	//	c[i].mesh->render(GL_TRIANGLES);
+	//	c[i].render();
+
+	//	current_shader->disable();
+
+	//}
+}
 

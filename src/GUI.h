@@ -49,6 +49,8 @@ public:
 	void buildQuad();
 	void buildQuadUVS(float minX, float maxX, float minY, float maxY);
 
+	void buildQuadJustified();
+
 	// model matrix 
 	Matrix44 model;
 	Texture* texture;

@@ -8,7 +8,14 @@
 enum class sound_types {
 
 	background,
-	death
+	death,
+	ambience,
+	cannon, 
+	footstep,
+	pick,
+	titan,
+	win
+
 
 };
 
@@ -27,6 +34,7 @@ public:
 
 
 	HSAMPLE *samples;
+	HCHANNEL ch;
 
 };
 

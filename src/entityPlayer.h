@@ -77,12 +77,15 @@ public:
 
 	std::vector<Matrix44> bone_matrices;
 	Camera * camera;
-	bool isanimated = true, iscarrying = false, isoncannon = false;
+	bool isanimated = true, iscarrying = false, isoncannon = false, isrunning = false;
+
 	int CarryItem,CannonID;
 	EntityMesh Cannon;
 	GUI scope;
 	Vector3 latestposition;
 	float maxyawCannon;
+	float stamina = 100;
+	GUI staminaBar; 
 	
 
 };

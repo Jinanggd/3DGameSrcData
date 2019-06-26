@@ -47,6 +47,7 @@ EntityPlayer::EntityPlayer() : Entity()
 	//this->camera->lookAt(Vector3(current_position.x, current_position.y + 40, current_position.z +50),current_position, Vector3(0.f, 1.f, 0.f)); //position the camera and point to 0,0,0
 	this->camera->setPerspective(70.f, 800.0f / (float)600.0f, 0.1f, 10000.f);
 	this->scope = GUI(Vector2(0, 0), Vector2(0, 0), false, GUI_Types::scope);
+	this->staminaBar = GUI(Vector2(10, 50), Vector2(0, 0), false, GUI_Types::basic);
 	//updateCamera(Vector3(0, 10, -20));
 
 }
@@ -181,7 +182,23 @@ void EntityPlayer::playerMovement(float dt, std::vector<EntityMesh> props, std::
 
 		move = R * move;
 
-		velocity = iscarrying ? velocity + move * 1.5 : velocity + move * 4;
+		float new_speed = iscarrying ? 4:6;
+
+		if (Input::isKeyPressed(SDL_SCANCODE_LSHIFT) && stamina > 0) {
+
+			new_speed +=3;
+			stamina -= dt*10;
+			isrunning = true;
+
+		}
+		else {
+			stamina += dt*5;
+			isrunning = false;
+
+			stamina = clamp(stamina, 0, 100);
+		}
+
+		velocity = velocity + move * new_speed;
 
 
 		checkCollision(props,bc, b,current_position + velocity * dt, dt);
@@ -339,7 +356,7 @@ void EntityPlayer::checkCollision(std::vector<EntityMesh> props, std::vector<Ent
 				if (iscarrying)
 					Game::instance->world.GUIs[5].enable = false;
 			}
-			else if(b[i].initial_time < 0 && b[i].type == (int)mat_types::tower1 && !iscarrying && Game::instance->world.GUIs[4].enable){
+			else if(b[i].initial_time < 0 && b[i].type == (int)mat_types::tower1 && !iscarrying && !Game::instance->world.GUIs[4].enable){
 				Game::instance->world.GUIs[10].enable = true;
 				Game::instance->world.GUIs[10].index = i;
 				if (iscarrying)
@@ -508,6 +525,38 @@ void EntityPlayer::updateAnim(float dt) {
 
 	else //run
 	{
+
+		if (iscarrying) { 
+		
+
+			anim = isrunning ? Animation::Get("data/characters/characters/carrying_running.skanim") : Animation::Get("data/characters/characters/carrying_walking.skanim");
+			anim->assignTime(t);
+			skeleton = anim->skeleton;
+
+
+		}
+
+		else if (isrunning) {
+
+
+			w = clamp(speed - 1.0, 0, 1);
+			anim = Animation::Get("data/characters/characters/running_FAST.skanim");
+			if (vel.z < 0)
+				anim->assignTime(t);
+			else
+				anim->assignTime(-t);
+			animB = Animation::Get("data/characters/characters/running_FAST.skanim");
+			if (vel.z < 0)
+				animB->assignTime((t / anim->duration) * animB->duration);
+			else
+				animB->assignTime(-(t / anim->duration) * animB->duration);
+			blendSkeleton(&anim->skeleton, &animB->skeleton, 2*w , &skeleton);
+		
+		
+		}
+
+		else {
+		
 		w = clamp(speed - 1.0, 0, 1);
 		anim = Animation::Get("data/characters/characters/walking.skanim");
 		if (vel.z < 0)
@@ -520,30 +569,12 @@ void EntityPlayer::updateAnim(float dt) {
 		else
 			animB->assignTime(-(t / anim->duration) * animB->duration);
 		blendSkeleton(&anim->skeleton, &animB->skeleton, 0.8, &skeleton);
+		}
 
 	}
 
-
-	//if (direction == KEY_LEFT) {
-
-	//	animB = Animation::Get("data/characters/characters/left_turn.skanim");
-	//	animB->assignTime(t);
-
-	//	float angle = abs(yaw / 360);
-
-	//	if (fmod(animB->duration, t) < 0.5) { yaw -= 90;  std::cout << "a"; }
-
-	//	w = clamp(angle, 0, 1);
-
-	//	//updateCamera();
-	//	updateMatrix();
-
-	//	blendSkeleton(&skeleton, &animB->skeleton, 0.9, &skeleton);
-
-	//}
 	
 
-	
 
 	skeleton.computeFinalBoneMatrices(bone_matrices, mesh);
 
@@ -609,10 +640,11 @@ void EntityPlayer::grab(std::vector<EntityMesh> vector)
 					
 					
 					//
-					float previousy = current_position.y;
-					current_position = Cannon.model.getTranslation()-frontCannon*15;
-					current_position.y = previousy;
-					////float angle = acos(clamp(dot(frontCannon, frontPlayer), -1.0f, 1.0f))*RAD2DEG;
+					//float previousy = current_position.y;
+					//current_position = Cannon.model.getTranslation()-frontCannon*15;
+					//current_position.y = previousy;
+					//////float angle = acos(clamp(dot(frontCannon, frontPlayer), -1.0f, 1.0f))*RAD2DEG;
+					current_position.y = 0;
 					////yaw += angle;
 					yawCannon = Cannon.rotation;
 					maxyawCannon = yawCannon + 40.0f;

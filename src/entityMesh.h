@@ -73,7 +73,7 @@ public:
 	Vector3 front;
 	Vector3 Direction;
 	GUI g;
-	int life = 3; 
+	int life = 6; 
 
 	mat_types tobeupgrate;
 	float initial_time = -1.0f;

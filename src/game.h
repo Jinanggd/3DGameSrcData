@@ -30,9 +30,9 @@ public:
 	int fps;
 	bool must_exit;
 	int loaded = 0;
-	GUI Start, LoadingBar;
+	GUI Start, LoadingBar,EndGame,ClearGame;
 	World world;
-	bool isOver = false, isReady = false, isLoading = false,isfullyLoaded = false;
+	bool isOver = false, isReady = false, isLoading = false, isfullyLoaded = false, renderminimap = false;
 	//some vars
 	Camera* camera; //our global camera
 	Camera* camera2D;
@@ -57,6 +57,7 @@ public:
 	void renderWorld();
 	void renderInit();
 	void renderLoading();
+	void renderResult();
 
 
 

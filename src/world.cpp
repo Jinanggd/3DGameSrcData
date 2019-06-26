@@ -5,6 +5,7 @@
 #include <random>
 
 
+
 //World* World::Instance() {
 //	return instance;
 //}
@@ -124,6 +125,7 @@ void World::rendermap() {
 
 	}
 
+	map.renderbuildablecanon(buildables, bullets_and_cannon);
 	glDisable(GL_BLEND);
 	glEnable(GL_DEPTH_TEST);
 }
@@ -370,6 +372,22 @@ void World::renderentities()
 		current_shader->setUniform("u_viewprojection", m);
 		current_shader->setUniform("u_time", *time);
 		Player->scope.render();
+		current_shader->disable();
+		glEnable(GL_DEPTH_TEST);
+	}
+	if (Player->staminaBar.enable && Player->stamina > 0) {
+		glDisable(GL_DEPTH_TEST);
+		current_shader = Player->staminaBar.shader;
+		current_shader->enable();
+		current_shader->setUniform("u_viewprojection", camera2D->viewprojection_matrix);
+		current_shader->setUniform("u_time", *time);
+		current_shader->setUniform("u_color", Vector4(231.0f / 255.0f, 197.0f / 255.0f, 78.0f / 255.0f, 1.0));
+		bool f = false;
+		current_shader->setUniform("is3D", f);
+		Player->staminaBar.size = Vector2(Player->stamina *3, 20);
+		Player->staminaBar.buildQuadJustified();
+		Player->staminaBar.mesh->render(GL_TRIANGLES);
+		current_shader->disable();
 		current_shader->disable();
 		glEnable(GL_DEPTH_TEST);
 	}
@@ -813,24 +831,6 @@ void World::update(float dt)
 		float distance = (newposition - currentposition).length();
 
 		Vector3 collisionpoint, collisionnormal;
-		//Search on propsvector
-
-		//Hacer con test ray collision
-		for (int i = 0; i < props.size(); i++) {
-
-			//A Ray from the current point to the new position
-			if (props[i].mesh->testRayCollision(props[i].model, currentposition, bullets_and_cannon[shootedBullet].Direction,
-				collisionpoint, collisionnormal, distance)) {
-				//Explosion GUI
-				explosion->model.setTranslation(collisionpoint.x, collisionpoint.y, collisionpoint.z);
-				explosion->explosion_initial_time = *time;
-				//Remove the bullet from the the vectors
-				removeBullet(shootedBullet);
-				std::cout << "Collision contra props" << std::endl;
-				return;
-			}
-		}
-
 
 		//Search on Titans vector
 		for (int i = 0; i < Titans.size(); i++) {
@@ -847,6 +847,37 @@ void World::update(float dt)
 				return;
 
 
+			}
+		}
+		//Search on propsvector
+		//Hacer con test ray collision
+		for (int i = 0; i < props.size(); i++) {
+
+			//A Ray from the current point to the new position
+			if (props[i].mesh->testRayCollision(props[i].model, currentposition, bullets_and_cannon[shootedBullet].Direction,
+				collisionpoint, collisionnormal, distance)) {
+				//Explosion GUI
+				explosion->model.setTranslation(collisionpoint.x, collisionpoint.y, collisionpoint.z);
+				explosion->explosion_initial_time = *time;
+				//Remove the bullet from the the vectors
+				removeBullet(shootedBullet);
+				std::cout << "Collision contra props" << std::endl;
+				return;
+			}
+		}
+
+		for (int i = 0; i < buildables.size(); i++) {
+
+			//A Ray from the current point to the new position
+			if (buildables[i].mesh->testRayCollision(buildables[i].model, currentposition, bullets_and_cannon[shootedBullet].Direction,
+				collisionpoint, collisionnormal, distance)) {
+				//Explosion GUI
+				explosion->model.setTranslation(collisionpoint.x, collisionpoint.y, collisionpoint.z);
+				explosion->explosion_initial_time = *time;
+				//Remove the bullet from the the vectors
+				removeBullet(shootedBullet);
+				std::cout << "Collision contra buildables" << std::endl;
+				return;
 			}
 		}
 		

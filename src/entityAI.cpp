@@ -183,7 +183,7 @@ void EntityAI::updatedirection(float dt, std::vector<EntityMesh> props)
 	float angle = ComputeSignedAngle(a, b);
 
 
-	velocity = velocity + direction * 7;
+	velocity = velocity + direction * 3;
 
 	speed = velocity.length() * 0.1;
 
@@ -284,7 +284,7 @@ void EntityAI::checkCollision(std::vector<EntityMesh> props, std::vector<EntityM
 
 		Vector3 collisionpoint, collision_normal;
 
-		if (b[i].mesh->testSphereCollision(b[i].model, character_center, 2, collisionpoint, collision_normal) == true) {
+		if (b[i].mesh->testSphereCollision(b[i].model, character_center, 4, collisionpoint, collision_normal) == true) {
 
 			Vector3 push_away = normalize(character_center - collisionpoint)*dt;
 			push_away.y = 0;
@@ -414,7 +414,7 @@ void EntityAI::updateAnim(float dt) {
 
 		anim = Animation::Get("data/characters/characters/breakdance.skanim");
 		anim->assignTime(t);
-		anim->skeleton.getBoneMatrix("mixamorig_Hips").scale(2, 2, 2);
+		//anim->skeleton.getBoneMatrix("mixamorig_Hips").scale(2, 2, 2);
 		anim->skeleton.getBoneMatrix("mixamorig_Head").scale(2, 2, 2);
 		anim->skeleton.getBoneMatrix("mixamorig_Spine2").scale(2, 2, 2);
 		skeleton = anim->skeleton;

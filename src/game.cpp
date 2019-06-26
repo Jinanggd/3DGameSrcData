@@ -38,6 +38,10 @@ Game::Game(int window_width, int window_height, SDL_Window* window)
 	must_exit = false;
 	Start = GUI(Vector2(800 / 2, 600 / 2), Vector2(800, 600), true, GUI_Types::title);
 	LoadingBar = GUI(Vector2(800 / 2, 0), Vector2(0, 0), true, GUI_Types::basic);
+	EndGame = GUI(Vector2(800 / 2, 600 / 2), Vector2(800, 150), true, GUI_Types::BulletKeysC);
+	EndGame.buildQuadUVS(801.0f / 1600.0f, 1599.0f / 1600.0f, (1200.0f - 168.0f) / 1200.0f, (1200.0f - 79.0f) / 1200.0f);
+	ClearGame = GUI(Vector2(800 / 2, 600 / 2), Vector2(800, 150), true, GUI_Types::BulletKeysC);
+	ClearGame.buildQuadUVS(801.0f / 1600.0f, 1599.0f / 1600.0f, (1200.0f - 446.0f) / 1200.0f, (1200.0f - 343.0f) / 1200.0f);
 	 
 	fps = 0;
 	frame = 0;
@@ -70,10 +74,11 @@ Game::Game(int window_width, int window_height, SDL_Window* window)
 //what to do when the image has to be draw
 void Game::render(void)
 {
-	mysound.playSound(sound_types::background);
-	mysound.playSound(sound_types::death);
+	//mysound.playSound(sound_types::background);
+	mysound.playSound(sound_types::footstep);
+	//mysound.playSound(sound_types::death);
 	//set the clear color (the background color)
-	glClearColor(0.372, 0.827, 0.945, 1.0);
+	glClearColor(1, 1, 1, 1.0);
 	//glClearColor(0, 0, 0, 1.0);
 
 	// Clear the window and the depth buffer
@@ -119,8 +124,11 @@ void Game::render(void)
 
 
 
-	if (isOver)
-		rt->toViewport(fbo_shader, Vector4(1, 0, 0, 1));
+	if (isOver) {
+		world.cleared ? rt->toViewport(fbo_shader, Vector4(0, 0.6, 0, 1)) : rt->toViewport(fbo_shader, Vector4(1, 0, 0, 1));
+		renderResult();
+
+	}
 	else
 		rt->toViewport();
 
@@ -147,7 +155,7 @@ void Game::update(double seconds_elapsed)
 	}
 
 	//async input to move the camera around
-	if (Input::isKeyPressed(SDL_SCANCODE_LSHIFT) ) speed *= 10; //move faster with left shift
+	if (Input::isKeyPressed(SDL_SCANCODE_LSHIFT)) { speed *= 10; }  //move faster with left shift
 
 	if (Input::isKeyPressed(SDL_SCANCODE_W) || Input::isKeyPressed(SDL_SCANCODE_UP)) {
 		if (ThirdCameraMode) {
@@ -177,8 +185,14 @@ void Game::update(double seconds_elapsed)
 		world.Player->updateAnim(time);
 		if(world.Titans.size()>0)
 			for(int i=0; i<world.Titans.size();i++){
+				if (world.Titans[i].state == EntityAI::DEAD && world.Titans[i].life != 0) {
+					world.Titans[i].life = 1;
+					world.Titans[i].substractLife();
+					continue;
+				}
 				world.Titans[i].updateTarget(*world.Player, world.buildables);
 				world.Titans[i].update(seconds_elapsed*speed, world.props, world.buildables);
+			
 			}
 		//world.Titan->updateTarget(*world.Player, world.buildables);
 		//world.Titan->update(seconds_elapsed*speed, world.props, world.buildables);
@@ -300,6 +314,7 @@ void Game::onKeyUp(SDL_KeyboardEvent event)
 			render();
 
 			isfullyLoaded = true;
+			camera->lookAt(Vector3(0, 200, 0), Vector3(0, 0, 0), Vector3(0, 1, 0));
 		}
 		else if (instructions > -1 && isReady) {
 			world.GUIs[instructions].enable = false;
@@ -307,6 +322,8 @@ void Game::onKeyUp(SDL_KeyboardEvent event)
 			if (instructions == -1) {
 				world.camera = world.Player->camera;
 				ThirdCameraMode = false;
+				renderminimap = true;
+				world.Player->staminaBar.enable = true;
 				world.initSpawnTime = time;
 			}
 		}
@@ -332,10 +349,26 @@ void Game::onKeyUp(SDL_KeyboardEvent event)
 			world.GUIs[11].enable = true;
 		}
 		break;		
+	case SDLK_F5:
+		if (isOver) {
+			isOver = false, isReady = false, isLoading = false, isfullyLoaded = false, renderminimap = false;
+			loaded = 0;
+			instructions = 3;
+		}
+		break;
+	case SDLK_F6:
+		for (int i = 0; i < world.Titans.size(); i++) {
+			world.Titans[i].state = EntityAI::DEAD;
+		}
+		world.cleared = true;
+		isOver = true;
+		break;
 	}
-	
-	
+		
 }
+	
+	
+
 
 void Game::onGamepadButtonDown(SDL_JoyButtonEvent event)
 {
@@ -410,13 +443,16 @@ void Game::renderWorld()
 
 	drawText(2, 2, getGPUStats(), Vector3(1, 1, 1), 2);
 
-	current_shader = world.map.shader;
+	if (renderminimap) {
+		current_shader = world.map.shader;
 
 
-	glViewport(window_width - 200, window_height - 200, 200, 200);
+		glViewport(window_width - 200, window_height - 200, 200, 200);
 
-	world.rendermap();
+		world.rendermap();
 
+	}
+	
 
 
 }
@@ -447,6 +483,7 @@ void Game::renderInit()
 	current_shader->disable();
 	
 
+	glEnable(GL_CULL_FACE);
 	std::vector<EntityAI> titans;
 	for (int i = 0; i < 6; ++i) {
 
@@ -455,20 +492,17 @@ void Game::renderInit()
 
 	}
 
-	Animation* anim = Animation::Get("data/characters/characters/breakdance.skanim");
-	anim->assignTime(time);
-	anim->skeleton.getBoneMatrix("mixamorig_Head").scale(2, 2, 2);
-	anim->skeleton.getBoneMatrix("mixamorig_Spine2").scale(2, 2, 2);
-
 
 	current_shader = Shader::Get("data/shaders/skinning.vs", "data/shaders/texture.fs");
 	//current_shader = titans[0].mat.shader;
-
+	Vector3 eye = titans[0].model.getTranslation()+titans[0].model.frontVector()*50;
+	camera->lookAt(eye, titans[0].model.getTranslation()+Vector3(25,30,0), Vector3(0, 1, 0));
 	for (int i = 0; i < 1; i++) {
 
 		current_shader->enable();
 		titans[i].updateAnim(time);
-		titans[i].model.setTranslation(camera->eye.x , camera->eye.y , camera->eye.z);
+		//titans[i].model.setTranslation(camera->eye.x , camera->eye.y , camera->eye.z);
+		//titans[i].model.setTranslation(camera->eye.x, camera->center.y+10, camera->eye.z);
 		current_shader->setUniform("u_viewprojection", camera->viewprojection_matrix);
 		current_shader->setUniform("u_time", time);
 		titans[i].render();
@@ -489,21 +523,71 @@ void Game::renderLoading()
 
 	//glEnable(GL_BLEND);
 	//glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
-	glDisable(GL_BLEND);
 
-	glDisable(GL_DEPTH_TEST);
+
+
+	glEnable(GL_DEPTH_TEST);
 
 	glDisable(GL_CULL_FACE);
+
+
+	current_shader = LoadingBar.shader;
 	current_shader->enable();
 	current_shader->setUniform("u_viewprojection", camera2D->viewprojection_matrix);
 	current_shader->setUniform("u_time", time);
 	LoadingBar.render();
 	current_shader->disable();
+
 	//glDisable(GL_BLEND);
+	current_shader = Start.shader;
 
-	isfullyLoaded ? drawText(5, 550, "Game was fully Loaded! Press SPACE to continue", Vector3(1, 1, 1), 2) : 
-		drawText(5, 550, "Loading " + std::to_string(loaded) + "%", Vector3(1, 1, 1), 2);
-	glEnable(GL_DEPTH_TEST);
+	current_shader->enable();
+	current_shader->setUniform("u_viewprojection", camera2D->viewprojection_matrix);
+	current_shader->setUniform("u_time", time);
+	//LoadingBar.render();
+	Start.render();
+	//LoadingBar.render();
+	current_shader->disable();
 
+
+
+	isfullyLoaded ? drawText(5, 550, "Game was fully Loaded! Press SPACE to continue", Vector3(0, 0, 0), 2) : 
+		drawText(5, 550, "Loading " + std::to_string(loaded) + "%", Vector3(0, 0, 0), 2);
+	
+	
+	//LoadingBar.render();
+
+	//current_shader->disable();
+	//glEnable(GL_DEPTH_TEST);
+	
+
+}
+
+void Game::renderResult()
+{
+
+	Shader* current_shader = ClearGame.shader;
+	current_shader->enable();
+	glDisable(GL_DEPTH_TEST);
+
+	glDisable(GL_CULL_FACE);
+	current_shader->setUniform("u_viewprojection", camera2D->viewprojection_matrix);
+	current_shader->setUniform("u_time", time);
+	if (world.cleared) {
+		//Game Cleared
+		
+		
+		ClearGame.render();
+
+		
+	}
+	else{
+		//Game over
+		EndGame.render();
+	}
+	current_shader->disable();
+
+
+	glEnable(GL_CULL_FACE);
 }
 
