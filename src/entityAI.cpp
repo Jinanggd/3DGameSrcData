@@ -19,8 +19,6 @@ EntityAI::EntityAI() : Entity()
 	mat.texture = Texture::Get("data/characters/characters/titan.png");
 	anim = Animation::Get("data/characters/characters/crouch_walking.skanim");
 
-	
-
 	this->yaw = 0.0f;
 	this->speed = 2.0f;
 	this->pitch = -1.1f;
@@ -41,6 +39,16 @@ EntityAI::EntityAI(float *time) : EntityAI()
 {
 
 	this->time = time;
+}
+
+EntityAI::EntityAI(float *time, bool init) : EntityAI()
+{
+
+	this->time = time;
+
+	this->anim = Animation::Get("data/characters/characters/breakdance.skanim");
+
+	state = DANCE;
 }
 
 
@@ -401,6 +409,20 @@ void EntityAI::updateAnim(float dt) {
 
 	switch (state)
 	{
+
+	case  EntityAI::DANCE:
+
+		anim = Animation::Get("data/characters/characters/breakdance.skanim");
+		anim->assignTime(t);
+		anim->skeleton.getBoneMatrix("mixamorig_Hips").scale(2, 2, 2);
+		anim->skeleton.getBoneMatrix("mixamorig_Head").scale(2, 2, 2);
+		anim->skeleton.getBoneMatrix("mixamorig_Spine2").scale(2, 2, 2);
+		skeleton = anim->skeleton;
+
+
+		break;
+
+
 	case EntityAI::IDLE:
 
 		anim = Animation::Get("data/characters/characters/reaction_hit.skanim");

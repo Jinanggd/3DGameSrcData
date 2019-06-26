@@ -20,6 +20,7 @@ class EntityAI : public Entity
 public:
 	EntityAI();
 	EntityAI(float * time);
+	EntityAI(float * time, bool init);
 	EntityAI(float * time, Matrix44 target);
 	EntityAI(float * time, EntityPlayer* p, std::vector<EntityMesh> *b);
 
@@ -55,7 +56,7 @@ public:
 	bool istargetplayer;
 	bool startedattack = false;
 
-	enum { IDLE, SEARCH, ATTACK , HURT, DEAD} state;
+	enum { IDLE, SEARCH, ATTACK , HURT, DEAD, DANCE} state;
 
 
 	float speed;

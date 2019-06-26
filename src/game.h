@@ -10,12 +10,14 @@
 #include "utils.h"
 #include "entity.h"
 #include "world.h"
+#include "sound.h"
+
 
 class Game
 {
 public:
-	static Game* instance;
 
+	static Game* instance;
 	//window
 	SDL_Window* window;
 	int window_width;
@@ -35,6 +37,7 @@ public:
 	Camera* camera; //our global camera
 	Camera* camera2D;
 	bool mouse_locked; //tells if the mouse is locked (not seen)
+	Sound mysound;
 
 	Game( int window_width, int window_height, SDL_Window* window );
 

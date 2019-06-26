@@ -60,6 +60,7 @@ Game::Game(int window_width, int window_height, SDL_Window* window)
 
 	//world = World(camera, &time);
 
+	mysound = Sound();
 
 	//hide the cursor
 	SDL_ShowCursor(!mouse_locked); //hide or show the mouse
@@ -69,6 +70,8 @@ Game::Game(int window_width, int window_height, SDL_Window* window)
 //what to do when the image has to be draw
 void Game::render(void)
 {
+	mysound.playSound(sound_types::background);
+	mysound.playSound(sound_types::death);
 	//set the clear color (the background color)
 	glClearColor(0.372, 0.827, 0.945, 1.0);
 	//glClearColor(0, 0, 0, 1.0);
@@ -93,10 +96,13 @@ void Game::render(void)
 	
 	if (isReady)
 		renderWorld();
-	else if (isLoading)
+	else if (isLoading) 
 		renderLoading();
-	else
+	else{
 		renderInit();
+	
+	}
+		
 	//renderWorld();
 
 	rt->disable();
@@ -282,7 +288,6 @@ void Game::onKeyUp(SDL_KeyboardEvent event)
 
 			render();
 			world.mapinit();
-			
 			LoadingBar.size = Vector2(500.0f, 30.0f);
 			LoadingBar.buildQuad();
 			loaded = 75;
@@ -420,23 +425,60 @@ void Game::renderInit()
 {
 	
 
-	Shader* current_shader = Start.shader;
+	Shader* current_shader;
 	glViewport(0, 0, window_width, window_height);
-	//glEnable(GL_BLEND);
-	//glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
-	glDisable(GL_BLEND);
+
+
+
 
 	glDisable(GL_DEPTH_TEST);
 
+	glDisable(GL_BLEND);
+
 	glDisable(GL_CULL_FACE);
+
+	current_shader = Start.shader;
 
 	current_shader->enable();
 	current_shader->setUniform("u_viewprojection", camera2D->viewprojection_matrix);
 	current_shader->setUniform("u_time", time);
 	Start.render();
+
 	current_shader->disable();
-	glEnable(GL_DEPTH_TEST);
-	//glDisable(GL_BLEND);
+	
+
+	std::vector<EntityAI> titans;
+	for (int i = 0; i < 6; ++i) {
+
+		EntityAI a = EntityAI(&time, true);
+		titans.push_back(a);
+
+	}
+
+	Animation* anim = Animation::Get("data/characters/characters/breakdance.skanim");
+	anim->assignTime(time);
+	anim->skeleton.getBoneMatrix("mixamorig_Head").scale(2, 2, 2);
+	anim->skeleton.getBoneMatrix("mixamorig_Spine2").scale(2, 2, 2);
+
+
+	current_shader = Shader::Get("data/shaders/skinning.vs", "data/shaders/texture.fs");
+	//current_shader = titans[0].mat.shader;
+
+	for (int i = 0; i < 1; i++) {
+
+		current_shader->enable();
+		titans[i].updateAnim(time);
+		titans[i].model.setTranslation(camera->eye.x , camera->eye.y , camera->eye.z);
+		current_shader->setUniform("u_viewprojection", camera->viewprojection_matrix);
+		current_shader->setUniform("u_time", time);
+		titans[i].render();
+
+	}
+
+	current_shader->disable();
+
+
+	
 }
 
 void Game::renderLoading()
