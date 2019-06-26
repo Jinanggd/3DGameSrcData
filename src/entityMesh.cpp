@@ -76,8 +76,7 @@ EntityMesh::EntityMesh( mat_types type)
 		center.y = this->mesh->aabb_min.y;
 		this->tag = "PropCannon";
 		this->mesh2 = new Mesh();
-		this->mesh2->createQuad(center.x, center.y, 
-			this->mesh->aabb_max.x - this->mesh->aabb_min.x, this->mesh->aabb_max.z - this->mesh->aabb_min.z,false);
+		this->mesh2->createQuad(0, 0, 10, 10, false);
 		this->mat.texture2 = Texture::Get("data/Selection.tga");
 		break;
 

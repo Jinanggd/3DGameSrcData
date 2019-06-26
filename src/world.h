@@ -48,6 +48,7 @@ public:
 	//Inits
 	void initProps();
 	void initWorld();
+	void CheckInit();
 	void initGUIs();
 	void initPlayer();
 	void SpawnTitans();
@@ -64,6 +65,7 @@ public:
 	float mapping(float start1, float stop1, float start2, float stop2, float value);
 	void printCamPos();
 	void sortBlendingObjects(EntityMesh m);
+	void isClear();
 
 
 	bool load();
@@ -106,9 +108,10 @@ public:
 
 	std::vector<Vector3> spawnzones;
 	int round = 0;
-	int numbersofTitans[1] = { 5 };
+	int numbersofTitans[1] = { 3 };
 	float initSpawnTime= -1;
 	float cdSpawn = 5.0f;
+	bool cleared = false;
 	
 	
 

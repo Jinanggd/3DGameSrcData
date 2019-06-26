@@ -81,6 +81,8 @@ public:
 	int CarryItem,CannonID;
 	EntityMesh Cannon;
 	GUI scope;
+	Vector3 latestposition;
+	float maxyawCannon;
 	
 
 };

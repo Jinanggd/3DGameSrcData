@@ -16,7 +16,6 @@ EntityAI::EntityAI() : Entity()
 	mesh = Mesh::Get("data/characters/characters/male.mesh");
 	mat.shader = isanimated ? Shader::Get("data/shaders/skinning.vs", "data/shaders/texture.fs") : Shader::Get("data/shaders/basic.vs", "data/shaders/texture.fs");
 	mesh->box.halfsize *= 2;
-
 	mat.texture = Texture::Get("data/characters/characters/titan.png");
 	anim = Animation::Get("data/characters/characters/crouch_walking.skanim");
 
@@ -111,11 +110,15 @@ void EntityAI::update(float dt, std::vector<EntityMesh> props, std::vector<Entit
 		if (isnear()) {
 
 			state = ATTACK;
-		
-
+			if(indexBuildable >=0){
+				if (Game::instance->world.buildables[indexBuildable].life < 0) {
+					state = SEARCH;
+					return;
+				}
+			}
+			
 			updatedirection(dt, props);
 			t = *time - animtime;
-
 			updateAnim(t);
 
 			if (istargetplayer) {
@@ -139,7 +142,7 @@ void EntityAI::update(float dt, std::vector<EntityMesh> props, std::vector<Entit
 
 			state = SEARCH;
 
-			//updatedirection(dt, props);
+			updatedirection(dt, props);
 
 			updateAnim(dt);
 		}
@@ -147,7 +150,7 @@ void EntityAI::update(float dt, std::vector<EntityMesh> props, std::vector<Entit
 	}
 
 	checkCollision(props,b, current_position + (velocity * dt), dt);
-	hpbar.setPositionfrom3D(current_position+Vector3(0,40,0), Vector2(0.3f*(1 / 3.0f*life), 0.05f),
+	hpbar.setPositionfrom3D(current_position+Vector3(0,80,0), Vector2(0.3f*(1 / 3.0f*life), 0.03f),
 		Game::instance->world.camera->viewprojection_matrix);
 
 
@@ -425,6 +428,7 @@ void EntityAI::updateAnim(float dt) {
 		anim = Animation::Get("data/characters/characters/reaction_hit.skanim");
 
 		anim->assignTime(t);
+		anim->skeleton.getBoneMatrix("mixamorig_Hips").scale(4,4,4);
 		anim->skeleton.getBoneMatrix("mixamorig_Head").scale(2, 2, 2);
 		anim->skeleton.getBoneMatrix("mixamorig_Spine2").scale(2, 2, 2);
 		skeleton = anim->skeleton;
@@ -447,7 +451,7 @@ void EntityAI::updateAnim(float dt) {
 			else
 				animB->assignTime(-t);
 			blendSkeleton(&anim->skeleton, &animB->skeleton, w, &skeleton);
-
+			skeleton.getBoneMatrix("mixamorig_Hips").scale(2, 2, 2);
 			skeleton.getBoneMatrix("mixamorig_Head").scale(2, 2, 2);
 			skeleton.getBoneMatrix("mixamorig_Spine2").scale(2, 2, 2);
 		}
@@ -466,6 +470,7 @@ void EntityAI::updateAnim(float dt) {
 			else
 				animB->assignTime(-(t / anim->duration) * animB->duration);
 			blendSkeleton(&anim->skeleton, &animB->skeleton, 0.8, &skeleton);
+			skeleton.getBoneMatrix("mixamorig_Hips").scale(2, 2, 2);
 			skeleton.getBoneMatrix("mixamorig_Head").scale(2, 2, 2);
 			skeleton.getBoneMatrix("mixamorig_Spine2").scale(2, 2, 2);
 
@@ -495,6 +500,8 @@ void EntityAI::updateAnim(float dt) {
 			//a++;
 			animtime = *time;
 		}
+		anim->skeleton.getBoneMatrix("mixamorig_Hips").scale(2, 2, 2);
+
 		anim->skeleton.getBoneMatrix("mixamorig_Head").scale(2, 2, 2);
 		anim->skeleton.getBoneMatrix("mixamorig_Spine2").scale(2, 2, 2);
 		skeleton = anim->skeleton;
@@ -506,6 +513,8 @@ void EntityAI::updateAnim(float dt) {
 		
 		if (dt > anim->duration) state = SEARCH;
 		anim->assignTime(dt,false);
+		anim->skeleton.getBoneMatrix("mixamorig_Hips").scale(2, 2, 2);
+
 		anim->skeleton.getBoneMatrix("mixamorig_Head").scale(2, 2, 2);
 		anim->skeleton.getBoneMatrix("mixamorig_Spine2").scale(2, 2, 2);
 		skeleton = anim->skeleton;
@@ -515,6 +524,8 @@ void EntityAI::updateAnim(float dt) {
 		anim = Animation::Get("data/characters/characters/dying.skanim");
 
 		anim->assignTime(dt, false);
+		anim->skeleton.getBoneMatrix("mixamorig_Hips").scale(2, 2, 2);
+
 		anim->skeleton.getBoneMatrix("mixamorig_Head").scale(2, 2, 2);
 		anim->skeleton.getBoneMatrix("mixamorig_Spine2").scale(2, 2, 2);
 		skeleton = anim->skeleton;
