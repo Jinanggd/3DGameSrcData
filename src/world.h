@@ -40,6 +40,11 @@ public:
 
 	//Renders
 	void renderentities();
+	void render_props();
+	void render_cannons();
+	void render_buildables();
+	void render_titan();
+	void render_player();
 	void renderplane();
 	void renderSkybox();
 	void renderGUI();

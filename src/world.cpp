@@ -208,14 +208,30 @@ void World::renderBlendings()
 
 void World::renderentities()
 {
+	render_props();
+	render_cannons();
+	render_buildables();
+	render_titan();
+	render_player();
 
+	//EXPLOSION -- No need frustrum
+	current_shader = explosion->mat.shader;
+	current_shader->enable();
+	current_shader->setUniform("u_viewprojection", camera->viewprojection_matrix);
+	current_shader->setUniform("u_time", *time);
+	explosion->render();
+	current_shader->disable();
+}
+
+void World::render_props()
+{
 	Matrix44 m;
 
 	//PROPS
 	glEnable(GL_DEPTH_TEST);
 	for (int i = 0; i < props.size(); ++i) {
 		m.setTranslation(props[i].model.getTranslation().x, props[i].model.getTranslation().y, props[i].model.getTranslation().z);
-		Vector3 world_center = m*props[i].mesh->box.center;
+		Vector3 world_center = m * props[i].mesh->box.center;
 		if (!(this->camera->testSphereInFrustum(world_center, 50) == CLIP_OUTSIDE))
 		{
 
@@ -233,7 +249,11 @@ void World::renderentities()
 
 		}
 	}
+}
 
+void World::render_cannons()
+{
+	Matrix44 m;
 	//BULLETS AND CANNON
 	for (int i = 0; i < bullets_and_cannon.size(); ++i) {
 		m.setTranslation(bullets_and_cannon[i].model.getTranslation().x, bullets_and_cannon[i].model.getTranslation().y, bullets_and_cannon[i].model.getTranslation().z);
@@ -277,7 +297,11 @@ void World::renderentities()
 
 		}
 	}
+}
 
+void World::render_buildables()
+{
+	Matrix44 m;
 	//BUILDABLES
 	for (int i = 0; i < buildables.size(); ++i) {
 		m.setTranslation(buildables[i].model.getTranslation().x, buildables[i].model.getTranslation().y, buildables[i].model.getTranslation().z);
@@ -334,6 +358,11 @@ void World::renderentities()
 		}
 	}
 
+}
+
+void World::render_titan()
+{
+	Matrix44 m;
 	//TITANS
 	for (int i = 0; i < Titans.size(); i++) {
 		m.setTranslation(Titans[i].model.getTranslation());
@@ -356,7 +385,11 @@ void World::renderentities()
 			}
 		}
 	}
+}
 
+void World::render_player()
+{
+	Matrix44 m;
 	//PLAYER
 	current_shader = Player->mat.shader;
 	current_shader->enable();
@@ -384,22 +417,13 @@ void World::renderentities()
 		current_shader->setUniform("u_color", Vector4(231.0f / 255.0f, 197.0f / 255.0f, 78.0f / 255.0f, 1.0));
 		bool f = false;
 		current_shader->setUniform("is3D", f);
-		Player->staminaBar.size = Vector2(Player->stamina *3, 20);
+		Player->staminaBar.size = Vector2(Player->stamina * 3, 20);
 		Player->staminaBar.buildQuadJustified();
 		Player->staminaBar.mesh->render(GL_TRIANGLES);
 		current_shader->disable();
 		current_shader->disable();
 		glEnable(GL_DEPTH_TEST);
 	}
-
-
-	//EXPLOSION -- No need frustrum
-	current_shader = explosion->mat.shader;
-	current_shader->enable();
-	current_shader->setUniform("u_viewprojection", camera->viewprojection_matrix);
-	current_shader->setUniform("u_time", *time);
-	explosion->render();
-	current_shader->disable();
 }
 
 void World::renderplane() {
@@ -460,13 +484,7 @@ void World::renderplane() {
 	glDepthMask(false);*/
 }
 
-//Height positions
-//py = mask->image.getPixel(j, i).x / 255.0f * 40.0f; HOUSES, TOWER
-//py * 0.65f; BULLET
-//characterpy = py * 0.63f; CHARACTER, TITAN
-//--- PENDING HEIGHT
-//CANNON ( also Scale )
-//Buildable
+//Height positions - ARE HARDCODED LOL
 void World::initProps() {
 
 	//Here we will spawn trees, buildings, set player position and the Titans positions
@@ -474,7 +492,7 @@ void World::initProps() {
 	for (int i = 0; i < mask->image.width; i += 150) {
 		float px = mapping(0, mask->image.width, -1024, 1024, i);
 
-		for (int j = 0; j < mask->image.height; j += 370) {
+		for (int j = 0; j < mask->image.height; j += 200) {
 
 			float pz = mapping(0, mask->image.width, -1024, 1024, j);
 			float py = plan_texture->image.getPixel(j, i).x / 255.0f * 20.0f;
@@ -485,15 +503,7 @@ void World::initProps() {
 			int randtext = rand() % 4 + 1;
 			float randscale = random() + 1.0f;
 			if (randscale == 0) randscale = 1.5f;
-			
-			//Trees
-			//std::uniform_int<int>dist(1, 4);
-			//if (mask->image.getPixel(j, i).x > 100 && mask->image.getPixel(j, i).x < 162 && dist(rng)==2) {
-			//	EntityMesh m = EntityMesh(mat_types::tree);
-			//	m.model.setTranslation(px, py, pz);
-			//	m.model.scale(10, rand()%16+13, 10);
-			//	props.push_back(m);
-			//}
+
 			if (mask->image.getPixel(j, i).z == 255 && mask->image.getPixel(j, i).x != 255) {
 				spawnzones.push_back(Vector3(px, characterpy, pz));
 			}

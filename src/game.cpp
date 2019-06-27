@@ -68,6 +68,7 @@ Game::Game(int window_width, int window_height, SDL_Window* window)
 
 	//hide the cursor
 	SDL_ShowCursor(!mouse_locked); //hide or show the mouse
+	mysound.playSound(sound_types::footstep);
 
 }
 
@@ -75,7 +76,7 @@ Game::Game(int window_width, int window_height, SDL_Window* window)
 void Game::render(void)
 {
 	//mysound.playSound(sound_types::background);
-	mysound.playSound(sound_types::footstep);
+	
 	//mysound.playSound(sound_types::death);
 	//set the clear color (the background color)
 	glClearColor(1, 1, 1, 1.0);

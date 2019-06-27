@@ -644,7 +644,8 @@ void EntityPlayer::grab(std::vector<EntityMesh> vector)
 					//current_position = Cannon.model.getTranslation()-frontCannon*15;
 					//current_position.y = previousy;
 					//////float angle = acos(clamp(dot(frontCannon, frontPlayer), -1.0f, 1.0f))*RAD2DEG;
-					current_position.y = 0;
+					current_position.y = -100;
+					updateMatrix();
 					////yaw += angle;
 					yawCannon = Cannon.rotation;
 					maxyawCannon = yawCannon + 40.0f;
