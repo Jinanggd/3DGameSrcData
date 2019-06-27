@@ -451,6 +451,13 @@ void Game::renderWorld()
 	}
 
 	drawText(2, 2, getGPUStats(), Vector3(1, 1, 1), 2);
+	if (world.Player->isoncannon) {
+		drawText(5, 550, "Bullets available: " + std::to_string(world.Player->Cannon.munition.size()), Vector3(1, 1, 1), 4);
+	}
+	else {
+		drawText(20, 530, "STAMINA", Vector3(1, 1, 1), 2);
+
+	}
 
 	if (renderminimap) {
 		current_shader = world.map.shader;

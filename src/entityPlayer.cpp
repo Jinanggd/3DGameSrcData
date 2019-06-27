@@ -39,7 +39,7 @@ EntityPlayer::EntityPlayer() : Entity()
 	this->yawCannon = 0.0f;
 	this->pitchCannon = 0.0f;
 	this->speed = 0.0f;
-	this->pitch = -2.1f;
+	this->pitch = -5.1f;
 
 
 	updateMatrix();
@@ -128,9 +128,9 @@ void EntityPlayer::playerMovement(float dt, std::vector<EntityMesh> props, std::
 
 		else if (Input::isKeyPressed(SDL_SCANCODE_S)) { 
 			pitchCannon += 9.0f*dt;
-			pitchCannon = clamp(pitchCannon, -18.0f, 8.0f);
+			pitchCannon = clamp(pitchCannon, -40.0f, 40.0f);
 
-			if (pitchCannon < 8.0f) {
+			if (pitchCannon < 40.0f) {
 				this->camera->rotate(9.0f*dt*DEG2RAD, rightCamera);
 				rotateCannon();
 				std::cout << " PITCH: " << pitchCannon << std::endl;
@@ -142,8 +142,8 @@ void EntityPlayer::playerMovement(float dt, std::vector<EntityMesh> props, std::
 		else if (Input::isKeyPressed(SDL_SCANCODE_W)){
 
 			pitchCannon -= 9.0f*dt;
-			pitchCannon = clamp(pitchCannon, -18.0f, 8.0f);
-			if (pitchCannon > -18.0f) {
+			pitchCannon = clamp(pitchCannon, -40.0f, 40.0f);
+			if (pitchCannon > -40.0f) {
 				this->camera->rotate(-9.0f*dt*DEG2RAD, rightCamera);
 				rotateCannon();
 				std::cout <<  " PITCH: " << pitchCannon << std::endl;
@@ -154,6 +154,7 @@ void EntityPlayer::playerMovement(float dt, std::vector<EntityMesh> props, std::
 		if (Input::wasKeyPressed(SDL_SCANCODE_Z)) {
 			std::cout << "YAW: " <<yawCannon << " PITCH: " << pitchCannon <<std::endl;
 		}
+		
 	}
 	else {
 		//If player is not in cannon mode, we can move the player,
@@ -188,6 +189,7 @@ void EntityPlayer::playerMovement(float dt, std::vector<EntityMesh> props, std::
 
 			new_speed +=3;
 			stamina -= dt*10;
+			stamina = clamp(stamina, 0, 100);
 			isrunning = true;
 
 		}
@@ -242,28 +244,6 @@ void EntityPlayer::rotateCannon()
 	newmodel = R * Cannon.model;
 	Cannon.model = newmodel;
 	Game::instance->world.bullets_and_cannon[CannonID].model = newmodel;
-	//Game::instance->world.props[Game::instance->world.bullets_and_cannon[CannonID].index_propsvector].model = newmodel;
-
-	
-	//Matrix44 cR,R,S,T,newmodel;
-	//S.setScale(2, 2, 2);
-	//T.setTranslation(Cannon.model.getTranslation().x, Cannon.model.getTranslation().y, Cannon.model.getTranslation().z);
-	//cR = Cannon.model.getRotationOnly();
-	//R.setRotation(rotation*DEG2RAD, axis);
-	////Cannon.model.rotateGlobal(rotation*DEG2RAD, axis);
-	////Cannon.model = Cannon.model*R;
-	//newmodel = S*cR*R*T;
-	//Cannon.model = newmodel;
-	////Cannon.model.setUpAndOrthonormalize(Vector3(0, 1, 0));
-
-	////Cannon.model.setRotation(rotation, axis);
-	//Game::instance->world.bullets_and_cannon[CannonID].model = newmodel;
-	//Game::instance->world.props[Game::instance->world.bullets_and_cannon[CannonID].index_propsvector].model = newmodel;
-	////Game::instance->world.bullets_and_cannon[CannonID].model = Game::instance->world.bullets_and_cannon[CannonID].model * R;
-	////Game::instance->world.props[Game::instance->world.bullets_and_cannon[CannonID].index_propsvector].model = Game::instance->world.props[Game::instance->world.bullets_and_cannon[CannonID].index_propsvector].model*R;
-	////Game::instance->world.bullets_and_cannon[CannonID].model.rotateGlobal(rotation, axis);
-	////Game::instance->world.props[Game::instance->world.bullets_and_cannon[CannonID].index_propsvector].model.rotateGlobal(rotation,axis);
-	////
 }
 
 //Check if there is a collision to the new position of the player, if there it is, the player will keep the same position as before moving
@@ -405,7 +385,7 @@ void EntityPlayer::updateCamera( std::vector<EntityMesh>props, std::vector<Entit
 	if (isoncannon) {
 
 		R_Yaw.setRotation(yawCannon*DEG2RAD, Vector3(0, 1, 0));
-		cam_eye = Cannon.model.getTranslation() + R_Yaw * Vector3(0, 9, -2);
+		cam_eye = Cannon.model.getTranslation() + R_Yaw * Vector3(0, 10, 0);
 		this->camera->lookAt(cam_eye, camera->center, Vector3(0, 1, 0));
 		scope.setPositionfrom3D(this->camera->center, Vector2(0.15f, 0.15f), this->camera->viewprojection_matrix);
 		return;
@@ -609,7 +589,7 @@ void EntityPlayer::grab(std::vector<EntityMesh> vector)
 	Vector3 character_center = current_position + Vector3(0, 2, 0);
 	Vector3 collisionpoint,collisionnormal;
 	for (int i = 0; i < vector.size(); i++) {
-		if (vector[i].mesh->testSphereCollision(vector[i].model, character_center, 5, collisionpoint, collisionnormal) == true) {
+		if (vector[i].mesh->testSphereCollision(vector[i].model, character_center, 2, collisionpoint, collisionnormal) == true) {
 			switch (vector[i].type)
 			{
 			case (int)mat_types::cannon:
@@ -622,10 +602,7 @@ void EntityPlayer::grab(std::vector<EntityMesh> vector)
 					CannonID = i;
 
 					if (CarryItem >= 0) {
-						Game::instance->world.bullets_and_cannon[CarryItem].model.translate(Vector3(0, -20, 0));
-						Cannon.munition.push_back(CarryItem);
-						Game::instance->world.bullets_and_cannon[CannonID].munition.push_back(CarryItem);
-						CarryItem = -1;
+						chargeCannon();
 					}
 
 					//position of the player
@@ -661,11 +638,12 @@ void EntityPlayer::grab(std::vector<EntityMesh> vector)
 
 					R_Yaw.setRotation(yawCannon*DEG2RAD, Vector3(0, 1, 0));
 					right = R_Yaw * Vector3(1, 0, 0);
-					R_Pitch.setRotation(pitchCannon*DEG2RAD, right);
-					cam_eye = Cannon.model.getTranslation()  +  R_Yaw*Vector3(0, 9, -2);
+					pitchCannon = 0;
 
+					R_Pitch.setRotation(pitchCannon*DEG2RAD, right);
+					cam_eye = Cannon.model.getTranslation()  +  R_Yaw*Vector3(0, 10, 0);
 					//front = Cannon.model.frontVector();
-					front = R_Yaw * R_Pitch * Vector3(0, 5, 30);
+					front = R_Yaw * R_Pitch * Vector3(0, 20, 30);
 					cam_center = cam_eye + front;
 
 					this->camera->lookAt(cam_eye, cam_center, Vector3(0, 1, 0));
@@ -731,6 +709,25 @@ void EntityPlayer::grab(std::vector<EntityMesh> vector)
 	
 }
 
+void EntityPlayer::chargeCannon()
+{
+	
+	Game::instance->world.bullets_and_cannon[CarryItem].model.translate(Vector3(0, -20, 0));
+	Cannon.munition.push_back(CarryItem);
+	Game::instance->world.bullets_and_cannon[CannonID].munition.push_back(CarryItem);
+	//adds 4 bullets for everyone you charged
+	int size = Game::instance->world.bullets_and_cannon.size();
+	for (int i = 0; i < 4; i++) {
+		Cannon.munition.push_back(size);
+		Game::instance->world.bullets_and_cannon[CannonID].munition.push_back(size);
+		EntityMesh b = EntityMesh(mat_types::bullet);
+		b.model.setTranslation(0, -100, 0);
+		Game::instance->world.bullets_and_cannon.push_back(b);
+		size = Game::instance->world.bullets_and_cannon.size();
+	}
+	CarryItem = -1;
+}
+
 void EntityPlayer::throwItem()
 {
 	if (iscarrying) {
@@ -776,7 +773,7 @@ void EntityPlayer::shoot(float dt)
 
 		Game::instance->world.bullets_and_cannon[CannonID].munition.erase(Game::instance->world.bullets_and_cannon[CannonID].munition.begin());
 		Cannon.munition.erase(Cannon.munition.begin());
-		Game::instance->world.shootedBullet = shootedBulletindex;
+		Game::instance->world.shootedBullet.push_back( shootedBulletindex ) ;
 		Game::instance->world.bullets_and_cannon[shootedBulletindex].initial_time =* Game::instance->world.time;
 
 	}

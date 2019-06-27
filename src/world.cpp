@@ -4,6 +4,7 @@
 #include <iostream>
 #include <algorithm>
 #include <random>
+#include "utils.h"
 
 
 
@@ -389,6 +390,18 @@ void World::render_titan()
 				Titans[i].hpbar.render();
 				current_shader->disable();
 			}
+			//current_shader = Titans[i].bbox.mat.shader;
+			//current_shader->enable();
+			//current_shader->setUniform("u_viewprojection", camera->viewprojection_matrix);
+			//current_shader->setUniform("u_time", *time);
+			//current_shader->setUniform("u_color", Vector4(1, 1, 1, 0.5));
+			//Matrix44 s;
+			//s.setTranslation(Titans[i].current_position);
+			//s.setScale(8, 7, 5);
+			//current_shader->setUniform("u_model", s*Titans[i].model);
+			//current_shader->setUniform("u_texture", Titans[i].bbox.mat.texture);
+			//Titans[i].bbox.mesh->render(GL_TRIANGLES);
+			//current_shader->disable();
 		}
 	}
 }
@@ -413,8 +426,13 @@ void World::render_player()
 		Player->scope.render();
 		current_shader->disable();
 		glEnable(GL_DEPTH_TEST);
+		//glDisable(GL_BLEND);
+
+		//drawText(5, 550, "Bullets available: " + std::to_string(Player->Cannon.munition.size()), Vector3(1, 1, 1), 4);
+
+		
 	}
-	if (Player->staminaBar.enable && Player->stamina > 0) {
+	else if (Player->staminaBar.enable && Player->stamina > 0) {
 		glDisable(GL_DEPTH_TEST);
 		current_shader = Player->staminaBar.shader;
 		current_shader->enable();
@@ -428,7 +446,12 @@ void World::render_player()
 		Player->staminaBar.mesh->render(GL_TRIANGLES);
 		current_shader->disable();
 		current_shader->disable();
+
 		glEnable(GL_DEPTH_TEST);
+		//glDisable(GL_BLEND);
+		//drawText(20, 530, "STAMINA", Vector3(1, 1, 1), 2);
+
+		
 	}
 }
 
@@ -718,32 +741,18 @@ void World::initProps() {
 				
 				this->Player->setPosition(px, characterpy, pz);
 				
+				//EntityAI t = EntityAI(time, Player->model);
+				//t.setPosition(px, Player->current_position.y + 10, pz + 20);
+				//Titans.push_back(t);
+
 				//EntityMesh a = EntityMesh(mat_types::cannon);
-				//a.model.setTranslation(px, cannonpy, pz + 10);s
-				//a.model.scale(3, 3, 3);
-				//a.model.rotate(90 * DEG2RAD, Vector3(0, 1, 0));
-				//a.rotation = 90;
-				//bullets_and_cannon.push_back(a);
-				
-
-				//a = EntityMesh(mat_types::cannon);
-				//a.model.setTranslation(px, cannonpy, pz - 10);
-				//a.model.scale(3, 3, 3);
-				//a.model.rotate(90 * DEG2RAD, Vector3(0, 1, 0));
+				//	a.model.setTranslation(px, cannonpy, pz -30);
+				//a.model.scale(6, 6, 6);
+				//a.rotation = 0;
 				//bullets_and_cannon.push_back(a);
 
 
-				//a = EntityMesh(mat_types::cannon);
-				//a.model.setTranslation(px+10, cannonpy, pz);
-				//a.model.scale(3, 3, 3);
-				//a.model.rotate(180 * DEG2RAD, Vector3(0, 1, 0));
-				//bullets_and_cannon.push_back(a);
 
-				//a = EntityMesh(mat_types::cannon);
-				//a.model.setTranslation(px - 10, cannonpy, pz);
-				//a.model.scale(3, 3, 3);
-				//a.model.rotate(270 * DEG2RAD, Vector3(0, 1, 0));
-				//bullets_and_cannon.push_back(a);
 
 				setPlayerPos = false;
 
@@ -832,78 +841,99 @@ void World::update(float dt)
 	SpawnTitans();
 	//Bullet shooted
 
-	if (shootedBullet > -1) {
-		Vector3 currentposition = bullets_and_cannon[shootedBullet].model.getTranslation();
-
-		if (abs(currentposition.x) > 3000 || abs(currentposition.y) > 2000 || abs(currentposition.z) > 3000) {
-			// Explosion GUI
-			removeBullet(shootedBullet);
-			std::cout << "Too far away" << std::endl;
-			return;
-		}
-		Vector3 movement = 100.0f*dt*bullets_and_cannon[shootedBullet].Direction;
-		movement.y += -0.5f* (*time - bullets_and_cannon[shootedBullet].initial_time)*(*time - bullets_and_cannon[shootedBullet].initial_time);
-		Vector3 newposition = currentposition + movement;
-		float distance = (newposition - currentposition).length();
-
-		Vector3 collisionpoint, collisionnormal;
-
-		//Search on Titans vector
-		for (int i = 0; i < Titans.size(); i++) {
-			Matrix44 SS;
-			SS.setScale(10, 10, 10);
-			if (Titans[i].mesh->testRayCollision(SS*Titans[i].model, currentposition, bullets_and_cannon[shootedBullet].Direction,
-				collisionpoint, collisionnormal, distance)) {
-				explosion->model.setTranslation(collisionpoint.x, collisionpoint.y, collisionpoint.z);
-				explosion->explosion_initial_time = *time;
-				Titans[i].substractLife();
-				Titans[i].animtime = *time;
-				removeBullet(shootedBullet);
-				isClear();
-				Game::instance->mysound.playSound(sound_types::explosion, false);
-				return;
+	if (shootedBullet.size() > 0) {
+		for (int i = 0; i < shootedBullet.size(); i++) {
+			Vector3 currentposition = bullets_and_cannon[shootedBullet[i]].model.getTranslation();
 
 
-			}
-		}
-		//Search on propsvector
-		//Hacer con test ray collision
-		for (int i = 0; i < props.size(); i++) {
-
-			//A Ray from the current point to the new position
-			if (props[i].mesh->testRayCollision(props[i].model, currentposition, bullets_and_cannon[shootedBullet].Direction,
-				collisionpoint, collisionnormal, distance)) {
-				//Explosion GUI
-				explosion->model.setTranslation(collisionpoint.x, collisionpoint.y, collisionpoint.z);
-				explosion->explosion_initial_time = *time;
-				//Remove the bullet from the the vectors
-				removeBullet(shootedBullet);
-				std::cout << "Collision contra props" << std::endl;
-				Game::instance->mysound.playSound(sound_types::explosion, false);
+			if (abs(currentposition.x) > 3000 || abs(currentposition.y) > 2000 || abs(currentposition.z) > 3000) {
+				// Explosion GUI
+				removeBullet(shootedBullet[i]);
+				std::cout << "Too far away" << std::endl;
 				return;
 			}
-		}
+			Vector3 movement = 100.0f*dt*bullets_and_cannon[shootedBullet[i]].Direction;
 
-		for (int i = 0; i < buildables.size(); i++) {
+			movement.y += -0.5f* (*time - bullets_and_cannon[shootedBullet[i]].initial_time)*(*time - bullets_and_cannon[shootedBullet[i]].initial_time);
+			
+			
+			Vector3 newposition = currentposition + movement;
+			Vector3 dir = (newposition - currentposition);
+			dir.normalize();
+			float distance = (newposition - currentposition).length();
 
-			//A Ray from the current point to the new position
-			if (buildables[i].mesh->testRayCollision(buildables[i].model, currentposition, bullets_and_cannon[shootedBullet].Direction,
-				collisionpoint, collisionnormal, distance)) {
-				//Explosion GUI
-				explosion->model.setTranslation(collisionpoint.x, collisionpoint.y, collisionpoint.z);
-				explosion->explosion_initial_time = *time;
-				//Remove the bullet from the the vectors
-				removeBullet(shootedBullet);
-				std::cout << "Collision contra buildables" << std::endl;
-				Game::instance->mysound.playSound(sound_types::explosion, false);
-				return;
+			Vector3 collisionpoint, collisionnormal;
+
+			//Matrix44 s;
+			//s.setTranslation(Titans[i].current_position);
+			//s.setScale(8, 7, 5);
+			//Search on Titans vector
+			for (int j = 0; j < Titans.size(); j++) {
+				Matrix44 SS;
+				SS.setScale(8, 7, 5);
+				if (Titans[j].bbox.mesh->testRayCollision(SS*Titans[j].model, currentposition, dir,
+					collisionpoint, collisionnormal, distance)) {
+					Vector3 d = bullets_and_cannon[shootedBullet[i]].Direction;
+					d.y = 0;
+					Vector3 point_explosion = collisionpoint - d * 5;
+					explosion->model.setTranslation(point_explosion.x, point_explosion.y, point_explosion.z);
+					explosion->explosion_initial_time = *time;
+					Titans[j].substractLife();
+					Titans[j].animtime = *time;
+					removeBullet(shootedBullet[i]);
+					isClear();
+					return;
+
+
+				}
 			}
+			//Search on propsvector
+			//Hacer con test ray collision
+			for (int j = 0; j < props.size(); j++) {
+
+				//A Ray from the current point to the new position
+				if (props[j].mesh->testRayCollision(props[j].model, currentposition, dir,
+					collisionpoint, collisionnormal, distance)) {
+					//Explosion GUI
+					Vector3 d = bullets_and_cannon[shootedBullet[i]].Direction;
+					d.y = 0;
+					Vector3 point_explosion = collisionpoint - d * 5;
+					explosion->model.setTranslation(point_explosion.x, point_explosion.y, point_explosion.z);
+					explosion->explosion_initial_time = *time;
+					//Remove the bullet from the the vectors
+					removeBullet(shootedBullet[i]);
+					std::cout << "Collision contra props" << std::endl;
+					return;
+				}
+
+			}
+
+
+			for (int j = 0; j < buildables.size(); j++) {
+
+				//A Ray from the current point to the new position
+				if (buildables[j].mesh->testRayCollision(buildables[j].model, currentposition, dir,
+					collisionpoint, collisionnormal, distance)) {
+					//Explosion GUI
+					Vector3 d = bullets_and_cannon[shootedBullet[i]].Direction;
+					d.y = 0;
+					Vector3 point_explosion = collisionpoint - d * 5;
+					explosion->model.setTranslation(point_explosion.x, point_explosion.y, point_explosion.z);
+					explosion->explosion_initial_time = *time;
+					//Remove the bullet from the the vectors
+					removeBullet(shootedBullet[i]);
+					std::cout << "Collision contra buildables" << std::endl;
+					return;
+				}
+
+			}
+
+
+			bullets_and_cannon[shootedBullet[i]].model.setTranslation(newposition.x, newposition.y, newposition.z);
+			//props[bullets_and_cannon[shootedBullet[i]].index_propsvector].model.setTranslation(newposition.x, newposition.y, newposition.z);
+			//props[bullets_and_cannon[index].index_propsvector].model.scale(50, 50, 50);
 		}
 		
-
-		bullets_and_cannon[shootedBullet].model.setTranslation(newposition.x, newposition.y, newposition.z);
-		//props[bullets_and_cannon[shootedBullet].index_propsvector].model.setTranslation(newposition.x, newposition.y, newposition.z);
-		//props[bullets_and_cannon[index].index_propsvector].model.scale(50, 50, 50);
 	}
 
 	//update GUIs
@@ -965,6 +995,14 @@ void World::updateBullets(int index, Vector3 position)
 
 void World::removeBullet(int index)
 {
+	int index_ = -1;
+	for (int i = 0; i < shootedBullet.size(); i++) {
+		if (shootedBullet[i] == index) {
+			index_ = i;
+			break;
+		}
+	}
+	index_ >= 0 ? shootedBullet.erase(shootedBullet.begin() + index_): shootedBullet.erase(shootedBullet.begin());
 	bullets_and_cannon.erase(bullets_and_cannon.begin() + index);
 
 	for (int i = 0; i < bullets_and_cannon.size(); i++) {
@@ -989,7 +1027,11 @@ void World::removeBullet(int index)
 	if(Player->CannonID > index)
 		Player->CannonID--;
 
-	shootedBullet = -1;
+	for (int i = 0; i < shootedBullet.size(); i++) {
+		if (shootedBullet[i] > index)
+			shootedBullet[i]--;
+	}
+	//shootedBullet = -1;
 }
 
 void World::sortBlendingObjects(EntityMesh m)

@@ -53,6 +53,7 @@ public:
 	Vector3 current_position;
 	Vector3 velocity, direction;
 	Matrix44 target;
+	EntityMesh bbox;
 	bool istargetplayer;
 	bool startedattack = false;
 
