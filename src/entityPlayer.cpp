@@ -258,7 +258,11 @@ void EntityPlayer::checkCollision(std::vector<EntityMesh> props, std::vector<Ent
 		if (props[i].type == (int)mat_types::tree || props[i].type == (int)mat_types::house || props[i].type == (int)mat_types::tower) {
 			Vector3 collisionpoint, collision_normal;
 
-			if (props[i].mesh->testSphereCollision(props[i].model, character_center, 2, collisionpoint, collision_normal) == true) {
+			float radius = 2;
+
+			if (props[i].type == (int)mat_types::tree) radius = 0.3;
+
+			if (props[i].mesh->testSphereCollision(props[i].model, character_center, radius, collisionpoint, collision_normal) == true) {
 				
 				Vector3 push_away = normalize(collisionpoint - character_center)*dt;
 				push_away.y = 0;
@@ -669,6 +673,7 @@ void EntityPlayer::grab(std::vector<EntityMesh> vector)
 				}
 				else {
 					iscarrying = true;
+					Game::instance->mysound.playSound(sound_types::pick, false);
 					CarryItem = i;
 					Game::instance->world.GUIs[4].enable = false;
 					Game::instance->world.GUIs[5].index = Game::instance->world.GUIs[4].index;

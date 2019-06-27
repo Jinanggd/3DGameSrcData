@@ -247,9 +247,13 @@ void EntityAI::checkCollision(std::vector<EntityMesh> props, std::vector<EntityM
 		if (props[i].type == (int)mat_types::tree || props[i].type == (int)mat_types::house || props[i].type == (int)mat_types::tower) {
 
 
+			float radius = 6;
+
+			if (props[i].type == (int)mat_types::tree) radius = 1;
+
 			Vector3 collisionpoint, collision_normal;
 
-			if (props[i].mesh->testSphereCollision(props[i].model, character_center, 6, collisionpoint, collision_normal) == true) {
+			if (props[i].mesh->testSphereCollision(props[i].model, character_center, radius, collisionpoint, collision_normal) == true) {
 
 				Vector3 push_away = normalize(character_center - collisionpoint)*dt;
 				push_away.y = 0;
@@ -548,6 +552,8 @@ void EntityAI::updateAnim(float dt) {
 void EntityAI::substractLife()
 {
 	life--;
+	Game::instance->mysound.playSound(sound_types::cannon , false);
+
 	if (life == 0) {
 		animtime = *time;
 		state = DEAD;
@@ -573,6 +579,10 @@ bool EntityAI::isnear() {
 	float distance = (mytarget - mypost).length();
 
 	if (istargetplayer) {
+
+		if (distance <= 100) Game::instance->mysound.playSound(sound_types::titan, true, distance);
+
+
 		if (distance <= 15) {
 			if (!startedattack) {
 				startedattack = true;

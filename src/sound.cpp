@@ -1,11 +1,11 @@
 #include "sound.h"
 #include <fstream>
 #include <iostream>
+#include "game.h"
 
 
-//World* World::Instance() {
-//	return instance;
-//}
+
+
 Sound::Sound()
 {
 	if (BASS_Init(-1, 44100.0f, 0, 0, NULL) == false)
@@ -18,85 +18,139 @@ Sound::Sound()
 
 
 	samples = new HSAMPLE[10];
+	chs = new HCHANNEL[10];
+	initTimes = new float[10];
 
-	//samples[0] = loadSample("data/sounds/background.wav");
-	//samples[1] = loadSample("data/sounds/death.wav");
-	//samples[2] = loadSample("data/sounds/ambience.mp3");
-	//samples[3] = loadSample("data/sounds/canon.mp3");
+
+	samples[0] = loadSample("data/sounds/background.wav");
+	samples[1] = loadSample("data/sounds/death.wav");
+	samples[2] = BASS_SampleLoad(FALSE, "data/sounds/ambience.mp3", 0, 0, 3, BASS_SAMPLE_LOOP);
+	samples[3] = loadSample("data/sounds/canon.mp3");
 	samples[4] = loadSample("data/sounds/footstep.wav");
-	//samples[5] = loadSample("data/sounds/pick.wav");
-	//samples[6] = loadSample("data/sounds/titan.mp3");
-	//samples[7] = loadSample("data/sounds/win.wav");
-	//samples[8] = loadSample("data/sounds/death.wav");
-	//samples[9] = loadSample("data/sounds/death.wav");
+	samples[5] = loadSample("data/sounds/pick.wav");
+	samples[6] = loadSample("data/sounds/titan.mp3");
+	samples[7] = loadSample("data/sounds/win.wav");
+	samples[8] = BASS_SampleLoad(FALSE, "data/sounds/init.wav", 0, 0, 3, BASS_SAMPLE_LOOP);
+	samples[9] = loadSample("data/sounds/explosion.wav");
+	samples[10] = loadSample("data/sounds/upgrade.wav");
+
 
 
 }
 
 
-void Sound::playSound (sound_types type)
+void Sound::playSound (sound_types type, bool loop)
 {
 
-	switch (type)
-	{
-	case sound_types::background:
-
-		ch = BASS_SampleGetChannel(samples[0], FALSE);
-		//ch = BASS_SampleGetChannel(samples[0], FALSE);
-
-		if (!BASS_ChannelPlay(ch, true))
-
-			break;
-	case sound_types::death:
-
-		ch = BASS_SampleGetChannel(samples[1], FALSE);
-		//BASS_ChannelSetAttribute(ch, BASS_ATTRIB_FREQ,1.5f);
-		//BASS_ChannelSetAttribute(ch, BASS_ATTRIB_MUSIC_SPEED, 0.0001f);
 
 
+	if ((int)type == (int)sound_types::ambience) {
 
-		if (!BASS_ChannelPlay(ch, true))
+	
+		BASS_SAMPLE info;
+		BASS_SampleGetInfo(samples[(int)type], &info); // get the sample's current info
+		info.volume = 0.5;
+		BASS_SampleSetInfo(samples[(int)type], &info);
 
-			break;
-	case sound_types::ambience:
-		ch = BASS_SampleGetChannel(samples[2], FALSE);
-		////ch = BASS_SampleGetChannel(samples[0], FALSE);
-
-		if (!BASS_ChannelPlay(ch, true))
-		break;
-	case sound_types::cannon:
-		ch = BASS_SampleGetChannel(samples[3], FALSE);
-		////ch = BASS_SampleGetChannel(samples[0], FALSE);
-
-		if (!BASS_ChannelPlay(ch, true))
-		break;
-	case sound_types::footstep:
-		ch = BASS_SampleGetChannel(samples[4], FALSE);
-		//ch = BASS_SampleGetChannel(samples[0], FALSE);
-
-		if (!BASS_ChannelPlay(ch, true))
-		break;
-	case sound_types::pick:
-		ch = BASS_SampleGetChannel(samples[5], FALSE);
-		//ch = BASS_SampleGetChannel(samples[0], FALSE);
-
-		if (!BASS_ChannelPlay(ch, true))
-		break;
-	case sound_types::titan:
-		ch = BASS_SampleGetChannel(samples[6], FALSE);
-		//ch = BASS_SampleGetChannel(samples[0], FALSE);
-
-		if (!BASS_ChannelPlay(ch, true))
-		break;
-	case sound_types::win:
-		ch = BASS_SampleGetChannel(samples[7], FALSE);
-		//ch = BASS_SampleGetChannel(samples[0], FALSE);
-
-		if (!BASS_ChannelPlay(ch, true))
-		break;
-	default:
-		break;
 	}
+
+	if ((int)type == (int)sound_types::footstep) {
+
+	
+		BASS_SAMPLE info;
+		BASS_SampleGetInfo(samples[(int)type], &info); // get the sample's current info
+		info.volume = 0.2;
+		BASS_SampleSetInfo(samples[(int)type], &info);
+
+	}
+
+
+	if ((int)type == (int)sound_types::init) {
+
+
+		BASS_SAMPLE info;
+		BASS_SampleGetInfo(samples[(int)type], &info); // get the sample's current info
+		info.volume = 0.5;
+		BASS_SampleSetInfo(samples[(int)type], &info);
+
+	}
+
+
+	if ((int)type == (int)sound_types::cannon) {
+
+
+		BASS_SAMPLE info;
+		BASS_SampleGetInfo(samples[(int)type], &info); // get the sample's current info
+		info.volume = 0.4;
+		BASS_SampleSetInfo(samples[(int)type], &info);
+
+	}
+
+	if ((int)type == (int)sound_types::win) {
+
+
+		BASS_SAMPLE info;
+		BASS_SampleGetInfo(samples[(int)type], &info); // get the sample's current info
+		info.volume = 0.5;
+		BASS_SampleSetInfo(samples[(int)type], &info);
+
+	}
+	
+
+	if ((int)type == (int)sound_types::explosion) {
+
+
+		BASS_SAMPLE info;
+		BASS_SampleGetInfo(samples[(int)type], &info); // get the sample's current info
+		info.volume = 0.1;
+		BASS_SampleSetInfo(samples[(int)type], &info);
+
+	}
+
+
+
+	if (!(BASS_ChannelIsActive(chs[(int)type]) == BASS_ACTIVE_PLAYING)) {
+
+
+	chs[(int)type] = BASS_SampleGetChannel(samples[(int)type], FALSE);
+
+
+	BASS_ChannelPlay(chs[(int)type], loop);
+
+	}
+
+}
+
+
+
+void Sound::playSound(sound_types type, bool loop, float distance)
+{
+
+	BASS_SAMPLE info;
+	BASS_SampleGetInfo(samples[(int)type], &info); // get the sample's current info
+
+	info.volume = clamp((1.0f / (distance*10)), 0, 1);
+	BASS_SampleSetInfo(samples[(int)type], &info);
+
+	if (!(BASS_ChannelIsActive(chs[(int)type]) == BASS_ACTIVE_PLAYING)) {
+
+
+		chs[(int)type] = BASS_SampleGetChannel(samples[(int)type], FALSE);
+
+
+		BASS_ChannelPlay(chs[(int)type], loop);
+
+	}
+
+}
+
+
+
+void Sound::PauseSound(sound_types type)
+{
+
+	BASS_ChannelPause(chs[(int)type]);
+
 
 
 }
@@ -105,6 +159,7 @@ void Sound::playSound (sound_types type)
 HSAMPLE Sound::loadSample(char * filename)
 {
 	HSAMPLE sam;
+
 	if (sam = BASS_SampleLoad(FALSE, filename, 0, 0, 3, BASS_SAMPLE_OVER_POS))
 		std::cout << "sample " << filename << " loaded!" << std::endl;
 	else
@@ -117,6 +172,13 @@ HSAMPLE Sound::loadSample(char * filename)
 
 
 
+
+
+
+void Sound::pause(sound_types type)
+{
+	BASS_ChannelStop(samples[int(type)]);
+}
 
 Sound::~Sound()
 {

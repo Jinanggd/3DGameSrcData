@@ -10,14 +10,21 @@ enum class sound_types {
 	background,
 	death,
 	ambience,
-	cannon, 
+	cannon,
 	footstep,
 	pick,
 	titan,
-	win
+	win,
+	init,
+	explosion,
+	upgrade
 
 
 };
+
+
+
+
 
 class Sound
 {
@@ -27,14 +34,20 @@ public:
 
 
 	Sound();
-	void playSound(sound_types);
+	void playSound(sound_types type, bool loop);
+	void playSound(sound_types type, bool loop, float distance);
+	void PauseSound(sound_types type);
 	HSAMPLE loadSample(char * filename);
 	void playSound(const char *filename);
+	void pause(sound_types type);
 	~Sound();
 
 
 	HSAMPLE *samples;
-	HCHANNEL ch;
+	HCHANNEL *chs;
+	float *initTimes;
+	
+	
 
 };
 

@@ -1,4 +1,5 @@
 #include "world.h"
+#include "game.h"
 #include <fstream>
 #include <iostream>
 #include <algorithm>
@@ -100,7 +101,7 @@ void World::rendermap() {
 	for (int i = 0; i < props.size(); ++i) {
 
 
-		current_shader = props[i].mat.shader;
+		current_shader = Shader::Get("data/shaders/basic_map.vs", "data/shaders/basic_map.fs");
 
 		current_shader->enable();
 
@@ -108,7 +109,12 @@ void World::rendermap() {
 
 		current_shader->setUniform("u_time", *time);
 
-		props[i].render();
+		current_shader->setUniform("u_color", Vector4(1, 1, 1, 1));
+
+		current_shader->setUniform("u_texture", props[i].mat.texture);
+		current_shader->setUniform("u_model", props[i].model);
+
+		props[i].mesh->render(GL_TRIANGLES);
 
 		current_shader->disable();
 		
@@ -839,6 +845,7 @@ void World::update(float dt)
 		for (int i = 0; i < shootedBullet.size(); i++) {
 			Vector3 currentposition = bullets_and_cannon[shootedBullet[i]].model.getTranslation();
 
+
 			if (abs(currentposition.x) > 3000 || abs(currentposition.y) > 2000 || abs(currentposition.z) > 3000) {
 				// Explosion GUI
 				removeBullet(shootedBullet[i]);
@@ -898,7 +905,9 @@ void World::update(float dt)
 					std::cout << "Collision contra props" << std::endl;
 					return;
 				}
+
 			}
+
 
 			for (int j = 0; j < buildables.size(); j++) {
 
@@ -916,6 +925,7 @@ void World::update(float dt)
 					std::cout << "Collision contra buildables" << std::endl;
 					return;
 				}
+
 			}
 
 
@@ -1054,6 +1064,7 @@ void World::isClear()
 		}
 			
 	}
+	Game::instance->isOver = true;
 	cleared = true;
 }
 
