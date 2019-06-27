@@ -176,7 +176,7 @@ void EntityMesh::render() {
 	else if (type == (int)mat_types::buildable) {
 
 		glEnable(GL_BLEND);
-		glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+		glBlendFunc(GL_SRC_ALPHA, GL_ONE);
 		this->mat.shader->setUniform("u_color", Vector4(1, 1, 1, 0.5));
 		this->mat.shader->setUniform("u_model", model);
 		this->mat.shader->setUniform("u_texture", this->mat.texture);

@@ -4,7 +4,7 @@ attribute vec2 a_uv;
 attribute vec4 a_color;
 
 
-float density = 0.007;
+float density = 0.005;
 float gradient = 1.5;
 
 

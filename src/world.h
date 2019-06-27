@@ -90,7 +90,8 @@ public:
 	std::vector<GUI> GUIs;
 	std::vector<EntityAI> Titans;
 
-	int shootedBullet;
+	//int shootedBullet;
+	std::vector<int>shootedBullet;
 	std::vector<EntityLight> lights;
 	Matrix44 m;
 	Texture* mask;
@@ -113,7 +114,7 @@ public:
 
 	std::vector<Vector3> spawnzones;
 	int round = 0;
-	int numbersofTitans[1] = { 2 };
+	int numbersofTitans[1] = { 5 };
 	float initSpawnTime= -1;
 	float cdSpawn = 5.0f;
 	bool cleared = false;

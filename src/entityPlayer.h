@@ -51,6 +51,7 @@ public:
 
 	void build(std::vector<EntityMesh>vector,mat_types t);
 	void grab(std::vector<EntityMesh> vector);
+	void chargeCannon();
 	void throwItem();
 	void shoot(float dt);
 	

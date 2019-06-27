@@ -19,6 +19,8 @@ EntityAI::EntityAI() : Entity()
 	mat.texture = Texture::Get("data/characters/characters/titan.png");
 	anim = Animation::Get("data/characters/characters/crouch_walking.skanim");
 
+	bbox = EntityMesh(mat_types::buildable);
+
 	this->yaw = 0.0f;
 	this->speed = 2.0f;
 	this->pitch = -1.1f;

@@ -18,6 +18,6 @@ void main()
 	
 
 	vec4 color = texture2D(u_texture,uv);
-	color = mix(vec4(0.2,0.2,0.2,1.0),color,visibility);
+	color = mix(vec4(0.678,0.282,0.3,1),color,visibility);
 	gl_FragColor = u_color * color;
 }
