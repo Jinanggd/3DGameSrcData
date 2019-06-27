@@ -99,7 +99,7 @@ void World::rendermap() {
 	for (int i = 0; i < props.size(); ++i) {
 
 
-		current_shader = props[i].mat.shader;
+		current_shader = Shader::Get("data/shaders/basic_map.vs", "data/shaders/basic_map.fs");
 
 		current_shader->enable();
 
@@ -107,7 +107,12 @@ void World::rendermap() {
 
 		current_shader->setUniform("u_time", *time);
 
-		props[i].render();
+		current_shader->setUniform("u_color", Vector4(1, 1, 1, 1));
+
+		current_shader->setUniform("u_texture", props[i].mat.texture);
+		current_shader->setUniform("u_model", props[i].model);
+
+		props[i].mesh->render(GL_TRIANGLES);
 
 		current_shader->disable();
 		

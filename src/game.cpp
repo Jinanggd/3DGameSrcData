@@ -68,7 +68,8 @@ Game::Game(int window_width, int window_height, SDL_Window* window)
 
 	//hide the cursor
 	SDL_ShowCursor(!mouse_locked); //hide or show the mouse
-	mysound.playSound(sound_types::footstep);
+
+
 
 }
 
@@ -159,24 +160,30 @@ void Game::update(double seconds_elapsed)
 	if (Input::isKeyPressed(SDL_SCANCODE_LSHIFT)) { speed *= 10; }  //move faster with left shift
 
 	if (Input::isKeyPressed(SDL_SCANCODE_W) || Input::isKeyPressed(SDL_SCANCODE_UP)) {
-		if (ThirdCameraMode) {
+		if (ThirdCameraMode) { 
 			camera->move(Vector3(0.0f, 0.0f, 1.0f) * speed);
+
 		}
+		else mysound.playSound(sound_types::footstep, false);
 	}
 
 	if (Input::isKeyPressed(SDL_SCANCODE_S) || Input::isKeyPressed(SDL_SCANCODE_DOWN)) {
 		if (ThirdCameraMode)
 			camera->move(Vector3(0.0f, 0.0f, -1.0f) * speed);
 
+		else mysound.playSound(sound_types::footstep, false);
+
 	} 
 	if (Input::isKeyPressed(SDL_SCANCODE_A) || Input::isKeyPressed(SDL_SCANCODE_LEFT)) {
 		if(ThirdCameraMode)
 			camera->move(Vector3(1.0f, 0.0f, 0.0f) * speed);
+		
 
 	}
 	if (Input::isKeyPressed(SDL_SCANCODE_D) || Input::isKeyPressed(SDL_SCANCODE_RIGHT)) {
 		if(ThirdCameraMode)
 			camera->move(Vector3(-1.0f, 0.0f, 0.0f) * speed);
+		
 	}
 	if (!ThirdCameraMode) {
 		world.Player->update(seconds_elapsed, world.props, world.bullets_and_cannon,world.buildables);
@@ -246,22 +253,8 @@ void Game::onKeyDown( SDL_KeyboardEvent event )
 			world.printCamPos();
 			break;
 
-		case SDLK_w:
-
-
-			break;
-
-		case SDLK_s:
-
-
-			break;
-
-		case SDLK_a: 
-
-			break;
-
-		case SDLK_d:
-				
+		case SDLK_w: SDLK_s: SDLK_a: SDLK_d:
+			//mysound.PauseSound(sound_types::footstep);
 			break;
 
 	}
@@ -277,9 +270,15 @@ void Game::onKeyUp(SDL_KeyboardEvent event)
 		}
 	switch (event.keysym.sym)
 	{
+
+	case SDLK_w : SDLK_s : SDLK_a: SDLK_d:
+
+	break;
+
 	case SDLK_r:
 		if (!ThirdCameraMode && world.Player->isoncannon) {
 			world.Player->shoot(elapsed_time*speed);
+			mysound.playSound(sound_types::cannon , false);
 		}
 		if (!ThirdCameraMode)
 			world.Player->build(world.buildables, mat_types::tower1);
@@ -330,6 +329,7 @@ void Game::onKeyUp(SDL_KeyboardEvent event)
 		}
 		else if (isfullyLoaded) {
 			isReady = true;
+			mysound.playSound(sound_types::ambience,true);
 		}
 		
 		break;
@@ -337,12 +337,14 @@ void Game::onKeyUp(SDL_KeyboardEvent event)
 		if (!ThirdCameraMode) {
 			world.Player->grab(world.bullets_and_cannon);
 			world.Player->grab(world.buildables);
+
 		}
 
 		break;
 	case SDLK_g:
 		if (!ThirdCameraMode) {
 			world.Player->throwItem();
+			mysound.playSound(sound_types::pick, false);
 		}
 		break;
 	case SDLK_h:
