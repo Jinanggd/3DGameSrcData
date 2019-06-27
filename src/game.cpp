@@ -69,7 +69,8 @@ Game::Game(int window_width, int window_height, SDL_Window* window)
 	//hide the cursor
 	SDL_ShowCursor(!mouse_locked); //hide or show the mouse
 
-
+	mysound.playSound(sound_types::init, true);
+	BASS_ChannelFlags(mysound.chs[(int)sound_types::init], 0, 0)&BASS_SAMPLE_LOOP;
 
 }
 
@@ -129,7 +130,7 @@ void Game::render(void)
 	if (isOver) {
 		world.cleared ? rt->toViewport(fbo_shader, Vector4(0, 0.6, 0, 1)) : rt->toViewport(fbo_shader, Vector4(1, 0, 0, 1));
 		renderResult();
-
+		mysound.playSound(sound_types::win, false);
 	}
 	else
 		rt->toViewport();
@@ -289,6 +290,11 @@ void Game::onKeyUp(SDL_KeyboardEvent event)
 		break;
 	case SDLK_SPACE:
 		if (!isfullyLoaded) {
+			
+			mysound.playSound(sound_types::background, false);
+		
+			BASS_ChannelPause(mysound.chs[(int)sound_types::init]);
+
 			isLoading = true;
 			world = World(camera, &time);
 			LoadingBar.size = Vector2(100.0f, 30.0f);

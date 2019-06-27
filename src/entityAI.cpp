@@ -578,7 +578,7 @@ bool EntityAI::isnear() {
 
 	if (istargetplayer) {
 
-		if (distance <= 40) Game::instance->mysound.playSound(sound_types::titan, true);
+		if (distance <= 100) Game::instance->mysound.playSound(sound_types::titan, true, distance);
 
 
 		if (distance <= 15) {

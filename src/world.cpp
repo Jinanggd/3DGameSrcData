@@ -1,4 +1,5 @@
 #include "world.h"
+#include "game.h"
 #include <fstream>
 #include <iostream>
 #include <algorithm>
@@ -859,6 +860,7 @@ void World::update(float dt)
 				Titans[i].animtime = *time;
 				removeBullet(shootedBullet);
 				isClear();
+				Game::instance->mysound.playSound(sound_types::explosion, false);
 				return;
 
 
@@ -877,6 +879,7 @@ void World::update(float dt)
 				//Remove the bullet from the the vectors
 				removeBullet(shootedBullet);
 				std::cout << "Collision contra props" << std::endl;
+				Game::instance->mysound.playSound(sound_types::explosion, false);
 				return;
 			}
 		}
@@ -892,6 +895,7 @@ void World::update(float dt)
 				//Remove the bullet from the the vectors
 				removeBullet(shootedBullet);
 				std::cout << "Collision contra buildables" << std::endl;
+				Game::instance->mysound.playSound(sound_types::explosion, false);
 				return;
 			}
 		}
@@ -1018,6 +1022,7 @@ void World::isClear()
 		}
 			
 	}
+	Game::instance->isOver = true;
 	cleared = true;
 }
 
