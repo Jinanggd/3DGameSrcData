@@ -133,7 +133,7 @@ void EntityPlayer::playerMovement(float dt, std::vector<EntityMesh> props, std::
 			if (pitchCannon < 40.0f) {
 				this->camera->rotate(9.0f*dt*DEG2RAD, rightCamera);
 				rotateCannon();
-				std::cout << " PITCH: " << pitchCannon << std::endl;
+				//std::cout << " PITCH: " << pitchCannon << std::endl;
 
 			}
 
@@ -146,7 +146,7 @@ void EntityPlayer::playerMovement(float dt, std::vector<EntityMesh> props, std::
 			if (pitchCannon > -40.0f) {
 				this->camera->rotate(-9.0f*dt*DEG2RAD, rightCamera);
 				rotateCannon();
-				std::cout <<  " PITCH: " << pitchCannon << std::endl;
+				//std::cout <<  " PITCH: " << pitchCannon << std::endl;
 			}
 		}
 
@@ -775,6 +775,7 @@ void EntityPlayer::shoot(float dt)
 		Cannon.munition.erase(Cannon.munition.begin());
 		Game::instance->world.shootedBullet.push_back( shootedBulletindex ) ;
 		Game::instance->world.bullets_and_cannon[shootedBulletindex].initial_time =* Game::instance->world.time;
+		Game::instance->mysound.playSound(sound_types::cannon, false);
 
 	}
 }

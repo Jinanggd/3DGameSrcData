@@ -185,7 +185,7 @@ void EntityAI::updatedirection(float dt, std::vector<EntityMesh> props)
 	float angle = ComputeSignedAngle(a, b);
 
 
-	velocity = velocity + direction * 3;
+	velocity = velocity + direction * 4.0f;
 
 	speed = velocity.length() * 0.1;
 
@@ -494,7 +494,7 @@ void EntityAI::updateAnim(float dt) {
 		if (dt > anim->duration) {
 			if (!istargetplayer && indexBuildable >= 0){
 				//Subsctract life to building
-				std::cout << state << std::endl;
+				//std::cout << state << std::endl;
 				if (Game::instance->world.buildables[indexBuildable].ExtractLife()) {
 					Game::instance->world.buildables[indexBuildable].downgrade();
 					state = SEARCH;
@@ -557,6 +557,8 @@ void EntityAI::substractLife()
 	if (life == 0) {
 		animtime = *time;
 		state = DEAD;
+		current_position.y -= 10;
+		updateMatrix();
 	}
 	else
 		state = HURT;
@@ -580,7 +582,7 @@ bool EntityAI::isnear() {
 
 	if (istargetplayer) {
 
-		if (distance <= 100) Game::instance->mysound.playSound(sound_types::titan, true, distance);
+		Game::instance->mysound.playSound(sound_types::titan, true, distance);
 
 
 		if (distance <= 15) {
@@ -622,7 +624,7 @@ void EntityAI::animateCharacter()
 void EntityAI::setPosition(float x, float y, float z)
 {
 	this->current_position = Vector3(x, y, z);
-	this->model.setTranslation(x, y, z);
+	updateMatrix();
 
 }
 

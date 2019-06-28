@@ -114,7 +114,7 @@ public:
 
 	std::vector<Vector3> spawnzones;
 	int round = 0;
-	int numbersofTitans[1] = { 5 };
+	int numbersofTitans[1] = { 8 };
 	float initSpawnTime= -1;
 	float cdSpawn = 5.0f;
 	bool cleared = false;

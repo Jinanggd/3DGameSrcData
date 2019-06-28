@@ -83,6 +83,7 @@ void Sound::playSound (sound_types type, bool loop)
 		BASS_SampleGetInfo(samples[(int)type], &info); // get the sample's current info
 		info.volume = 0.4;
 		BASS_SampleSetInfo(samples[(int)type], &info);
+		BASS_ChannelStop(chs[(int)type]);
 
 	}
 
@@ -102,8 +103,10 @@ void Sound::playSound (sound_types type, bool loop)
 
 		BASS_SAMPLE info;
 		BASS_SampleGetInfo(samples[(int)type], &info); // get the sample's current info
-		info.volume = 0.1;
+		info.volume = 0.6;
 		BASS_SampleSetInfo(samples[(int)type], &info);
+
+		BASS_ChannelStop(chs[(int)type]);
 
 	}
 
@@ -129,7 +132,7 @@ void Sound::playSound(sound_types type, bool loop, float distance)
 	BASS_SAMPLE info;
 	BASS_SampleGetInfo(samples[(int)type], &info); // get the sample's current info
 
-	info.volume = clamp((1.0f / (distance*10)), 0, 1);
+	info.volume = clamp((1.0f / (distance*0.3)), 0, 1);
 	BASS_SampleSetInfo(samples[(int)type], &info);
 
 	if (!(BASS_ChannelIsActive(chs[(int)type]) == BASS_ACTIVE_PLAYING)) {

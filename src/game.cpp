@@ -165,14 +165,14 @@ void Game::update(double seconds_elapsed)
 			camera->move(Vector3(0.0f, 0.0f, 1.0f) * speed);
 
 		}
-		else mysound.playSound(sound_types::footstep, false);
+		else if(!world.Player->isoncannon) mysound.playSound(sound_types::footstep, false);
 	}
 
 	if (Input::isKeyPressed(SDL_SCANCODE_S) || Input::isKeyPressed(SDL_SCANCODE_DOWN)) {
 		if (ThirdCameraMode)
 			camera->move(Vector3(0.0f, 0.0f, -1.0f) * speed);
 
-		else mysound.playSound(sound_types::footstep, false);
+		else if (!world.Player->isoncannon) mysound.playSound(sound_types::footstep, false);
 
 	} 
 	if (Input::isKeyPressed(SDL_SCANCODE_A) || Input::isKeyPressed(SDL_SCANCODE_LEFT)) {
@@ -279,7 +279,7 @@ void Game::onKeyUp(SDL_KeyboardEvent event)
 	case SDLK_r:
 		if (!ThirdCameraMode && world.Player->isoncannon) {
 			world.Player->shoot(elapsed_time*speed);
-			mysound.playSound(sound_types::cannon , false);
+			
 		}
 		if (!ThirdCameraMode)
 			world.Player->build(world.buildables, mat_types::tower1);
@@ -450,7 +450,7 @@ void Game::renderWorld()
 
 	}
 
-	drawText(2, 2, getGPUStats(), Vector3(1, 1, 1), 2);
+	//drawText(2, 2, getGPUStats(), Vector3(1, 1, 1), 2);
 	if (world.Player->isoncannon) {
 		drawText(5, 550, "Bullets available: " + std::to_string(world.Player->Cannon.munition.size()), Vector3(1, 1, 1), 4);
 	}

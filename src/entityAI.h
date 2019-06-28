@@ -67,7 +67,7 @@ public:
 	float * time;
 	float animtime;
 	float hp;
-	int life = 2;
+	int life = 3;
 	int indexBuildable = -1;
 	GUI hpbar;
 	Skeleton skeleton;
